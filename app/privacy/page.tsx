@@ -9,7 +9,7 @@ export default function Privacy() {
         </Link>
       </nav>
       <h1 className="display-lg mb-6 text-ink">Privacy</h1>
-      <div className="space-y-4 text-sm leading-relaxed text-ink-muted">
+      <div className="readable space-y-4 text-sm leading-relaxed text-ink-muted">
         <p>
           LaunchMap stores only what it needs to run: your GitHub account
           identifier (for sign-in and run limits) and the product URLs you submit

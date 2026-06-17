@@ -14,23 +14,23 @@
 /* Linear design tokens — single source of truth as CSS variables.
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
-  --color-primary: #2dd4bf;
-  --color-primary-hover: #5eead4;
-  --color-primary-focus: #14b8a6;
+  --color-primary: #22d3ee;
+  --color-primary-hover: #67e8f9;
+  --color-primary-focus: #06b6d4;
 
-  --color-ink: #f7f8f8;
-  --color-ink-muted: #d0d6e0;
-  --color-ink-subtle: #8a8f98;
-  --color-ink-tertiary: #62666d;
+  --color-ink: #f4f4f5;
+  --color-ink-muted: #c4c4c8;
+  --color-ink-subtle: #8b8b92;
+  --color-ink-tertiary: #5f5f66;
 
-  --color-canvas: #010102;
-  --color-surface-1: #0f1011;
-  --color-surface-2: #141516;
-  --color-surface-3: #18191a;
-  --color-surface-4: #191a1b;
+  --color-canvas: #0a0a0b;
+  --color-surface-1: #141416;
+  --color-surface-2: #18181b;
+  --color-surface-3: #1c1c1f;
+  --color-surface-4: #202024;
 
-  --color-hairline: #23252a;
-  --color-hairline-strong: #34343a;
+  --color-hairline: #2a2a2e;
+  --color-hairline-strong: #3a3a3e;
 
   --color-success: #27a644;
 }
@@ -43,8 +43,16 @@ body {
      carries the canvas color underneath. */
   background-color: transparent;
   color: var(--color-ink);
+  /* Whole site reads pixel by default; long-form text opts into .readable. */
+  font-family: "Pixel Impacted", var(--font-pixel), ui-monospace, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Readable cut for dense / long text (table rows, legal copy) where pixel
+   would hurt legibility. */
+.readable {
+  font-family: var(--font-inter), "SF Pro Display", system-ui, sans-serif;
 }
 
 /* Display pixel font: Pixel Impacted → Silkscreen fallback. Reserved for
@@ -54,11 +62,11 @@ body {
 }
 .display-xl {
   font-family: "Pixel Impacted", var(--font-pixel), ui-monospace, monospace;
-  font-size: clamp(18px, 3vw, 27px);
+  font-size: clamp(16px, 2.5vw, 22px);
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.45;
   letter-spacing: 0;
-  text-wrap: balance;
+  white-space: nowrap;
 }
 .display-lg {
   font-family: "Pixel Impacted", var(--font-pixel), ui-monospace, monospace;
@@ -104,10 +112,22 @@ body {
   text-wrap: pretty;
 }
 
-/* Focus ring: 2px teal at 50% opacity. */
+/* Focus ring: 2px cyan at 50% opacity. */
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(45, 212, 191, 0.5);
+  outline: 2px solid rgba(34, 211, 238, 0.5);
   outline-offset: 1px;
+}
+
+/* Floating content panel — lifts the hero off the busy pixel field. */
+.panel {
+  background-color: rgba(20, 20, 22, 0.82);
+  border: 1px solid var(--color-hairline);
+  border-radius: 16px;
+  backdrop-filter: blur(6px);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 24px 60px -20px rgba(0, 0, 0, 0.7),
+    0 0 50px -24px rgba(34, 211, 238, 0.45);
 }
 
 /* Tactile button: explicit transition props (never transition:all). */

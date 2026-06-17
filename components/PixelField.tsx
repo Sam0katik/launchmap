@@ -2,10 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-// Flowing pixel field — a dense grid of cells whose brightness rides a moving
-// noise wave, so bands of teal pixels drift across the canvas (organic, not
-// random twinkle). Sits behind all content, low alpha so text stays readable,
-// honors prefers-reduced-motion.
+// Horizontal travelling wave of pixels. Bright bands flow sideways across a
+// small, dense grid of cyan cells over the charcoal canvas. Behind all content,
+// low alpha for readability, honors prefers-reduced-motion.
 export function PixelField() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -16,16 +15,14 @@ export function PixelField() {
     if (!ctx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const CELL = 13; // dense grid
-    const MAX_A = 0.4;
-    // Teal / cyan family — the new accent.
-    const TINTS = ["45,212,191", "94,234,212", "20,184,166", "56,189,180"];
+    const CELL = 8; // smaller + denser
+    const MAX_A = 0.42;
+    const TINTS = ["34,211,238", "103,232,249", "6,182,212", "45,212,191"];
 
     let cols = 0;
     let rows = 0;
     let raf = 0;
     let t = 0;
-    // Per-cell static jitter for a hand-scattered (not perfectly smooth) look.
     let jitter: Float32Array = new Float32Array(0);
     let tintIdx: Uint8Array = new Uint8Array(0);
 
@@ -46,43 +43,37 @@ export function PixelField() {
       }
     };
 
-    // Cheap pseudo-noise: sum of sines over x, y, and a moving t → drifting bands.
+    // Horizontal travelling wave: dominant term moves bands along +x over time,
+    // with a gentle vertical sway so the front isn't a flat line.
     const wave = (x: number, y: number) =>
-      Math.sin(x * 0.18 + t) +
-      Math.sin(y * 0.22 + t * 0.7) +
-      Math.sin((x + y) * 0.09 - t * 0.5) +
-      Math.sin((x - y) * 0.13 + t * 0.4);
+      Math.sin(x * 0.11 - t * 1.3 + Math.sin(y * 0.08) * 2.2) +
+      0.5 * Math.sin(y * 0.16 + t * 0.25);
 
     const draw = () => {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
       for (let gy = 0; gy < rows; gy++) {
         for (let gx = 0; gx < cols; gx++) {
           const i = gy * cols + gx;
-          // wave in [-4,4] → normalize to [0,1]
-          let v = (wave(gx, gy) + 4) / 8;
-          v *= 0.6 + jitter[i] * 0.8; // scatter
-          if (v < 0.62) continue; // threshold → only bright cells render
-          const a = Math.min(MAX_A, (v - 0.62) * MAX_A * 3);
+          let v = (wave(gx, gy) + 1.5) / 3; // normalize ~[0,1]
+          v *= 0.55 + jitter[i] * 0.85;
+          if (v < 0.66) continue;
+          const a = Math.min(MAX_A, (v - 0.66) * MAX_A * 3.2);
           ctx.fillStyle = `rgba(${TINTS[tintIdx[i]]},${a})`;
-          ctx.fillRect(gx * CELL, gy * CELL, CELL - 2, CELL - 2);
+          ctx.fillRect(gx * CELL, gy * CELL, CELL - 1, CELL - 1);
         }
       }
     };
 
     const frame = () => {
-      t += 0.018;
+      t += 0.02;
       draw();
       raf = requestAnimationFrame(frame);
     };
 
     resize();
     window.addEventListener("resize", resize);
-
-    if (reduce) {
-      draw(); // one static frame
-    } else {
-      raf = requestAnimationFrame(frame);
-    }
+    if (reduce) draw();
+    else raf = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(raf);

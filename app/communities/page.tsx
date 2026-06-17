@@ -49,9 +49,10 @@ export default function CommunitiesPage() {
 
       <header className="mb-6">
         <h1 className="display-lg mb-2 text-ink">Community database</h1>
-        <p className="text-sm text-ink-subtle">
-          The curated catalog. Edit <code className="text-ink-muted">data/communities.json</code>,
-          run <code className="text-ink-muted">npm run db:seed-gen</code>, reload.
+        <p className="readable text-sm text-ink-subtle">
+          The curated catalog. Add rows with <code className="text-ink-muted">npm run db:add</code>{" "}
+          (or edit <code className="text-ink-muted">data/communities.json</code> +{" "}
+          <code className="text-ink-muted">npm run db:seed-gen</code>).
         </p>
       </header>
 
@@ -81,7 +82,7 @@ export default function CommunitiesPage() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-hairline">
-        <table className="w-full text-left text-sm">
+        <table className="readable w-full text-left text-sm">
           <thead className="bg-surface-1 text-xs uppercase text-ink-subtle">
             <tr>
               <Th>Name</Th>

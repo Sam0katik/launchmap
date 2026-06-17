@@ -9,7 +9,7 @@ export default function Contact() {
         </Link>
       </nav>
       <h1 className="display-lg mb-6 text-ink">Contact</h1>
-      <div className="space-y-4 text-sm leading-relaxed text-ink-muted">
+      <div className="readable space-y-4 text-sm leading-relaxed text-ink-muted">
         <p>Questions, feedback, or a community to add? Reach out:</p>
         <ul className="space-y-2">
           <li>
