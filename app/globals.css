@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Linear design tokens — single source of truth as CSS variables.
+   Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
+:root {
+  --color-primary: #5e6ad2;
+  --color-primary-hover: #828fff;
+  --color-primary-focus: #5e69d1;
+
+  --color-ink: #f7f8f8;
+  --color-ink-muted: #d0d6e0;
+  --color-ink-subtle: #8a8f98;
+  --color-ink-tertiary: #62666d;
+
+  --color-canvas: #010102;
+  --color-surface-1: #0f1011;
+  --color-surface-2: #141516;
+  --color-surface-3: #18191a;
+  --color-surface-4: #191a1b;
+
+  --color-hairline: #23252a;
+  --color-hairline-strong: #34343a;
+
+  --color-success: #27a644;
+}
+
+html,
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Linear pulls display tracking aggressively negative. */
+.display-xl {
+  font-size: clamp(36px, 8vw, 80px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.display-lg {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+.headline {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.eyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-ink-subtle);
+}
+
+/* Focus ring per Linear spec: 2px primary-focus at 50% opacity. */
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(94, 105, 209, 0.5);
+  outline-offset: 1px;
+}
