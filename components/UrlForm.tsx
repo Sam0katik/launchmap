@@ -36,31 +36,31 @@ export function UrlForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="w-full max-w-xl space-y-3">
+    <form onSubmit={onSubmit} className="w-full max-w-xs space-y-2.5">
       <input
         type="url"
         required
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="https://your-product.com"
-        className="focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2.5 text-ink placeholder:text-ink-tertiary"
+        className="focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
       />
       <input
         type="text"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         maxLength={280}
-        placeholder="One line about what it does (optional)"
-        className="focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2.5 text-ink placeholder:text-ink-tertiary"
+        placeholder="One line (optional)"
+        className="focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
       />
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring btn-press w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+        className="focus-ring btn-press pixel mt-1 w-full rounded-md border border-primary-hover/40 bg-primary px-4 py-2.5 text-sm tracking-wide text-white shadow-[0_0_24px_-6px_rgba(94,105,209,0.7)] hover:bg-primary-hover disabled:opacity-60"
       >
-        {loading ? "Building your map…" : "Build my launch map"}
+        {loading ? "BUILDING…" : "BUILD MY LAUNCH MAP"}
       </button>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
     </form>
   );
 }

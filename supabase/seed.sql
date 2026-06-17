@@ -5,7 +5,7 @@
 -- verified_at per row; re-verify against live sidebars before production and
 -- monthly thereafter. The generator warns on rows older than 45 days.
 --
--- Rows: 20 | Generated: 2026-06-17
+-- Rows: 26 | Generated: 2026-06-17
 
 truncate table communities restart identity cascade;
 
@@ -93,4 +93,28 @@ values
   ('directory', 'Indie Hackers', 'https://www.indiehackers.com/', '{"indie","bootstrapped","saas","solofounder","buildinpublic","launch"}',
    'welcome', 'Community for bootstrapped founders; Product-Hunt-style exposure without the extreme competition.',
    'Required: post in the right group, lead with the story / lessons, not a bare link.', 'easy', 'No karma gate; reputation builds via genuine participation.',
-   'moderate', 'Tue-Thu mornings ET', null, '2026-06-17');
+   'moderate', 'Tue-Thu mornings ET', null, '2026-06-17'),
+  ('directory', 'WIP.co', 'https://wip.co/', '{"indie","buildinpublic","maker","saas","solofounder","devtool"}',
+   'welcome', 'Maker community + public to-do list (by @marckohlbrugge). Paid membership (~$20/mo) keeps it serious and spam-free.',
+   'Required: log real progress / ship things; it''s a doing community, not a promo board.', 'easy', 'No karma; paid membership is the gate.',
+   'moderate', 'Any weekday', null, '2026-06-17'),
+  ('directory', 'Makerlog', 'https://getmakerlog.com/', '{"indie","buildinpublic","maker","solofounder","launch"}',
+   'welcome', 'Free maker community where you log daily tasks/streaks and share what you ship.',
+   'Required: share genuine progress; community rewards consistency over pitches.', 'easy', 'No karma; free to join.',
+   'low', 'Any weekday', null, '2026-06-17'),
+  ('directory', 'TinyLaunch', 'https://www.tinylaunch.com/', '{"launch","indie","saas","devtool","microsaas"}',
+   'welcome', 'Fast daily launch board with a do-follow backlink. Low pressure, quick exposure.',
+   'Required: submit your product; pick a launch day.', 'easy', 'No karma.',
+   'moderate', 'N/A — daily slots', null, '2026-06-17'),
+  ('directory', 'Fazier', 'https://fazier.com/', '{"launch","saas","devtool","ai","indie","maker"}',
+   'welcome', 'Launch platform with built-in community + embeddable badges; less 24h pressure than Product Hunt.',
+   'Required: submit via form; engage with the community for traction.', 'easy', 'No karma.',
+   'moderate', 'Weekly cycle', null, '2026-06-17'),
+  ('reddit', 'r/growmybusiness', 'https://www.reddit.com/r/growmybusiness/', '{"startup","saas","marketing","founder","launch","growth"}',
+   'welcome', 'Growth/marketing feedback sub; sharing your product for advice is on-topic.',
+   'Required: frame as a growth question, not a raw ad. Removed: pure drive-by links.', 'medium', 'Some history helps; new accounts can be filtered.',
+   'moderate', 'Weekday mornings ET', null, '2026-06-17'),
+  ('reddit', 'r/SaaSMarketing', 'https://www.reddit.com/r/SaaSMarketing/', '{"saas","marketing","growth","b2b","launch"}',
+   'welcome', 'Niche SaaS-marketing sub; product shares welcome when tied to a marketing learning/question.',
+   'Required: lead with the marketing angle/insight. Removed: bare promo.', 'easy', 'Low barrier.',
+   'low', 'Weekday mornings ET', null, '2026-06-17');
