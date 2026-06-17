@@ -14,25 +14,25 @@
 /* Linear design tokens — single source of truth as CSS variables.
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
-  --color-primary: #22d3ee;
-  --color-primary-hover: #67e8f9;
-  --color-primary-focus: #06b6d4;
+  --color-primary: #7dd3fc;
+  --color-primary-hover: #bae6fd;
+  --color-primary-focus: #38bdf8;
 
-  --color-ink: #f4f4f5;
-  --color-ink-muted: #c4c4c8;
-  --color-ink-subtle: #8b8b92;
-  --color-ink-tertiary: #5f5f66;
+  --color-ink: #fafafa;
+  --color-ink-muted: #a1a1aa;
+  --color-ink-subtle: #71717a;
+  --color-ink-tertiary: #52525b;
 
-  --color-canvas: #0a0a0b;
-  --color-surface-1: #141416;
-  --color-surface-2: #18181b;
-  --color-surface-3: #1c1c1f;
-  --color-surface-4: #202024;
+  --color-canvas: #09090b;
+  --color-surface-1: #18181b;
+  --color-surface-2: #1f1f23;
+  --color-surface-3: #27272a;
+  --color-surface-4: #2e2e33;
 
-  --color-hairline: #2a2a2e;
-  --color-hairline-strong: #3a3a3e;
+  --color-hairline: #27272a;
+  --color-hairline-strong: #3f3f46;
 
-  --color-success: #27a644;
+  --color-success: #34d399;
 }
 
 html {
@@ -112,22 +112,18 @@ body {
   text-wrap: pretty;
 }
 
-/* Focus ring: 2px cyan at 50% opacity. */
+/* Focus ring: 2px icy blue at 50% opacity. */
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(34, 211, 238, 0.5);
+  outline: 2px solid rgba(125, 211, 252, 0.45);
   outline-offset: 1px;
 }
 
-/* Floating content panel — lifts the hero off the busy pixel field. */
+/* Floating content panel — solid, opaque, no border, no neon. Just a soft
+   elevation shadow so it sits clearly above the background. */
 .panel {
-  background-color: rgba(20, 20, 22, 0.82);
-  border: 1px solid var(--color-hairline);
-  border-radius: 16px;
-  backdrop-filter: blur(6px);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.3),
-    0 24px 60px -20px rgba(0, 0, 0, 0.7),
-    0 0 50px -24px rgba(34, 211, 238, 0.45);
+  background-color: #161618;
+  border-radius: 18px;
+  box-shadow: 0 30px 70px -24px rgba(0, 0, 0, 0.85);
 }
 
 /* Tactile button: explicit transition props (never transition:all). */

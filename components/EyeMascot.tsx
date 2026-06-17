@@ -7,12 +7,12 @@ import { useEffect, useRef, useState } from "react";
 // toward the mouse. Pure SVG pixel rects, crisp-edged.
 
 const CELL = 6;
-const WHITE = "#f4f4f5";
-const IRIS_OUT = "#0e7490";
-const IRIS_MID = "#06b6d4";
-const IRIS_IN = "#22d3ee";
-const PUPIL = "#0a0a0b";
-const RING = "#1c1c1f";
+const WHITE = "#fafafa";
+const IRIS_OUT = "#075985";
+const IRIS_MID = "#38bdf8";
+const IRIS_IN = "#7dd3fc";
+const PUPIL = "#09090b";
+const RING = "#27272a";
 
 // Almond sclera, [xStart, xEnd] inclusive per row y (0..12).
 const SCLERA: [number, number][] = [
