@@ -1,13 +1,18 @@
--- LaunchMap seed data — starter set for the "vibe-coders / indie SaaS" niche.
+-- LaunchMap seed data — curated launch communities for the
+-- "vibe-coders / indie SaaS / dev-tool" niche.
 --
--- ⚠️ DATA-ACCURACY NOTE (read before production):
--- These rows are STARTING ESTIMATES based on each community's well-known public
--- posture as of 2026-06. Per the spec's core principle ("stale rules = a banned
--- user"), every row MUST be manually re-verified against the live community
--- rules before launch, and re-checked monthly. verified_at reflects when the
--- row was last hand-checked — keep it honest.
+-- ⚠️ DATA ACCURACY (the product's core principle — read before production):
+-- Rows below were RESEARCHED on 2026-06-17 from public community rules + recent
+-- launch guides (Reddit sidebars, redship.io, oneup.today, subredditsignals,
+-- uneed.best, smollaunch, launchdirectories, HN guidelines). Self-promo posture
+-- and karma bars on Reddit are nuanced and change — `self_promo_note` /
+-- `karma_note` capture the *current* posture, not a guarantee.
 --
--- Idempotent: clears and reloads the seed set.
+-- Per the spec ("stale rules = a banned user"), each row must get a final
+-- human confirmation against the live sidebar before launch, and a monthly
+-- re-verify of the top communities. `verified_at` = last hand-checked date.
+--
+-- Idempotent: clears and reloads the full set.
 
 truncate table communities restart identity cascade;
 
@@ -16,65 +21,185 @@ insert into communities
    rules_summary, karma_tier, karma_note, activity_level, best_time,
    submit_template, verified_at)
 values
+  -- ── Reddit: showcase / launch-welcoming ──────────────────────────────
   ('reddit', 'r/SideProject', 'https://www.reddit.com/r/SideProject/',
-   '{saas,indie,vibecoders,sideproject,ai,webapp,launch}',
+   '{saas,indie,vibecoders,sideproject,ai,webapp,launch,buildinpublic}',
    'welcome',
-   'Sharing what you built is the point of the sub. Keep it genuine, no pure ad copy.',
-   'Removed: low-effort drops with no context. Required: explain what it is and why you built it; engage with comments.',
-   'easy', 'New accounts tolerated; light karma history helps avoid spam filter.',
+   'Sharing what you built is the point of the sub (~628K members). Reddit drives 3-8x more indie signups than Product Hunt.',
+   'Removed: bare links / no context = treated as spam. Required: what it is, why you built it, tech used, what feedback you want.',
+   'easy', 'New accounts tolerated; comment for a few days first to clear the spam filter.',
    'active', 'Tue-Thu 9-12 ET',
    null, '2026-06-17'),
 
-  ('reddit', 'r/SaaS', 'https://www.reddit.com/r/SaaS/',
-   '{saas,b2b,indie,startup,launch,pricing}',
-   'megathread_only',
-   'Direct promo is limited; use the weekly self-promo / feedback threads.',
-   'Removed: standalone launch posts outside allowed threads. Required: contribute discussion, not just links.',
-   'medium', 'Some history expected; brand-new accounts often filtered.',
-   'active', 'Mon-Wed 8-11 ET',
+  ('reddit', 'r/indiehackers', 'https://www.reddit.com/r/indiehackers/',
+   '{indie,bootstrapped,saas,solofounder,buildinpublic,launch,microsaas}',
+   'welcome',
+   'Showcase-style community (~100K). Best format: "Launched X months ago, Y users — here is what I learned."',
+   'Required: genuine journey posts with real numbers / honest failures. Removed: pure promo with no story.',
+   'easy', 'Low barrier; basic participation helps.',
+   'moderate', 'Tue-Thu mornings ET',
    null, '2026-06-17'),
 
   ('reddit', 'r/microsaas', 'https://www.reddit.com/r/microsaas/',
-   '{microsaas,saas,indie,bootstrapped,solofounder,launch}',
+   '{microsaas,saas,indie,bootstrapped,solofounder,launch,b2b}',
    'welcome',
    'Build-in-public and small-launch posts welcome when they add insight.',
-   'Removed: spammy repeat self-promo. Required: share numbers/learnings, not just a link.',
-   'easy', 'Low barrier; basic account age helps.',
+   'Required: share numbers / learnings, not just a link. Removed: repeat spammy self-promo.',
+   'easy', 'Low barrier; some account age helps.',
    'moderate', 'Tue-Thu 10-13 ET',
    null, '2026-06-17'),
 
   ('reddit', 'r/alphaandbetausers', 'https://www.reddit.com/r/alphaandbetausers/',
    '{beta,earlyaccess,feedback,indie,testers,launch}',
    'welcome',
-   'Purpose-built for recruiting early users/testers — promo expected here.',
-   'Required: clearly label stage (alpha/beta) and what feedback you want.',
+   'Purpose-built for recruiting early users / testers — promo is expected here.',
+   'Required: clearly label stage (alpha/beta) and the exact feedback you want.',
    'easy', 'Minimal karma needs.',
    'low', 'Any weekday morning ET',
+   null, '2026-06-17'),
+
+  ('reddit', 'r/roastmystartup', 'https://www.reddit.com/r/roastmystartup/',
+   '{feedback,startup,indie,saas,launch,critique}',
+   'welcome',
+   'Feedback-first sub — you post to get torn apart constructively. Thick skin required.',
+   'Required: be ready for blunt critique; ask specific questions. Removed: thin-skinned replies / pure promo.',
+   'easy', 'Low barrier.',
+   'moderate', 'Weekday mornings ET',
+   null, '2026-06-17'),
+
+  ('reddit', 'r/IMadeThis', 'https://www.reddit.com/r/IMadeThis/',
+   '{indie,sideproject,webapp,launch,showcase,maker}',
+   'welcome',
+   'Showcase what you personally made — projects, tools, apps.',
+   'Required: it must be something you built; show the thing. Removed: drop-and-run links with no detail.',
+   'easy', 'Low barrier.',
+   'moderate', 'Tue-Thu ET',
+   null, '2026-06-17'),
+
+  ('reddit', 'r/vibecoding', 'https://www.reddit.com/r/vibecoding/',
+   '{ai,vibecoders,devtool,aicoding,indie,launch,webapp}',
+   'welcome',
+   'Newer community for AI-assisted builders — your exact ICP.',
+   'Required: tie the post to the AI/vibe-coding workflow. Removed: generic promo unrelated to the craft.',
+   'easy', 'Low barrier; growing fast.',
+   'active', 'Weekdays, midday ET',
+   null, '2026-06-17'),
+
+  ('reddit', 'r/EntrepreneurRideAlong', 'https://www.reddit.com/r/EntrepreneurRideAlong/',
+   '{startup,founder,indie,saas,buildinpublic,journey}',
+   'welcome',
+   'Journey / build-along community — narrative posts do well.',
+   'Required: share the process and lessons. Removed: standalone ad-style launch posts.',
+   'medium', 'Some history expected.',
+   'moderate', 'Mon-Wed ET',
+   null, '2026-06-17'),
+
+  -- ── Reddit: promo allowed only in designated threads ─────────────────
+  ('reddit', 'r/SaaS', 'https://www.reddit.com/r/SaaS/',
+   '{saas,b2b,indie,startup,launch,pricing}',
+   'megathread_only',
+   'Direct promo limited; use the weekly "Share Your SaaS" / feedback threads.',
+   'Removed: standalone launch posts outside allowed threads; name+link+one-liner = spam.',
+   'medium', 'Brand-new accounts often filtered; build some history.',
+   'active', 'Mon-Wed 8-11 ET',
+   null, '2026-06-17'),
+
+  ('reddit', 'r/startups', 'https://www.reddit.com/r/startups/',
+   '{startup,saas,founder,launch,feedback,b2b}',
+   'megathread_only',
+   'Use "Share Your Startup" / Feedback Friday threads; main feed is strict.',
+   'Removed: self-promo in the main feed. Required: substantive discussion contributions.',
+   'medium', 'Account age + comment karma expected.',
+   'active', 'Fri for Feedback Friday; weekday mornings ET',
    null, '2026-06-17'),
 
   ('reddit', 'r/Entrepreneur', 'https://www.reddit.com/r/Entrepreneur/',
    '{startup,business,founder,saas,marketing}',
    'megathread_only',
-   'Strict on self-promo; use the designated threads only.',
-   'Removed: launch/promo posts in the main feed. Required: high-effort discussion contributions.',
+   'Strict; product mentions must emerge from valuable content. Weekly promo threads exist.',
+   'Removed: "check out my product" posts. Norm: 10:1 (ten helpful contributions per promo).',
    'hard', 'Established account + comment karma strongly recommended.',
    'active', 'Mon/Thu 9-12 ET',
    null, '2026-06-17'),
 
+  ('reddit', 'r/webdev', 'https://www.reddit.com/r/webdev/',
+   '{webdev,devtool,saas,frontend,launch,showcase}',
+   'megathread_only',
+   'Showcase only in the weekly "Showoff Saturday" thread; main feed removes promo.',
+   'Removed: self-promo outside Showoff Saturday. Required: dev substance.',
+   'medium', 'Some history expected.',
+   'active', 'Sat (Showoff Saturday) ET',
+   null, '2026-06-17'),
+
+  -- ── Directories / launch platforms ───────────────────────────────────
+  ('directory', 'Product Hunt', 'https://www.producthunt.com/posts/new',
+   '{launch,saas,devtool,ai,startup,webapp}',
+   'welcome',
+   '24h launch spike, broad tech audience (~300-1k visits/day). Relaunch allowed after 6 months with new features.',
+   'Required: prep assets + a hunter/network; pick a launch day; engage all day. No karma concept.',
+   'easy', 'No karma; success depends on prep + day-of engagement.',
+   'active', 'Tue-Thu 00:01 PT start',
+   null, '2026-06-17'),
+
+  ('hackernews', 'Hacker News — Show HN', 'https://news.ycombinator.com/showhn.html',
+   '{devtool,opensource,saas,ai,launch,technical}',
+   'megathread_only',
+   'Show HN is the designated place for "something you built". 100% builder/engineer audience.',
+   'Required: modest tone, NO superlatives (fastest/best/first), go deep on details. Talk as fellow engineers.',
+   'hard', 'Account needed; karma gates some actions. Quality + honesty rule.',
+   'active', 'Early in the week, mornings PT',
+   'https://news.ycombinator.com/submitlink?t={title}', '2026-06-17'),
+
   ('directory', 'BetaList', 'https://betalist.com/submit',
    '{beta,earlyaccess,startup,waitlist,saas,launch}',
    'welcome',
-   'Curated early-stage startup directory; strong email subscriber base for beta signups.',
-   'Required: submit via their form; manual curation, can take time / has a paid skip-the-line option.',
-   'easy', 'No account-karma concept; quality bar is editorial.',
+   'Pre-launch waitlist directory with a strong email subscriber base. Free submission but low acceptance (editorial).',
+   'Required: submit via form; only well-presented early-stage products get the free slot. Paid skip exists.',
+   'easy', 'No karma; bar is editorial quality.',
    'moderate', 'N/A — submission-based',
+   null, '2026-06-17'),
+
+  ('directory', 'Peerlist Launchpad', 'https://peerlist.io/launchpad',
+   '{launch,saas,devtool,indie,maker,professional}',
+   'welcome',
+   'Professional builder network. One product/week; submit Monday, competition runs a week (less 24h pressure).',
+   'Required: complete product profile; launch slot is weekly.',
+   'easy', 'No karma; a complete Peerlist profile helps.',
+   'moderate', 'Submit Monday',
+   null, '2026-06-17'),
+
+  ('directory', 'Uneed', 'https://www.uneed.best/submit-a-tool',
+   '{devtool,saas,ai,directory,launch}',
+   'welcome',
+   'Curated tool directory. Free with a waiting period; $30 to skip the queue.',
+   'Required: submit via form; curated, so quality matters.',
+   'easy', 'No karma; editorial curation.',
+   'moderate', 'N/A — submission-based',
+   null, '2026-06-17'),
+
+  ('directory', 'MicroLaunch', 'https://microlaunch.net/',
+   '{launch,indie,saas,microsaas,devtool}',
+   'welcome',
+   'Product-Hunt-style but launch is live for a month — no pressure to harvest upvotes in 24h. Free.',
+   'Required: submit; supportive/constructive community.',
+   'easy', 'No karma.',
+   'moderate', 'N/A — month-long window',
+   null, '2026-06-17'),
+
+  ('directory', 'DevHunt', 'https://devhunt.org/',
+   '{devtool,cli,api,opensource,launch,technical}',
+   'welcome',
+   '"Product Hunt for developers" — 100% dev audience. Best for dev tools, CLIs, APIs, OSS.',
+   'Required: must be a developer tool; submit via form.',
+   'easy', 'No karma.',
+   'moderate', 'Weekly cycle',
    null, '2026-06-17'),
 
   ('directory', 'Indie Hackers', 'https://www.indiehackers.com/',
    '{indie,bootstrapped,saas,solofounder,buildinpublic,launch}',
    'welcome',
    'Community for bootstrapped founders; Product-Hunt-style exposure without the extreme competition.',
-   'Required: post in the right group, lead with the story/lessons, not a bare link.',
+   'Required: post in the right group, lead with the story / lessons, not a bare link.',
    'easy', 'No karma gate; reputation builds via genuine participation.',
    'moderate', 'Tue-Thu mornings ET',
    null, '2026-06-17');
