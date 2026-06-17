@@ -1,4 +1,5 @@
 import type { RankedCommunity } from "@/lib/types";
+import { buildSubmitLink } from "@/lib/submit-links";
 
 // One community card on the map. Locked cards show name + rank only; the rules,
 // karma, best time, submit link, and draft live behind the paywall.
@@ -109,15 +110,33 @@ function UnlockedBody({
         </p>
       )}
 
-      <a
-        href={community.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="focus-ring inline-block rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-hover"
-      >
-        Open submit form
-      </a>
+      <SubmitButton entry={entry} />
     </div>
+  );
+}
+
+// "Open submit form" — uses the prefilled submit link where the platform
+// supports it (Reddit, HN, X), else a plain "Open" to the community.
+// In Stage 5 the placeholder draft below is replaced by the real Sonnet draft.
+function SubmitButton({ entry }: { entry: RankedCommunity }) {
+  const { community } = entry;
+  const placeholder = {
+    title: `Built something for ${community.niche_tags[0] ?? "makers"} — feedback welcome`,
+    body: "[Your tailored draft goes here once the map is generated]",
+  };
+  const prefilled = buildSubmitLink(community, placeholder);
+  const href = prefilled ?? community.url;
+  const label = prefilled ? "Open prefilled submit form" : "Open";
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="focus-ring btn-press inline-block rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+    >
+      {label}
+    </a>
   );
 }
 
