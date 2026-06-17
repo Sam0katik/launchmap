@@ -1,8 +1,8 @@
 # LaunchMap — Development Plan
 
 > Generated 2026-06-17. Built from `LaunchMap_MVP_спека.txt` + `/last30days` market
-> validation + ECC/Next.js patterns. Stack decisions: **Next.js + Vercel + Supabase**,
-> **Linear** design language.
+> validation + ECC/Next.js patterns. Stack decisions: **Next.js + Render + Supabase**,
+> **Linear** design language with a pixel display font.
 
 ---
 
@@ -51,10 +51,10 @@ Route Handler (server)
    └─ unlock (Lemon Squeezy) → drafts (Sonnet, lazy) + submit links revealed
 ```
 
-**Why this stack vs the spec's Render+Postgres:** Supabase gives Postgres +
-GitHub OAuth + RLS out of the box (less hand-wiring than Render + separate
-Postgres + custom OAuth), and Vercel is the zero-config Next.js host. Same
-data model, same SQL schema, fewer moving parts for a solo MVP.
+**Why this stack:** app hosted on **Render** (per the spec) via a `render.yaml`
+Blueprint; **Supabase** provides Postgres + GitHub OAuth + RLS out of the box
+(less hand-wiring than Render Postgres + custom OAuth). Same data model, same
+SQL schema, fewer moving parts for a solo MVP.
 
 ---
 
@@ -130,10 +130,13 @@ take it from scaffold to shipped.
 - [ ] Confirm rate limit (5/day) + URL cache (24h) behave under abuse.
 
 ### Step 6 — Deploy & full-cycle test (day 12)
-- [ ] Deploy to Vercel; set env vars; point Supabase redirect URLs at prod.
+- [ ] Deploy to **Render** via `render.yaml` Blueprint; set secret env vars in
+      the dashboard; point Supabase + Lemon Squeezy URLs at the Render domain.
 - [ ] Run the full loop on a real product end-to-end.
 - [ ] Security pass (ECC `security-review`): RLS, webhook signature, no service
       key on client, input validation.
+
+> Stage-by-stage wiring detail lives in [`FEATURE_WIRING.md`](./FEATURE_WIRING.md).
 
 ---
 

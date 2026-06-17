@@ -56,7 +56,7 @@ export function UrlForm() {
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
+        className="focus-ring btn-press w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
       >
         {loading ? "Building your map…" : "Build my launch map"}
       </button>

@@ -44,8 +44,9 @@ const config: Config = {
         xxl: "24px",
       },
       fontFamily: {
-        // Inter is the documented free substitute for Linear's custom sans.
+        // Inter = body (readable). Pixel = display detail only.
         sans: ["var(--font-inter)", "SF Pro Display", "-apple-system", "system-ui", "sans-serif"],
+        pixel: ["var(--font-pixel)", "ui-monospace", "monospace"],
         mono: ["var(--font-geist-mono)", "ui-monospace", "SF Mono", "Menlo", "monospace"],
       },
       maxWidth: {

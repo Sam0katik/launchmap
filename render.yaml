@@ -1,0 +1,44 @@
+# Render Blueprint — host LaunchMap as a Next.js Web Service.
+# DB + Auth stay on Supabase (managed Postgres + GitHub OAuth); Render runs the app.
+#
+# Deploy: push to GitHub → Render → New → Blueprint → pick this repo.
+# Set the secret env vars (marked sync:false) in the Render dashboard.
+services:
+  - type: web
+    name: launchmap
+    runtime: node
+    region: frankfurt
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL_ANALYZE
+        value: claude-haiku-4-5-20251001
+      - key: ANTHROPIC_MODEL_DRAFT
+        value: claude-sonnet-4-6
+      - key: LEMONSQUEEZY_API_KEY
+        sync: false
+      - key: LEMONSQUEEZY_STORE_ID
+        sync: false
+      - key: LEMONSQUEEZY_VARIANT_ID
+        sync: false
+      - key: LEMONSQUEEZY_WEBHOOK_SECRET
+        sync: false
+      - key: FREE_RUNS_PER_DAY
+        value: "5"
+      - key: URL_CACHE_HOURS
+        value: "24"

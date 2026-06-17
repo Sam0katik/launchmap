@@ -13,6 +13,15 @@ const POLICY_LABEL: Record<string, string> = {
   banned: "No self-promo",
 };
 
+// Functional color-coding aids scanning (ECC: support repeated-use scanning).
+// green = safe, amber = constrained, red = risky.
+const POLICY_TONE: Record<string, string> = {
+  welcome: "text-success border-success/40",
+  megathread_only: "text-amber-400 border-amber-400/40",
+  comment_only: "text-amber-400 border-amber-400/40",
+  banned: "text-red-400 border-red-400/40",
+};
+
 const KARMA_LABEL: Record<string, string> = {
   easy: "Easy",
   medium: "Medium",
@@ -38,7 +47,7 @@ export function CommunityCard({
           </div>
           <span className="eyebrow mt-1 block">{community.platform}</span>
         </div>
-        <span className="rounded-pill rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
+        <span className="tnum rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
           {relevance}% match
         </span>
       </div>
@@ -76,7 +85,11 @@ function UnlockedBody({
   return (
     <div className="mt-4 space-y-3 border-t border-hairline pt-4 text-sm">
       <div className="flex flex-wrap gap-2">
-        <Badge>{policyLabel[community.self_promo_policy]}</Badge>
+        <span
+          className={`rounded-full border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
+        >
+          {policyLabel[community.self_promo_policy]}
+        </span>
         {community.karma_tier && (
           <Badge>Karma: {karmaLabel[community.karma_tier]}</Badge>
         )}

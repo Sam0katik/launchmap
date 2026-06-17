@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Pixelify_Sans } from "next/font/google";
 import "./globals.css";
 
-// Inter = documented free substitute for Linear's proprietary display/text cut.
+// Body = Inter (free substitute for Linear's proprietary text cut) — kept for
+// readability at small sizes.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+});
+
+// Display = Pixelify Sans — the one memorable detail. Pixel font reserved for
+// the wordmark, hero headline, and eyebrows only; never body (readability).
+const pixel = Pixelify_Sans({
+  subsets: ["latin"],
+  variable: "--font-pixel",
   weight: ["400", "500", "600", "700"],
 });
 
@@ -21,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${pixel.variable}`}>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

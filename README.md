@@ -10,11 +10,11 @@ For indie makers and vibe-coders with zero audience and zero followers.
 
 ## Stack
 
-- **Next.js 14** (App Router) on **Vercel**
+- **Next.js 14** (App Router) on **Render** (`render.yaml` Blueprint)
 - **Supabase** — Postgres + GitHub OAuth + RLS
 - **Anthropic** — Claude Haiku (landing analysis + matching), Claude Sonnet (drafts)
 - **Lemon Squeezy** — one-time map unlock (merchant of record, handles VAT)
-- **Linear** design language (via `awesome-design-md`)
+- **Linear** design language (via `awesome-design-md`) + Pixelify Sans display font
 
 ## Quick start
 
@@ -27,6 +27,8 @@ cp .env.example .env.local      # fill in Supabase + Anthropic keys
 #   supabase/seed.sql
 
 npm run dev                     # http://localhost:3000
+#   /        landing + URL form
+#   /demo    full map UI with mock data (no DB/keys needed)
 ```
 
 Enable the **GitHub** provider in Supabase Auth and add the local + prod

@@ -4,32 +4,35 @@ import { UrlForm } from "@/components/UrlForm";
 // dense type with negative tracking, product framed in a surface-1 panel.
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-content flex-col items-center px-6">
-      <section className="flex w-full max-w-2xl flex-1 flex-col items-center justify-center py-24 text-center">
-        <span className="eyebrow mb-5">For indie makers with zero audience</span>
+    <main className="mx-auto flex min-h-screen max-w-content flex-col px-6">
+      <nav className="flex h-14 items-center">
+        <span className="wordmark text-sm text-ink">LAUNCHMAP</span>
+      </nav>
 
-        <h1 className="display-xl mb-5 text-ink">
-          Paste your URL.
+      <section className="flex w-full max-w-2xl flex-1 flex-col items-center justify-center self-center py-24 text-center">
+        <span className="eyebrow mb-6">first users · zero audience</span>
+
+        <h1 className="display-xl mb-6 text-ink">
+          Paste URL.
           <br />
-          Get your launch map.
+          Get launch map.
         </h1>
 
-        <p className="mb-10 max-w-lg text-lg leading-relaxed text-ink-muted">
-          A ranked list of where to post your product for first users — with each
-          community&apos;s rules, karma requirements, best time, a one-click
-          submit link, and a tailored draft. So you launch without getting
-          banned.
+        <p className="pretty mb-10 max-w-md text-base leading-relaxed text-ink-muted">
+          Ranked list of where to post your product — each community&apos;s
+          rules, karma bar, best time, one-click submit link, and a tailored
+          draft. Launch without getting banned.
         </p>
 
         <UrlForm />
 
         <p className="mt-6 text-sm text-ink-tertiary">
-          Free: top 4 communities. Full map: one-time unlock.
+          Free: top 4. Full map: one-time unlock.
         </p>
       </section>
 
-      <footer className="w-full border-t border-hairline py-8 text-center text-xs text-ink-subtle">
-        LaunchMap — built for the first-100-users problem.
+      <footer className="flex h-16 items-center justify-center border-t border-hairline text-xs text-ink-subtle">
+        Built for the first-100-users problem.
       </footer>
     </main>
   );
