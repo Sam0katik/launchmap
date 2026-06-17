@@ -8,7 +8,8 @@ services:
     name: launchmap
     runtime: node
     region: frankfurt
-    plan: starter
+    # free tier (spins down when idle). Bump to "starter" ($7/mo) for always-on.
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm run start
     healthCheckPath: /

@@ -56,7 +56,7 @@ export function UrlForm() {
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring btn-press pixel mt-1 w-full rounded-md border border-primary-hover/40 bg-primary px-4 py-2.5 text-sm tracking-wide text-white shadow-[0_0_24px_-6px_rgba(94,105,209,0.7)] hover:bg-primary-hover disabled:opacity-60"
+        className="focus-ring btn-press pixel mt-1 w-full rounded-md border border-primary-hover/40 bg-primary px-4 py-2.5 text-sm tracking-wide text-canvas shadow-[0_0_24px_-6px_rgba(45,212,191,0.8)] hover:bg-primary-hover disabled:opacity-60"
       >
         {loading ? "BUILDING…" : "BUILD MY LAUNCH MAP"}
       </button>

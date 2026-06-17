@@ -133,7 +133,7 @@ function SubmitButton({ entry }: { entry: RankedCommunity }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="focus-ring btn-press inline-block rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+      className="focus-ring btn-press inline-block rounded-md bg-primary px-3 py-2 text-sm font-medium text-canvas hover:bg-primary-hover"
     >
       {label}
     </a>

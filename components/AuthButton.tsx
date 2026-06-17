@@ -42,9 +42,9 @@ export function AuthButton() {
     location.reload();
   }
 
-  // On-brand: pixel font, lavender hairline, fills on hover.
+  // On-brand: pixel font, teal hairline, fills on hover. Enlarged.
   const cls =
-    "focus-ring btn-press pixel rounded-md border border-primary/40 bg-surface-1 px-3 py-1.5 text-[11px] tracking-wide text-ink-muted hover:border-primary hover:bg-primary hover:text-white disabled:opacity-50";
+    "focus-ring btn-press pixel rounded-md border border-primary/50 bg-surface-1 px-4 py-2 text-xs tracking-wide text-ink hover:border-primary hover:bg-primary hover:text-canvas disabled:opacity-50";
 
   if (!configured) {
     return (

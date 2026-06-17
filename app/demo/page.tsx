@@ -32,7 +32,7 @@ export default function DemoPage() {
             {lockedCount} more communities are locked — unlock rules, drafts, and
             one-click submit links for your whole map.
           </p>
-          <button className="focus-ring btn-press rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover">
+          <button className="focus-ring btn-press rounded-md bg-primary px-4 py-2 text-sm font-medium text-canvas hover:bg-primary-hover">
             Unlock full map
           </button>
         </div>

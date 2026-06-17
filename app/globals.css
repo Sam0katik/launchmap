@@ -14,9 +14,9 @@
 /* Linear design tokens — single source of truth as CSS variables.
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
-  --color-primary: #5e6ad2;
-  --color-primary-hover: #828fff;
-  --color-primary-focus: #5e69d1;
+  --color-primary: #2dd4bf;
+  --color-primary-hover: #5eead4;
+  --color-primary-focus: #14b8a6;
 
   --color-ink: #f7f8f8;
   --color-ink-muted: #d0d6e0;
@@ -54,9 +54,9 @@ body {
 }
 .display-xl {
   font-family: "Pixel Impacted", var(--font-pixel), ui-monospace, monospace;
-  font-size: clamp(20px, 3.4vw, 31px);
+  font-size: clamp(18px, 3vw, 27px);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
   letter-spacing: 0;
   text-wrap: balance;
 }
@@ -104,9 +104,9 @@ body {
   text-wrap: pretty;
 }
 
-/* Focus ring per Linear spec: 2px primary-focus at 50% opacity. */
+/* Focus ring: 2px teal at 50% opacity. */
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(94, 105, 209, 0.5);
+  outline: 2px solid rgba(45, 212, 191, 0.5);
   outline-offset: 1px;
 }
 

@@ -47,7 +47,7 @@ export default async function MapPage({
           {/* TODO: wire Lemon Squeezy checkout (Step 5). */}
           <button
             disabled
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white opacity-60"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-canvas opacity-60"
           >
             Unlock full map
           </button>

@@ -5,7 +5,7 @@
 -- verified_at per row; re-verify against live sidebars before production and
 -- monthly thereafter. The generator warns on rows older than 45 days.
 --
--- Rows: 26 | Generated: 2026-06-17
+-- Rows: 30 | Generated: 2026-06-17
 
 truncate table communities restart identity cascade;
 
@@ -117,4 +117,20 @@ values
   ('reddit', 'r/SaaSMarketing', 'https://www.reddit.com/r/SaaSMarketing/', '{"saas","marketing","growth","b2b","launch"}',
    'welcome', 'Niche SaaS-marketing sub; product shares welcome when tied to a marketing learning/question.',
    'Required: lead with the marketing angle/insight. Removed: bare promo.', 'easy', 'Low barrier.',
-   'low', 'Weekday mornings ET', null, '2026-06-17');
+   'low', 'Weekday mornings ET', null, '2026-06-17'),
+  ('reddit', 'r/indiebiz', 'https://www.reddit.com/r/indiebiz/', '{"indie","smallbusiness","bootstrapped","saas","launch","founder"}',
+   'welcome', 'Small-/indie-business sub; sharing what you built for feedback is on-topic.',
+   'Required: add context and engage. Removed: pure drive-by promo.', 'easy', 'Low barrier.',
+   'low', 'Weekday mornings ET', null, '2026-06-17'),
+  ('directory', 'Launching Next', 'https://www.launchingnext.com/submit/', '{"launch","startup","saas","directory","waitlist"}',
+   'welcome', 'Manually-curated startup directory; quality bar keeps listings clean. Free submission.',
+   'Required: submit via form; curated review before listing.', 'easy', 'No karma; editorial curation.',
+   'moderate', 'N/A — submission-based', null, '2026-06-17'),
+  ('directory', 'StartupBase', 'https://startupbase.io/', '{"launch","startup","saas","indie","directory","voting"}',
+   'welcome', 'Upvote/comment launch board (Product-Hunt-style) with far less daily competition.',
+   'Required: submit your startup; engage with the community for upvotes.', 'easy', 'No karma; account needed.',
+   'moderate', 'Weekly cycle', null, '2026-06-17'),
+  ('discord', 'Indie Worldwide (Discord)', 'https://indieworldwide.com/', '{"indie","saas","buildinpublic","maker","community","launch"}',
+   'comment_only', 'Large indie-founder Discord; share launches in the designated #launch / #showcase channels only.',
+   'Required: post in the right channel; participate, don''t just drop links.', 'easy', 'No karma; join the server (some events/membership perks paid).',
+   'active', 'Anytime — channel-based', null, '2026-06-17');
