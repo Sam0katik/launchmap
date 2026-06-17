@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Pixelify_Sans } from "next/font/google";
+import { Inter, Silkscreen } from "next/font/google";
 import "./globals.css";
 
 // Body = Inter (free substitute for Linear's proprietary text cut) — kept for
@@ -10,12 +10,12 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
-// Display = Pixelify Sans — the one memorable detail. Pixel font reserved for
-// the wordmark, hero headline, and eyebrows only; never body (readability).
-const pixel = Pixelify_Sans({
+// Display = Silkscreen — a blockier, more retro pixel cut. Reserved for the
+// wordmark, hero headline, and eyebrows only; never body (readability).
+const pixel = Silkscreen({
   subsets: ["latin"],
   variable: "--font-pixel",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
