@@ -14,9 +14,9 @@
 /* Linear design tokens — single source of truth as CSS variables.
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
-  --color-primary: #4ade80;
-  --color-primary-hover: #86efac;
-  --color-primary-focus: #22c55e;
+  --color-primary: #fb7185;
+  --color-primary-hover: #fda4af;
+  --color-primary-focus: #f43f5e;
 
   --color-ink: #fafafa;
   --color-ink-muted: #a1a1aa;
@@ -112,28 +112,43 @@ body {
   text-wrap: pretty;
 }
 
-/* Focus ring: 2px green at 50% opacity. */
+/* Focus ring: 2px coral at 50% opacity. */
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(74, 222, 128, 0.45);
+  outline: 2px solid rgba(251, 113, 133, 0.45);
   outline-offset: 1px;
 }
 
-/* Floating content panel — solid, opaque. Faint green inner edge for the
-   terminal feel; no blur. */
+/* Content panel — borderless. No frame edge: a soft radial fade into the page
+   plus a quiet drop shadow, so content reads without a hard rectangle. */
 .panel {
-  background-color: #121412;
-  border: 1px solid rgba(74, 222, 128, 0.14);
-  border-radius: 14px;
-  box-shadow:
-    0 30px 70px -24px rgba(0, 0, 0, 0.85),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  background:
+    radial-gradient(
+      120% 90% at 50% 30%,
+      rgba(28, 28, 32, 0.96) 0%,
+      rgba(20, 20, 23, 0.9) 55%,
+      rgba(16, 16, 18, 0) 100%
+    );
+  border-radius: 20px;
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.8);
 }
 
 /* ── Retro-terminal CRT ─────────────────────────────────────── */
-/* Phosphor glow on pixel display text. */
+/* Subtle coral phosphor glow on pixel display text. */
 .display-xl,
 .wordmark {
-  text-shadow: 0 0 8px rgba(74, 222, 128, 0.35);
+  text-shadow: 0 0 9px rgba(251, 113, 133, 0.3);
+}
+
+/* Blinking terminal cursor for the wordmark gimmick. */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.blink {
+  animation: blink 1.05s step-end infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .blink { animation: none; }
 }
 
 /* Full-screen scanline + flicker overlay, above everything, non-interactive. */

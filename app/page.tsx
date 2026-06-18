@@ -1,8 +1,17 @@
 import Link from "next/link";
 import { UrlForm } from "@/components/UrlForm";
 import { PixelClusters } from "@/components/PixelClusters";
-import { RadarMascot } from "@/components/RadarMascot";
 import { AuthButton } from "@/components/AuthButton";
+
+// Wordmark with a terminal gimmick: accent "MAP" + a blinking cursor block.
+function Wordmark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`wordmark ${className}`}>
+      LAUNCH<span className="text-primary">MAP</span>
+      <span className="blink ml-0.5 text-primary">▮</span>
+    </span>
+  );
+}
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -18,19 +27,15 @@ export default function Home() {
       <PixelClusters />
       <div className="relative z-10 flex min-h-screen flex-col">
         <main className="mx-auto flex w-full max-w-content flex-1 flex-col px-6">
-          {/* LAUNCHMAP left, Sign in pinned top-right */}
+          {/* Wordmark left, Sign in pinned top-right */}
           <nav className="flex h-16 items-center justify-between">
-            <span className="wordmark text-xl text-ink">LAUNCHMAP</span>
+            <Wordmark className="text-xl text-ink" />
             <AuthButton />
           </nav>
 
           <section className="flex flex-1 flex-col items-center justify-center py-10">
-            {/* Solid panel so the content never blends into the background */}
-            <div className="panel flex w-full max-w-sm flex-col items-center px-7 pt-8 pb-6 text-center">
-              <div className="mb-5">
-                <RadarMascot size={132} />
-              </div>
-
+            {/* Borderless panel — soft fade, no frame edge */}
+            <div className="panel flex w-full max-w-sm flex-col items-center px-8 pt-10 pb-7 text-center">
               <h1 className="display-xl mb-4 text-ink">
                 Paste URL
                 <br />

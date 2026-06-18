@@ -16,8 +16,9 @@ export function PixelClusters() {
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const CELL = 9;
-    const MAX_A = 0.32;
-    const TINTS = ["74,222,128", "134,239,172", "34,197,94", "22,163,74"];
+    const MAX_A = 0.3;
+    // Gray gamma + a rare coral accent pixel (index 3).
+    const TINTS = ["63,63,70", "82,82,91", "113,113,122", "251,113,133"];
 
     let cols = 0;
     let rows = 0;
@@ -48,7 +49,8 @@ export function PixelClusters() {
           // edge bias: 0 at center → 1 at corners
           const edge = Math.hypot(gx - cx, gy - cy) / maxD;
           mask[i] = Math.pow(edge, 1.6) * Math.random();
-          tintIdx[i] = (Math.random() * TINTS.length) | 0;
+          // mostly gray, ~8% coral accent
+          tintIdx[i] = Math.random() < 0.08 ? 3 : (Math.random() * 3) | 0;
           phase[i] = Math.random() * Math.PI * 2;
         }
       }
