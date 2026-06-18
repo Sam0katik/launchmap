@@ -11,10 +11,10 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#7dd3fc",
-          hover: "#bae6fd",
-          focus: "#38bdf8",
-          deep: "#075985",
+          DEFAULT: "#4ade80",
+          hover: "#86efac",
+          focus: "#22c55e",
+          deep: "#166534",
         },
         ink: {
           DEFAULT: "#fafafa",

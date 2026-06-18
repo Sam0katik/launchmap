@@ -3,11 +3,27 @@ import { CommunityCard } from "@/components/CommunityCard";
 import { DEMO_ANALYSIS, DEMO_RANKED } from "@/lib/demo-data";
 
 // Static preview of the map screen with mock data — no DB, no auth.
-// Lets you see the full product skeleton on localhost before Supabase is wired.
-export default function DemoPage() {
+// Reflects the submitted URL/note (text only — JSX auto-escapes, no XSS).
+export default function DemoPage({
+  searchParams,
+}: {
+  searchParams: { url?: string; note?: string };
+}) {
   const analysis = DEMO_ANALYSIS;
   const ranked = DEMO_RANKED;
   const lockedCount = ranked.filter((r) => r.locked).length;
+
+  // Safely derive a display host from the submitted url.
+  let host = "";
+  if (searchParams.url) {
+    try {
+      const u = new URL(searchParams.url);
+      if (u.protocol === "http:" || u.protocol === "https:") host = u.host;
+    } catch {
+      host = "";
+    }
+  }
+  const note = (searchParams.note ?? "").slice(0, 160);
 
   return (
     <main className="mx-auto max-w-content px-6 py-10">
@@ -19,10 +35,15 @@ export default function DemoPage() {
       </nav>
 
       <header className="mb-10">
-        <span className="eyebrow mb-3 block">your launch map</span>
-        <h1 className="display-lg mb-3 text-ink">{analysis.product_summary}</h1>
-        <p className="text-ink-subtle">
-          {analysis.category} · for {analysis.icp}
+        <span className="eyebrow mb-3 block">
+          your launch map{host ? ` · ${host}` : ""}
+        </span>
+        <h1 className="display-lg mb-3 text-ink">
+          {host ? `Where to launch ${host}` : analysis.product_summary}
+        </h1>
+        <p className="readable text-ink-subtle">
+          {note || `${analysis.category} · for ${analysis.icp}`}{" "}
+          <span className="text-ink-tertiary">(demo · sample data)</span>
         </p>
       </header>
 

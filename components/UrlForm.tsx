@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Landing-page input: product URL (required) + optional one-line description.
-// Posts to /api/analyze, then routes to the generated map.
+// When the backend (Supabase) is configured it POSTs /api/analyze and routes to
+// the real map. Until then it runs in DEMO MODE: validate the URL client-side
+// and route to /demo so entering a URL actually shows something.
+const BACKEND_READY = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
 export function UrlForm() {
   const router = useRouter();
   const [url, setUrl] = useState("");
@@ -14,8 +18,26 @@ export function UrlForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    // Basic client-side validation (defense in depth; server validates too).
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error();
+    } catch {
+      setError("Enter a valid http(s) URL.");
+      return;
+    }
+
+    // Demo mode — no backend yet.
+    if (!BACKEND_READY) {
+      const qs = new URLSearchParams({ url });
+      if (description) qs.set("note", description);
+      router.push(`/demo?${qs.toString()}`);
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -35,32 +57,39 @@ export function UrlForm() {
     }
   }
 
+  const inputCls =
+    "focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2 text-xs text-ink placeholder:text-[10px] placeholder:uppercase placeholder:tracking-wide placeholder:text-ink-tertiary";
+
   return (
-    <form onSubmit={onSubmit} className="w-full max-w-xs space-y-2.5">
-      <input
-        type="url"
-        required
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        placeholder="https://your-product.com"
-        className="focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
-      />
-      <input
-        type="text"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        maxLength={280}
-        placeholder="One line (optional)"
-        className="focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
-      />
+    <form onSubmit={onSubmit} className="w-full max-w-[15rem]">
+      <div className="space-y-2.5">
+        <input
+          type="url"
+          required
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="product url"
+          className={inputCls}
+        />
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={280}
+          placeholder="one line · optional"
+          className={inputCls}
+        />
+      </div>
+
+      {/* noticeable gap before the CTA */}
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring btn-press pixel mt-1 w-full rounded-md bg-primary-deep px-4 py-3 text-sm tracking-wide text-white hover:bg-primary-focus disabled:opacity-60"
+        className="focus-ring btn-press pixel mt-7 w-full rounded-md bg-primary-deep px-4 py-3 text-sm tracking-wide text-white hover:bg-primary-focus disabled:opacity-60"
       >
         {loading ? "BUILDING…" : "BUILD MY LAUNCH MAP"}
       </button>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="readable mt-2 text-xs text-red-400">{error}</p>}
     </form>
   );
 }
