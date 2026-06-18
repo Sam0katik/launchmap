@@ -1,61 +1,68 @@
 import Link from "next/link";
 import { UrlForm } from "@/components/UrlForm";
-import { PixelClusters } from "@/components/PixelClusters";
+import { InteractivePixels } from "@/components/InteractivePixels";
+import { Lighthouse } from "@/components/Lighthouse";
 import { AuthButton } from "@/components/AuthButton";
-
-// Wordmark with a terminal gimmick: accent "MAP" + a blinking cursor block.
-function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <span className={`wordmark ${className}`}>
-      LAUNCH<span className="text-primary">MAP</span>
-      <span className="blink ml-0.5 text-primary">▮</span>
-    </span>
-  );
-}
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="tracking-wide transition-colors hover:text-primary">
+    <Link href={href} className="tracking-wide transition-colors hover:text-ink">
       {children}
     </Link>
+  );
+}
+
+function Wordmark() {
+  return (
+    <span className="wordmark text-2xl text-ink">
+      BEACON
+      <span className="blink ml-0.5">▮</span>
+    </span>
   );
 }
 
 export default function Home() {
   return (
     <>
-      <PixelClusters />
+      <InteractivePixels />
+      {/* rotating lighthouse beam sweeping the whole page */}
+      <div className="beam" aria-hidden="true" />
+
       <div className="relative z-10 flex min-h-screen flex-col">
-        <main className="mx-auto flex w-full max-w-content flex-1 flex-col px-6">
-          {/* Wordmark left, Sign in pinned top-right */}
-          <nav className="flex h-16 items-center justify-between">
-            <Wordmark className="text-xl text-ink" />
-            <AuthButton />
-          </nav>
-
-          <section className="flex flex-1 flex-col items-center justify-center py-10">
-            {/* Borderless panel — soft fade, no frame edge */}
-            <div className="panel flex w-full max-w-sm flex-col items-center px-8 pt-10 pb-7 text-center">
-              <h1 className="display-xl mb-4 text-ink">
-                Paste URL
-                <br />
-                Make first users
-              </h1>
-
-              <p className="pretty mb-7 max-w-[15rem] text-[11px] leading-relaxed text-ink-muted">
-                Ranked communities to post in — rules, karma, best time, and a
-                ready submit link
-              </p>
-
-              <UrlForm />
+        <main className="flex flex-1 items-center justify-center px-6">
+          <div className="flex w-full max-w-md flex-col items-center">
+            {/* brand + sign-in, lowered toward the card */}
+            <div className="z-20 mb-3 flex w-full items-center justify-between px-1">
+              <Wordmark />
+              <AuthButton />
             </div>
-          </section>
+
+            {/* card with the lighthouse rising from behind it */}
+            <div className="relative mt-12 w-full">
+              <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[78%]">
+                <Lighthouse size={92} />
+              </div>
+
+              <div className="panel relative z-10 flex w-full flex-col items-center px-9 pb-9 pt-11 text-center">
+                <h1 className="display-xl mb-5 text-ink">
+                  Paste URL
+                  <br />
+                  Make first users
+                </h1>
+
+                <p className="pretty mb-8 max-w-xs text-base leading-relaxed text-ink-muted">
+                  Ranked communities to post in — rules, karma, best time, and a
+                  ready submit link
+                </p>
+
+                <UrlForm />
+              </div>
+            </div>
+          </div>
         </main>
 
-        {/* Solid footer bar so it never blends with the background */}
         <footer className="border-t border-hairline bg-canvas">
-          <div className="mx-auto flex h-14 max-w-content items-center justify-center gap-5 px-6 text-[10px] text-ink-muted">
-            <FooterLink href="/communities">COMMUNITIES</FooterLink>
+          <div className="mx-auto flex h-14 max-w-content items-center justify-center gap-6 px-6 text-xs text-ink-subtle">
             <FooterLink href="/privacy">PRIVACY</FooterLink>
             <FooterLink href="/contact">CONTACT</FooterLink>
           </div>

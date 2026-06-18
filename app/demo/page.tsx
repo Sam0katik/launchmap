@@ -29,7 +29,7 @@ export default function DemoPage({
     <main className="mx-auto max-w-content px-6 py-10">
       <nav className="mb-12 flex h-14 items-center justify-between">
         <Link href="/" className="wordmark text-sm text-ink">
-          LAUNCHMAP
+          BEACON
         </Link>
         <span className="eyebrow">demo · mock data</span>
       </nav>

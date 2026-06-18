@@ -5,7 +5,7 @@ export default function Contact() {
     <main className="relative z-10 mx-auto max-w-2xl px-6 py-12">
       <nav className="mb-10 flex h-12 items-center">
         <Link href="/" className="wordmark text-lg text-ink">
-          LAUNCHMAP
+          BEACON
         </Link>
       </nav>
       <h1 className="display-lg mb-6 text-ink">Contact</h1>

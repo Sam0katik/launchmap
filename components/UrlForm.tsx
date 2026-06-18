@@ -58,11 +58,11 @@ export function UrlForm() {
   }
 
   const inputCls =
-    "focus-ring w-full rounded-md border border-hairline bg-surface-1 px-3 py-2 text-xs text-ink placeholder:text-[10px] placeholder:uppercase placeholder:tracking-wide placeholder:text-ink-tertiary";
+    "focus-ring w-full rounded-md border border-hairline bg-surface-1 px-4 py-3 text-base text-ink placeholder:text-xs placeholder:uppercase placeholder:tracking-wide placeholder:text-ink-tertiary";
 
   return (
-    <form onSubmit={onSubmit} className="w-full max-w-[15rem]">
-      <div className="space-y-2.5">
+    <form onSubmit={onSubmit} className="w-full">
+      <div className="space-y-3">
         <input
           type="url"
           required
@@ -85,11 +85,11 @@ export function UrlForm() {
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring btn-press pixel mt-7 w-full rounded-md bg-primary-deep px-4 py-3 text-sm tracking-wide text-white hover:bg-primary-focus disabled:opacity-60"
+        className="focus-ring btn-press pixel mt-8 w-full rounded-md bg-primary px-5 py-4 text-lg tracking-wide text-canvas hover:bg-primary-hover disabled:opacity-60"
       >
-        {loading ? "BUILDING…" : "BUILD MY LAUNCH MAP"}
+        {loading ? "BUILDING…" : "LIGHT MY WAY"}
       </button>
-      {error && <p className="readable mt-2 text-xs text-red-400">{error}</p>}
+      {error && <p className="readable mt-2 text-sm text-red-400">{error}</p>}
     </form>
   );
 }
