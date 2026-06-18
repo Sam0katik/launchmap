@@ -57,8 +57,9 @@ export function UrlForm() {
     }
   }
 
+  const DESC_MAX = 100;
   const inputCls =
-    "focus-ring w-full rounded-md border border-hairline bg-surface-1 px-4 py-3 text-base text-ink placeholder:text-xs placeholder:uppercase placeholder:tracking-wide placeholder:text-ink-tertiary";
+    "focus-ring w-full rounded-lg border border-hairline bg-surface-1 px-4 py-3 text-[15px] text-ink placeholder:text-ink-tertiary";
 
   return (
     <form onSubmit={onSubmit} className="w-full">
@@ -68,28 +69,33 @@ export function UrlForm() {
           required
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="product url"
+          placeholder="https://your-product.com"
           className={inputCls}
         />
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          maxLength={280}
-          placeholder="one line · optional"
-          className={inputCls}
-        />
+        <div>
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value.slice(0, DESC_MAX))}
+            maxLength={DESC_MAX}
+            placeholder="One line about it (optional)"
+            className={inputCls}
+          />
+          <div className="mt-1 pr-1 text-right text-[11px] tabular-nums text-ink-tertiary">
+            {description.length}/{DESC_MAX}
+          </div>
+        </div>
       </div>
 
       {/* noticeable gap before the CTA */}
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring btn-press pixel mt-8 w-full rounded-md bg-primary px-5 py-4 text-lg tracking-wide text-canvas hover:bg-primary-hover disabled:opacity-60"
+        className="focus-ring btn-press mt-6 w-full rounded-lg bg-primary px-5 py-3.5 text-base font-semibold text-canvas hover:bg-primary-hover disabled:opacity-60"
       >
-        {loading ? "BUILDING…" : "LIGHT MY WAY"}
+        {loading ? "Lighting the way…" : "Light my way"}
       </button>
-      {error && <p className="readable mt-2 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
     </form>
   );
 }

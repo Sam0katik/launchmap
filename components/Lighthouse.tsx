@@ -1,41 +1,60 @@
-// Pixel lighthouse — peeks out from behind the card. The bright lamp room sits
-// at the top; the rotating page-wide light beam is a separate CSS element
-// (.beam) in the page. Mono palette. Pure SVG pixel rects.
+// Tall pixel lighthouse — bright lamp room up top, a banded tapering tower,
+// a window and door, and a rock base. Mono palette. The page-wide rotating
+// beam is a separate CSS element (.beam) positioned at the lamp.
 
 const LAMP = "#fafafa";
 const GLASS = "#e5e5e5";
-const BODY = "#52525b";
-const BODY_LT = "#71717a";
-const DARK = "#3f3f46";
+const BAND_L = "#d4d4d8"; // light stripe
+const BAND_D = "#3f3f46"; // dark stripe
 const RAIL = "#27272a";
+const BASE = "#2e2e33";
+const WINDOW = "#18181b";
 
-// [xStart, xEnd, y, color] band rows on a 12-wide grid.
+// Bands: [xStart, xEnd, y, color] on a 12-wide grid (taper widens downward).
 const ROWS: [number, number, number, string][] = [
-  [4, 7, 0, DARK], // lamp cap
-  [4, 7, 1, LAMP], // light
-  [3, 8, 2, LAMP],
-  [3, 8, 3, GLASS],
-  [3, 8, 4, RAIL], // gallery rail
-  [4, 7, 5, BODY_LT], // tower top
-  [4, 7, 6, BODY],
-  [3, 8, 7, DARK], // stripe
-  [3, 8, 8, BODY_LT],
-  [3, 8, 9, BODY],
-  [2, 9, 10, DARK], // stripe
-  [2, 9, 11, BODY_LT],
-  [2, 9, 12, BODY],
-  [1, 10, 13, DARK], // base
+  [5, 6, 0, BAND_D], // roof peak
+  [4, 7, 1, BAND_D], // roof
+  [4, 7, 2, LAMP], // light
+  [3, 8, 3, LAMP],
+  [3, 8, 4, GLASS], // lamp glass
+  [2, 9, 5, RAIL], // gallery deck
+  [4, 7, 6, BAND_L], // tower begins
+  [4, 7, 7, BAND_L],
+  [4, 7, 8, BAND_D],
+  [4, 7, 9, BAND_D],
+  [3, 8, 10, BAND_L],
+  [3, 8, 11, BAND_L],
+  [3, 8, 12, BAND_D],
+  [3, 8, 13, BAND_D],
+  [3, 8, 14, BAND_L],
+  [2, 9, 15, BAND_L],
+  [2, 9, 16, BAND_D],
+  [2, 9, 17, BAND_D],
+  [2, 9, 18, BAND_L],
+  [1, 10, 19, BAND_L],
+  [1, 10, 20, BAND_D],
+  [0, 11, 21, BASE], // rock base
+  [0, 11, 22, BAND_D],
+];
+
+// Single-cell overrides (window + door).
+const OVERRIDES: [number, number, string][] = [
+  [5, 11, WINDOW], [6, 11, WINDOW], // window
+  [5, 19, WINDOW], [6, 19, WINDOW], // door
+  [5, 20, WINDOW], [6, 20, WINDOW],
 ];
 
 const CELL = 6;
 const W = 12 * CELL;
-const H = 14 * CELL;
+const H = 23 * CELL;
 
-export function Lighthouse({ size = 84 }: { size?: number }) {
-  const cells: [number, number, string][] = [];
+export function Lighthouse({ size = 110 }: { size?: number }) {
+  const grid = new Map<string, string>();
   for (const [s, e, y, c] of ROWS) {
-    for (let x = s; x <= e; x++) cells.push([x, y, c]);
+    for (let x = s; x <= e; x++) grid.set(`${x},${y}`, c);
   }
+  for (const [x, y, c] of OVERRIDES) grid.set(`${x},${y}`, c);
+
   return (
     <svg
       width={size}
@@ -47,11 +66,14 @@ export function Lighthouse({ size = 84 }: { size?: number }) {
       role="img"
       shapeRendering="crispEdges"
     >
-      {/* soft lamp halo */}
-      <circle cx={W / 2} cy={CELL * 1.5} r={14} fill="rgba(255,255,255,0.18)" />
-      {cells.map(([x, y, c], i) => (
-        <rect key={i} x={x * CELL} y={y * CELL} width={CELL} height={CELL} fill={c} />
-      ))}
+      {/* lamp halo */}
+      <circle cx={W / 2} cy={CELL * 2.5} r={16} fill="rgba(255,255,255,0.16)" />
+      {Array.from(grid.entries()).map(([k, c]) => {
+        const [x, y] = k.split(",").map(Number);
+        return (
+          <rect key={k} x={x * CELL} y={y * CELL} width={CELL} height={CELL} fill={c} />
+        );
+      })}
     </svg>
   );
 }

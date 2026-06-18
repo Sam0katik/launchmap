@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, VT323 } from "next/font/google";
+import { Inter, Pixelify_Sans } from "next/font/google";
 import "./globals.css";
 
-// Readable cut for dense / long text.
+// Body/UI text = Inter (clean, readable) — the default everywhere.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   weight: ["400", "500", "600", "700"],
 });
 
-// Pixel display = VT323 — a readable retro-terminal mono. The whole UI runs on
-// this; long-form text opts into .readable (Inter).
-const pixel = VT323({
+// Pixel display = Pixelify Sans — used for the brand + hero headline only, so
+// the UI reads polished, not crunchy.
+const pixel = Pixelify_Sans({
   subsets: ["latin"],
   variable: "--font-pixel",
-  weight: "400",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -30,10 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${pixel.variable}`}>
-      <body className="antialiased">
-        {children}
-        <div className="crt-overlay" aria-hidden="true" />
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

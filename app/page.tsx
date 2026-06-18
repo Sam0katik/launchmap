@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { UrlForm } from "@/components/UrlForm";
-import { InteractivePixels } from "@/components/InteractivePixels";
 import { Lighthouse } from "@/components/Lighthouse";
 import { AuthButton } from "@/components/AuthButton";
+import type { CSSProperties } from "react";
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -14,9 +14,9 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 
 function Wordmark() {
   return (
-    <span className="wordmark text-2xl text-ink">
+    <span className="wordmark inline-flex items-center text-3xl text-ink">
       BEACON
-      <span className="blink ml-0.5">▮</span>
+      <span className="beacon-dot ml-2" />
     </span>
   );
 }
@@ -24,47 +24,48 @@ function Wordmark() {
 export default function Home() {
   return (
     <>
-      <InteractivePixels />
-      {/* rotating lighthouse beam sweeping the whole page */}
-      <div className="beam" aria-hidden="true" />
+      <div className="stars" aria-hidden="true" />
+      {/* rotating beam emanating from the lighthouse lamp */}
+      <div
+        className="beam"
+        aria-hidden="true"
+        style={{ "--beam-y": "30%" } as CSSProperties}
+      />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <main className="flex flex-1 items-center justify-center px-6">
+        {/* brand + sign-in pinned to the top corners */}
+        <header className="flex h-20 items-center justify-between px-7">
+          <Wordmark />
+          <AuthButton />
+        </header>
+
+        <main className="flex flex-1 items-center justify-center px-6 pb-10">
           <div className="flex w-full max-w-md flex-col items-center">
-            {/* brand + sign-in, lowered toward the card */}
-            <div className="z-20 mb-3 flex w-full items-center justify-between px-1">
-              <Wordmark />
-              <AuthButton />
-            </div>
+            {/* tall lighthouse standing above the card */}
+            <Lighthouse size={140} />
 
-            {/* card with the lighthouse rising from behind it */}
-            <div className="relative mt-12 w-full">
-              <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[78%]">
-                <Lighthouse size={92} />
-              </div>
+            {/* taller solid info card */}
+            <div className="panel -mt-3 flex w-full flex-col items-center px-9 pb-11 pt-10 text-center">
+              <h1 className="display-xl mb-5 text-ink">
+                Light the way
+                <br />
+                to first users
+              </h1>
 
-              <div className="panel relative z-10 flex w-full flex-col items-center px-9 pb-9 pt-11 text-center">
-                <h1 className="display-xl mb-5 text-ink">
-                  Paste URL
-                  <br />
-                  Make first users
-                </h1>
+              <p className="pretty mb-9 max-w-xs text-[15px] leading-relaxed text-ink-muted">
+                Paste your product URL and get a ranked map of communities to
+                post in — rules, karma, best time, and a ready submit link.
+              </p>
 
-                <p className="pretty mb-8 max-w-xs text-base leading-relaxed text-ink-muted">
-                  Ranked communities to post in — rules, karma, best time, and a
-                  ready submit link
-                </p>
-
-                <UrlForm />
-              </div>
+              <UrlForm />
             </div>
           </div>
         </main>
 
         <footer className="border-t border-hairline bg-canvas">
           <div className="mx-auto flex h-14 max-w-content items-center justify-center gap-6 px-6 text-xs text-ink-subtle">
-            <FooterLink href="/privacy">PRIVACY</FooterLink>
-            <FooterLink href="/contact">CONTACT</FooterLink>
+            <FooterLink href="/privacy">Privacy</FooterLink>
+            <FooterLink href="/contact">Contact</FooterLink>
           </div>
         </footer>
       </div>

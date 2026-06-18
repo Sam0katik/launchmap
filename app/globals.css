@@ -35,58 +35,72 @@
   --color-success: #34d399;
 }
 
+/* Dark night-sky backdrop: a soft glow up top (where the lighthouse stands)
+   fading to near-black, with a faint static star layer. */
 html {
-  background-color: var(--color-canvas);
+  background:
+    radial-gradient(120% 80% at 50% -5%, #1b1b20 0%, #101013 42%, #09090b 100%);
 }
 body {
-  /* transparent so the fixed PixelField canvas (z-0) shows through; html
-     carries the canvas color underneath. */
   background-color: transparent;
   color: var(--color-ink);
-  /* Whole site reads pixel by default; long-form text opts into .readable. */
-  font-family: "Pixel Impacted", var(--font-pixel), ui-monospace, monospace;
+  font-family: var(--font-inter), "SF Pro Display", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Readable cut for dense / long text (table rows, legal copy) where pixel
-   would hurt legibility. */
+/* Faint star field (static, cheap). */
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.5) 50%, transparent 50%),
+    radial-gradient(1px 1px at 70% 20%, rgba(255, 255, 255, 0.35) 50%, transparent 50%),
+    radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.4) 50%, transparent 50%),
+    radial-gradient(1px 1px at 85% 60%, rgba(255, 255, 255, 0.3) 50%, transparent 50%),
+    radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.35) 50%, transparent 50%),
+    radial-gradient(1px 1px at 60% 90%, rgba(255, 255, 255, 0.25) 50%, transparent 50%),
+    radial-gradient(1px 1px at 90% 35%, rgba(255, 255, 255, 0.3) 50%, transparent 50%),
+    radial-gradient(1px 1px at 30% 50%, rgba(255, 255, 255, 0.28) 50%, transparent 50%);
+  background-size: 100% 100%;
+  opacity: 0.6;
+}
+
+/* .readable kept as an explicit hook; same as the body default now. */
 .readable {
   font-family: var(--font-inter), "SF Pro Display", system-ui, sans-serif;
 }
 
-/* Display pixel font: Pixel Impacted → Silkscreen fallback. Reserved for
-   wordmark + hero + labels + buttons. Sized so the hero stays 2 lines. */
+/* Pixel display — Pixelify Sans. Brand + hero only. */
 .pixel {
-  font-family: "Pixel Impacted", var(--font-pixel), ui-monospace, monospace;
+  font-family: var(--font-pixel), ui-monospace, monospace;
 }
-/* VT323 is a readable terminal mono with a big x-height — size up for impact. */
 .display-xl {
   font-family: var(--font-pixel), ui-monospace, monospace;
-  font-size: clamp(34px, 6vw, 54px);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+  font-size: clamp(30px, 5.5vw, 50px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.5px;
 }
 .display-lg {
   font-family: var(--font-pixel), ui-monospace, monospace;
-  font-size: clamp(30px, 5vw, 42px);
-  font-weight: 400;
-  line-height: 1.1;
+  font-size: clamp(28px, 4.5vw, 40px);
+  font-weight: 600;
+  line-height: 1.12;
   text-wrap: balance;
 }
 .wordmark {
   font-family: var(--font-pixel), ui-monospace, monospace;
-  font-weight: 400;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 .eyebrow {
-  font-family: var(--font-pixel), ui-monospace, monospace;
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1.3;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--color-ink-subtle);
 }
@@ -119,72 +133,71 @@ body {
   outline-offset: 1px;
 }
 
-/* Content panel — borderless. No frame edge: a soft radial fade into the page
-   plus a quiet drop shadow, so content reads without a hard rectangle. */
+/* Content panel — fully solid/opaque, subtle border for a clean edge. */
 .panel {
-  background:
-    radial-gradient(
-      120% 90% at 50% 30%,
-      rgba(28, 28, 32, 0.96) 0%,
-      rgba(20, 20, 23, 0.9) 55%,
-      rgba(16, 16, 18, 0) 100%
-    );
-  border-radius: 20px;
-  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.8);
+  background-color: #161619;
+  border: 1px solid var(--color-hairline);
+  border-radius: 16px;
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.85);
 }
 
-/* ── Retro-terminal CRT ─────────────────────────────────────── */
-/* Soft white phosphor glow on pixel display text. */
+/* Soft glow on the brand + hero. */
 .display-xl,
 .wordmark {
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.28);
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.18);
 }
 
-/* Lighthouse sweep — a rotating wedge of light that crosses the whole page.
-   Origin sits at the lamp (top-center of the card area). */
+/* Lighthouse beam — a rotating wedge of light emanating FROM the lamp, which
+   sits near the top-center of the screen (set by --beam-x / --beam-y). */
 @keyframes beam-rot {
   to {
-    transform: rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 .beam {
   position: fixed;
-  left: 50%;
-  top: 38%;
-  width: 240vmax;
-  height: 240vmax;
+  left: var(--beam-x, 50%);
+  top: var(--beam-y, 16%);
+  width: 260vmax;
+  height: 260vmax;
+  transform: translate(-50%, -50%);
   transform-origin: center;
-  translate: -50% -50%;
   pointer-events: none;
   z-index: 1;
   background: conic-gradient(
-    from 0deg at 50% 50%,
-    rgba(255, 255, 255, 0.07) 0deg,
-    rgba(255, 255, 255, 0) 16deg,
-    rgba(255, 255, 255, 0) 180deg,
-    rgba(255, 255, 255, 0.05) 188deg,
-    rgba(255, 255, 255, 0) 200deg,
+    from -10deg at 50% 50%,
+    rgba(255, 255, 255, 0.09) 0deg,
+    rgba(255, 255, 255, 0) 22deg,
     rgba(255, 255, 255, 0) 360deg
   );
-  animation: beam-rot 11s linear infinite;
+  animation: beam-rot 9s linear infinite;
   mix-blend-mode: screen;
 }
 @media (prefers-reduced-motion: reduce) {
-  .beam {
-    animation: none;
-  }
+  .beam { animation: none; }
 }
 
-/* Blinking terminal cursor for the wordmark gimmick. */
-@keyframes blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+/* Beacon wordmark gimmick — a pulsing light dot (the "beacon"). */
+@keyframes beacon-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7);
+  }
+  50% {
+    opacity: 0.45;
+    box-shadow: 0 0 14px 3px rgba(255, 255, 255, 0.55);
+  }
 }
-.blink {
-  animation: blink 1.05s step-end infinite;
+.beacon-dot {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 9999px;
+  background: #fafafa;
+  animation: beacon-pulse 1.8s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .blink { animation: none; }
+  .beacon-dot { animation: none; }
 }
 
 /* Full-screen scanline + flicker overlay, above everything, non-interactive. */
