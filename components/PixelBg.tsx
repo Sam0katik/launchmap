@@ -2,9 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-// Calm, neat pixel shimmer. A sparse grid of dim monochrome pixels with a slow
-// diagonal wave of brightness drifting across — subtle, not busy. Behind all
-// content, honors prefers-reduced-motion.
+// Drifting pixel blobs — a few soft warm-orange pixel clusters slowly moving
+// across the cream canvas and wrapping at the edges. Subtle, behind content,
+// honors prefers-reduced-motion.
 export function PixelBg() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -15,52 +15,75 @@ export function PixelBg() {
     if (!ctx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const CELL = 20; // sparse
-    const DOT = 2;
+    const CELL = 10;
+    const MAX_A = 0.12;
 
-    let cols = 0;
-    let rows = 0;
+    let w = 0;
+    let h = 0;
     let raf = 0;
-    let t = 0;
-    let jitter: Float32Array = new Float32Array(0);
+
+    type Blob = { x: number; y: number; vx: number; vy: number; r: number; tint: string };
+    const TINTS = ["255,83,16", "210,120,40", "180,150,90"];
+    let blobs: Blob[] = [];
+
+    const make = (): Blob => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      r: 120 + Math.random() * 130,
+      tint: TINTS[(Math.random() * TINTS.length) | 0],
+    });
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(window.innerWidth * dpr);
-      canvas.height = Math.floor(window.innerHeight * dpr);
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cols = Math.ceil(window.innerWidth / CELL) + 1;
-      rows = Math.ceil(window.innerHeight / CELL) + 1;
-      jitter = new Float32Array(cols * rows);
-      for (let i = 0; i < jitter.length; i++) jitter[i] = Math.random();
+      blobs = new Array(5).fill(0).map(make);
     };
 
-    const draw = () => {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      for (let gy = 0; gy < rows; gy++) {
-        for (let gx = 0; gx < cols; gx++) {
-          const i = gy * cols + gx;
-          // slow diagonal shimmer wave + per-cell jitter
-          const wave = Math.sin(gx * 0.12 + gy * 0.12 - t);
-          let a = 0.03 + Math.max(0, wave) * 0.09 * (0.4 + jitter[i] * 0.6);
-          if (a < 0.035) continue;
-          ctx.fillStyle = `rgba(228,228,231,${a})`;
-          ctx.fillRect(gx * CELL, gy * CELL, DOT, DOT);
+    const drawBlob = (b: Blob) => {
+      const x0 = Math.floor((b.x - b.r) / CELL) * CELL;
+      const y0 = Math.floor((b.y - b.r) / CELL) * CELL;
+      for (let y = y0; y <= b.y + b.r; y += CELL) {
+        for (let x = x0; x <= b.x + b.r; x += CELL) {
+          const d = Math.hypot(x - b.x, y - b.y);
+          if (d > b.r) continue;
+          const a = (1 - d / b.r) * MAX_A;
+          if (a < 0.015) continue;
+          ctx.fillStyle = `rgba(${b.tint},${a})`;
+          ctx.fillRect(x, y, CELL - 2, CELL - 2);
         }
       }
     };
 
+    const step = () => {
+      ctx.clearRect(0, 0, w, h);
+      for (const b of blobs) {
+        b.x += b.vx;
+        b.y += b.vy;
+        const m = b.r;
+        if (b.x < -m) b.x = w + m;
+        if (b.x > w + m) b.x = -m;
+        if (b.y < -m) b.y = h + m;
+        if (b.y > h + m) b.y = -m;
+        drawBlob(b);
+      }
+    };
+
     const frame = () => {
-      t += 0.012;
-      draw();
+      step();
       raf = requestAnimationFrame(frame);
     };
 
     resize();
     window.addEventListener("resize", resize);
-    if (reduce) draw();
+    if (reduce) step();
     else raf = requestAnimationFrame(frame);
 
     return () => {

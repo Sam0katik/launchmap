@@ -14,59 +14,37 @@
 /* Linear design tokens — single source of truth as CSS variables.
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
-  --color-primary: #e5e5e5;
-  --color-primary-hover: #fafafa;
-  --color-primary-focus: #d4d4d4;
+  --color-primary: #ff5310;
+  --color-primary-hover: #ff6a30;
+  --color-primary-focus: #e0440a;
 
-  --color-ink: #fafafa;
-  --color-ink-muted: #a1a1aa;
-  --color-ink-subtle: #71717a;
-  --color-ink-tertiary: #52525b;
+  --color-ink: #17150f;
+  --color-ink-muted: #5c564a;
+  --color-ink-subtle: #8a8170;
+  --color-ink-tertiary: #b3a98f;
 
-  --color-canvas: #09090b;
-  --color-surface-1: #18181b;
-  --color-surface-2: #1f1f23;
-  --color-surface-3: #27272a;
-  --color-surface-4: #2e2e33;
+  --color-canvas: #f0ebdd;
+  --color-surface-1: #e9e2cf;
+  --color-surface-2: #e0d8c1;
+  --color-surface-3: #d6ccb0;
+  --color-surface-4: #cabd9c;
 
-  --color-hairline: #27272a;
-  --color-hairline-strong: #3f3f46;
+  --color-hairline: #cbc1a8;
+  --color-hairline-strong: #1c1a13;
 
-  --color-success: #34d399;
+  --color-success: #1a7f4b;
 }
 
-/* Dark night-sky backdrop: a soft glow up top (where the lighthouse stands)
-   fading to near-black, with a faint static star layer. */
+/* Light cream canvas (Departure Mono / print-zine vibe). */
 html {
-  background:
-    radial-gradient(120% 80% at 50% -5%, #1b1b20 0%, #101013 42%, #09090b 100%);
+  background-color: var(--color-canvas);
 }
 body {
   background-color: transparent;
   color: var(--color-ink);
-  /* whole site is pixel (Jersey 10); dense data opts into .readable */
   font-family: var(--font-pixel), ui-monospace, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Faint star field (static, cheap). */
-.stars {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.5) 50%, transparent 50%),
-    radial-gradient(1px 1px at 70% 20%, rgba(255, 255, 255, 0.35) 50%, transparent 50%),
-    radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.4) 50%, transparent 50%),
-    radial-gradient(1px 1px at 85% 60%, rgba(255, 255, 255, 0.3) 50%, transparent 50%),
-    radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.35) 50%, transparent 50%),
-    radial-gradient(1px 1px at 60% 90%, rgba(255, 255, 255, 0.25) 50%, transparent 50%),
-    radial-gradient(1px 1px at 90% 35%, rgba(255, 255, 255, 0.3) 50%, transparent 50%),
-    radial-gradient(1px 1px at 30% 50%, rgba(255, 255, 255, 0.28) 50%, transparent 50%);
-  background-size: 100% 100%;
-  opacity: 0.6;
 }
 
 /* .readable kept as an explicit hook; same as the body default now. */
@@ -128,67 +106,27 @@ body {
   text-wrap: pretty;
 }
 
-/* Focus ring: 2px white at 45% opacity. */
+/* Focus ring: 2px orange. */
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(229, 229, 229, 0.45);
-  outline-offset: 1px;
+  outline: 2px solid rgba(255, 83, 16, 0.55);
+  outline-offset: 2px;
 }
 
-/* Content panel — fully solid/opaque, subtle border for a clean edge. */
+/* Content panel — print-zine box: solid cream, hard dark border + offset
+   shadow (no transparency). */
 .panel {
-  background-color: #161619;
-  border: 1px solid var(--color-hairline);
-  border-radius: 16px;
-  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.85);
+  background-color: var(--color-surface-1);
+  border: 2px solid var(--color-hairline-strong);
+  border-radius: 10px;
+  box-shadow: 8px 8px 0 0 var(--color-hairline-strong);
 }
 
-/* (no glow on white text — kept flat per request) */
-
-/* Lighthouse beam — a rotating wedge of light emanating FROM the lamp, which
-   sits near the top-center of the screen (set by --beam-x / --beam-y). */
-@keyframes beam-rot {
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-.beam {
-  position: fixed;
-  left: var(--beam-x, 50%);
-  top: var(--beam-y, 16%);
-  width: 260vmax;
-  height: 260vmax;
-  transform: translate(-50%, -50%);
-  transform-origin: center;
-  pointer-events: none;
-  z-index: 1;
-  background: conic-gradient(
-    from -11deg at 50% 50%,
-    rgba(255, 246, 214, 0.14) 0deg,
-    rgba(255, 246, 214, 0) 22deg,
-    rgba(255, 246, 214, 0) 360deg
-  );
-  animation: beam-rot 9s linear infinite;
-  mix-blend-mode: screen;
-}
-@media (prefers-reduced-motion: reduce) {
-  .beam { animation: none; }
-}
-
-/* Warm static glow right at the lamp. */
-.lampglow {
-  position: fixed;
-  left: var(--beam-x, 50%);
-  top: var(--beam-y, 16%);
-  width: 360px;
-  height: 360px;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(
-    circle,
-    rgba(255, 244, 214, 0.16) 0%,
-    rgba(255, 244, 214, 0) 62%
-  );
+/* "Lit" word — orange and glowing, like it's burning. */
+.lit {
+  color: var(--color-primary);
+  text-shadow:
+    0 0 10px rgba(255, 83, 16, 0.55),
+    0 0 26px rgba(255, 83, 16, 0.35);
 }
 
 

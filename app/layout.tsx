@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
-import { Inter, Jersey_10 } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 // Inter kept only for dense data (the communities table / legal copy) via
-// .readable — everything else on the site is pixel.
+// .readable — everything else on the site is the pixel mono.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   weight: ["400", "500", "600"],
 });
 
-// Pixel font everywhere = Jersey 10 — a thin, neat pixel typeface.
-const pixel = Jersey_10({
-  subsets: ["latin"],
+// Departure Mono — self-hosted (SIL OFL). The site's pixel mono typeface.
+const pixel = localFont({
+  src: "../public/fonts/DepartureMono-Regular.woff2",
   variable: "--font-pixel",
-  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
