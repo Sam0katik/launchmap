@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, Pixelify_Sans } from "next/font/google";
+import { Inter, Jersey_10 } from "next/font/google";
 import "./globals.css";
 
-// Body/UI text = Inter (clean, readable) — the default everywhere.
+// Inter kept only for dense data (the communities table / legal copy) via
+// .readable — everything else on the site is pixel.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
 });
 
-// Pixel display = Pixelify Sans — used for the brand + hero headline only, so
-// the UI reads polished, not crunchy.
-const pixel = Pixelify_Sans({
+// Pixel font everywhere = Jersey 10 — a thin, neat pixel typeface.
+const pixel = Jersey_10({
   subsets: ["latin"],
   variable: "--font-pixel",
-  weight: ["400", "500", "600", "700"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {

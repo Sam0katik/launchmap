@@ -59,7 +59,7 @@ export function UrlForm() {
 
   const DESC_MAX = 100;
   const inputCls =
-    "focus-ring w-full rounded-lg border border-hairline bg-surface-1 px-4 py-3 text-[15px] text-ink placeholder:text-ink-tertiary";
+    "focus-ring w-full rounded-lg border border-hairline bg-surface-1 px-4 py-3 text-lg text-ink placeholder:text-ink-tertiary";
 
   return (
     <form onSubmit={onSubmit} className="w-full">
@@ -91,7 +91,7 @@ export function UrlForm() {
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring btn-press mt-6 w-full rounded-lg bg-primary px-5 py-3.5 text-base font-semibold text-canvas hover:bg-primary-hover disabled:opacity-60"
+        className="focus-ring btn-press mt-6 w-full rounded-lg bg-primary px-5 py-3.5 text-xl text-canvas hover:bg-primary-hover disabled:opacity-60"
       >
         {loading ? "Lighting the way…" : "Light my way"}
       </button>
