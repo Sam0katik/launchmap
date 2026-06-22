@@ -2,7 +2,7 @@
 // hover. Key phrases are marker-highlighted (reference style).
 export function ClippedNote() {
   return (
-    <div className="group relative w-[270px] origin-top-left rotate-[3deg] cursor-default select-none transition-transform duration-300 ease-out hover:translate-x-7 hover:-translate-y-3 hover:rotate-[0.5deg]">
+    <div className="group relative w-[270px] origin-top-left rotate-[3deg] cursor-default select-none transition-transform duration-300 ease-out hover:translate-x-[170px] hover:-translate-y-8 hover:rotate-[1deg]">
       {/* vertical wire paper clip over the top edge (reference style) */}
       <svg
         className="absolute -top-8 left-9 z-10"
