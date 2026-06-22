@@ -44,7 +44,7 @@ export function AuthButton() {
 
   // Fully solid/opaque. Fills white on hover.
   const cls =
-    "focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-lg text-white transition-shadow hover:bg-primary-hover hover:shadow-[0_0_26px_2px_rgba(255,92,0,0.8)] disabled:opacity-50";
+    "focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-lg font-medium text-white transition-colors hover:bg-[#b9c4a0] hover:text-ink disabled:opacity-50";
 
   if (!configured) {
     return (

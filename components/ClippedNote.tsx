@@ -1,32 +1,37 @@
-// A small beige note "clipped" onto the main card with a paper clip — the
-// description lives here, with key phrases marker-highlighted (reference style).
+// Beige note "clipped" to the card with a paper clip. Slides out smoothly on
+// hover. Key phrases are marker-highlighted (reference style).
 export function ClippedNote() {
   return (
-    <div className="pointer-events-none relative w-[260px] rotate-[3deg] select-none">
-      {/* paper clip over the top edge */}
+    <div className="group relative w-[270px] origin-top-left rotate-[3deg] cursor-default select-none transition-transform duration-300 ease-out hover:translate-x-3 hover:-translate-y-1.5 hover:rotate-[1.5deg]">
+      {/* vertical wire paper clip over the top edge (reference style) */}
       <svg
-        className="absolute -top-7 left-8 z-10"
-        width="26"
-        height="58"
-        viewBox="0 0 26 58"
+        className="absolute -top-8 left-9 z-10"
+        width="22"
+        height="70"
+        viewBox="0 0 22 70"
         fill="none"
         aria-hidden="true"
       >
         <path
-          d="M13 54 V14 a8 8 0 0 1 16 0 V44 a13 13 0 0 1 -26 0 V12 a11 11 0 0 1 22 0 V46"
-          transform="translate(-2 0)"
-          stroke="#5b5751"
-          strokeWidth="2.5"
-          fill="none"
+          d="M8 64 V12 a3 3 0 0 1 6 0 V58"
+          stroke="#6b675f"
+          strokeWidth="2.4"
           strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M14 58 V14 a6 6 0 0 0 -12 0 V62 a9 9 0 0 0 18 0 V10 a8 8 0 0 0 -16 0 V52"
+          stroke="#88847b"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          fill="none"
         />
       </svg>
 
-      {/* the note */}
-      <div className="border-2 border-hairline-strong bg-[#cdbfa6] px-5 py-5 text-[13px] leading-relaxed text-ink shadow-[5px_5px_0_0_var(--color-hairline-strong)]">
+      <div className="border-2 border-hairline-strong bg-[#cdbfa6] px-5 py-5 text-[13px] leading-relaxed text-ink shadow-[6px_8px_0_0_var(--color-hairline-strong)]">
         <p className="mb-3 text-base">Mission brief</p>
         <p>
-          Paste your URL and Beacon maps where to post. Each spot comes with its{" "}
+          Paste your URL and Beacon maps where to post. Each spot lists its{" "}
           <span className="hl">rules</span>,{" "}
           <span className="hl">karma bar</span>, and{" "}
           <span className="hl">best time</span> — so you reach first users{" "}

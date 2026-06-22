@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { UrlForm } from "@/components/UrlForm";
-import { PixelBg } from "@/components/PixelBg";
 import { VectorSketch } from "@/components/VectorSketch";
 import { ClippedNote } from "@/components/ClippedNote";
 import { LighthouseIcon } from "@/components/LighthouseIcon";
@@ -9,7 +8,7 @@ import { AuthButton } from "@/components/AuthButton";
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="tracking-wide transition-colors hover:text-primary">
+    <Link href={href} className="menu-link rounded-sm">
       {children}
     </Link>
   );
@@ -19,7 +18,6 @@ export default function Home() {
   return (
     <>
       <VectorSketch />
-      <PixelBg />
 
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* brand (click = reload) + sign-in in the corners */}
@@ -34,7 +32,15 @@ export default function Home() {
 
         <main className="flex flex-1 items-center justify-center px-6 py-16">
           <div className="relative">
-            <div className="panel w-full max-w-xl px-14 pb-14 pt-12 text-center">
+            {/* receipt-style card */}
+            <div className="panel w-full max-w-xl px-12 pb-10 pt-7 text-center">
+              {/* receipt meta line */}
+              <div className="mb-4 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
+                <span>Beacon Labs</span>
+                <span>No. 0207</span>
+              </div>
+              <div className="receipt-rule mb-8" />
+
               <h1 className="display-xl mb-9 text-ink">
                 Light the way
                 <br />
@@ -42,10 +48,17 @@ export default function Home() {
               </h1>
 
               <UrlForm />
+
+              {/* receipt footer: barcode */}
+              <div className="receipt-rule mb-5 mt-9" />
+              <div className="barcode mx-auto w-3/4" />
+              <p className="mt-3 text-xs uppercase tracking-[0.3em] text-ink-subtle">
+                * scan to launch *
+              </p>
             </div>
 
             {/* description lives on a beige note clipped to the card corner */}
-            <div className="absolute -right-32 -top-14 hidden lg:block">
+            <div className="absolute -right-48 -top-16 hidden xl:block">
               <ClippedNote />
             </div>
           </div>

@@ -115,14 +115,17 @@ body {
 
 /* Content panel — print-zine box: solid cream, hard dark border + offset
    shadow (no transparency). */
+/* Main card styled like a printed receipt: cream paper, framed, with volume
+   from a stacked offset + soft shadow. */
 .panel {
   position: relative;
   background-color: var(--color-surface-1);
   border: 2px solid var(--color-hairline-strong);
-  /* cut the bottom-left corner (luggage-tag style). drop-shadow (not box-shadow)
-     follows the clipped shape for the hard print offset. */
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 30px 100%, 0 calc(100% - 30px));
-  filter: drop-shadow(7px 7px 0 var(--color-hairline-strong));
+  border-radius: 6px;
+  box-shadow:
+    0 2px 0 0 var(--color-hairline-strong),
+    10px 12px 0 -1px var(--color-hairline-strong),
+    16px 22px 34px -8px rgba(0, 0, 0, 0.35);
 }
 
 /* Marker highlight behind key phrases (sage green, like the reference letter). */
@@ -134,25 +137,38 @@ body {
   padding: 0 2px;
 }
 
-/* Decorative tractor-feed punch holes down the left + right edges. */
-.panel::before,
-.panel::after {
-  content: "";
-  position: absolute;
-  top: 16px;
-  bottom: 16px;
-  width: 8px;
-  background-image: radial-gradient(
-    circle at center,
-    var(--color-canvas) 0 3px,
-    transparent 3.4px
-  );
-  background-size: 8px 22px;
-  background-repeat: repeat-y;
-  pointer-events: none;
+/* Menu-style link: marker-highlights on hover (reference photo 2). */
+.menu-link {
+  padding: 1px 5px;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
-.panel::before { left: 9px; }
-.panel::after { right: 9px; }
+.menu-link:hover {
+  background-color: #b9c4a0;
+  color: #1b1a16;
+}
+
+/* Faux barcode strip. */
+.barcode {
+  height: 42px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-ink) 0 2px,
+    transparent 2px 5px,
+    var(--color-ink) 5px 6px,
+    transparent 6px 8px,
+    var(--color-ink) 8px 11px,
+    transparent 11px 13px,
+    var(--color-ink) 13px 14px,
+    transparent 14px 18px
+  );
+}
+
+/* Dashed receipt divider. */
+.receipt-rule {
+  border-top: 2px dashed var(--color-hairline-strong);
+}
 
 
 /* Full-screen scanline + flicker overlay, above everything, non-interactive. */
