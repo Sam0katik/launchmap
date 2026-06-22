@@ -14,25 +14,25 @@
 /* Linear design tokens — single source of truth as CSS variables.
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
-  --color-primary: #ff5310;
-  --color-primary-hover: #ff7a3c;
-  --color-primary-focus: #ff6a30;
+  --color-primary: #ff5c00;
+  --color-primary-hover: #ff7a2e;
+  --color-primary-focus: #e64f00;
 
-  --color-ink: #f1e9d6;
-  --color-ink-muted: #b9ae93;
-  --color-ink-subtle: #8b8167;
-  --color-ink-tertiary: #645b46;
+  --color-ink: #1b1a16;
+  --color-ink-muted: #56524a;
+  --color-ink-subtle: #847f72;
+  --color-ink-tertiary: #a39d8c;
 
-  --color-canvas: #19150f;
-  --color-surface-1: #2a2417;
-  --color-surface-2: #332d1e;
-  --color-surface-3: #3d3624;
-  --color-surface-4: #47402b;
+  --color-canvas: #e6e2d6;
+  --color-surface-1: #efece2;
+  --color-surface-2: #e3dfd2;
+  --color-surface-3: #d8d3c4;
+  --color-surface-4: #ccc6b4;
 
-  --color-hairline: #3a3325;
-  --color-hairline-strong: #5b5238;
+  --color-hairline: #cfc9b8;
+  --color-hairline-strong: #1b1a16;
 
-  --color-success: #5fcf8f;
+  --color-success: #1a7f4b;
 }
 
 /* Light cream canvas (Departure Mono / print-zine vibe). */
@@ -116,19 +116,32 @@ body {
 /* Content panel — print-zine box: solid cream, hard dark border + offset
    shadow (no transparency). */
 .panel {
-  background-color: #2f2917; /* warm, slightly yellower dark */
+  position: relative;
+  background-color: var(--color-surface-1);
   border: 2px solid var(--color-hairline-strong);
-  border-radius: 10px;
-  box-shadow: 8px 8px 0 0 #100c06;
+  border-radius: 8px;
+  box-shadow: 8px 8px 0 0 var(--color-hairline-strong);
 }
 
-/* "Lit" word — orange and glowing, like it's burning. */
-.lit {
-  color: var(--color-primary);
-  text-shadow:
-    0 0 10px rgba(255, 83, 16, 0.55),
-    0 0 26px rgba(255, 83, 16, 0.35);
+/* Decorative tractor-feed punch holes down the left + right edges. */
+.panel::before,
+.panel::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  width: 8px;
+  background-image: radial-gradient(
+    circle at center,
+    var(--color-canvas) 0 3px,
+    transparent 3.4px
+  );
+  background-size: 8px 22px;
+  background-repeat: repeat-y;
+  pointer-events: none;
 }
+.panel::before { left: 9px; }
+.panel::after { right: 9px; }
 
 
 /* Full-screen scanline + flicker overlay, above everything, non-interactive. */

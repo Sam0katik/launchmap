@@ -2,6 +2,7 @@ import Link from "next/link";
 import { UrlForm } from "@/components/UrlForm";
 import { PixelBg } from "@/components/PixelBg";
 import { LighthouseIcon } from "@/components/LighthouseIcon";
+import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -21,15 +22,15 @@ export default function Home() {
         {/* brand (click = reload) + sign-in in the corners */}
         <header className="flex h-20 items-center justify-between px-8">
           {/* plain <a> to "/" forces a full page refresh */}
-          <a href="/" className="wordmark flex items-center gap-2.5 text-4xl text-ink hover:text-primary">
-            <LighthouseIcon size={28} />
-            BEACON
+          <a href="/" className="wordmark flex items-end gap-2.5 text-4xl text-ink hover:text-primary">
+            <LighthouseIcon size={46} />
+            <ScrambleText text="BEACON" className="leading-none" />
           </a>
           <AuthButton />
         </header>
 
         <main className="flex flex-1 items-center justify-center px-6 pb-12">
-          <div className="panel w-full max-w-xl px-12 pb-14 pt-12 text-center">
+          <div className="panel w-full max-w-xl px-14 pb-14 pt-12 text-center">
             <h1 className="display-xl mb-6 text-ink">
               Light the way
               <br />
@@ -37,8 +38,8 @@ export default function Home() {
             </h1>
 
             <p className="mx-auto mb-10 max-w-sm text-xl leading-snug text-ink-muted">
-              Paste your URL. Get a ranked map of where to post for your first
-              users.
+              Paste your URL. Get a ranked map of where to post — rules, karma,
+              and best time.
             </p>
 
             <UrlForm />

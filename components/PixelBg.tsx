@@ -16,14 +16,14 @@ export function PixelBg() {
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const CELL = 10;
-    const MAX_A = 0.2;
+    const MAX_A = 0.08;
 
     let w = 0;
     let h = 0;
     let raf = 0;
 
     type Blob = { x: number; y: number; vx: number; vy: number; r: number; tint: string };
-    const TINTS = ["255,83,16", "255,140,40", "230,180,90"];
+    const TINTS = ["120,116,104", "150,145,130", "95,93,86"];
     let blobs: Blob[] = [];
 
     const make = (): Blob => ({
