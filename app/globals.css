@@ -14,9 +14,9 @@
 /* Linear design tokens — single source of truth as CSS variables.
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
-  --color-primary: #ff5c00;
-  --color-primary-hover: #ff7a2e;
-  --color-primary-focus: #e64f00;
+  --color-primary: #ff6a14;
+  --color-primary-hover: #ff8438;
+  --color-primary-focus: #ff5c00;
 
   --color-ink: #1b1a16;
   --color-ink-muted: #56524a;
@@ -119,8 +119,19 @@ body {
   position: relative;
   background-color: var(--color-surface-1);
   border: 2px solid var(--color-hairline-strong);
-  border-radius: 8px;
-  box-shadow: 8px 8px 0 0 var(--color-hairline-strong);
+  /* cut the bottom-left corner (luggage-tag style). drop-shadow (not box-shadow)
+     follows the clipped shape for the hard print offset. */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+  filter: drop-shadow(7px 7px 0 var(--color-hairline-strong));
+}
+
+/* Marker highlight behind key phrases (sage green, like the reference letter). */
+.hl {
+  background-color: #b9c4a0;
+  color: #1b1a16;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 2px;
 }
 
 /* Decorative tractor-feed punch holes down the left + right edges. */

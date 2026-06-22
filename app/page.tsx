@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { UrlForm } from "@/components/UrlForm";
 import { PixelBg } from "@/components/PixelBg";
+import { VectorSketch } from "@/components/VectorSketch";
+import { ClippedNote } from "@/components/ClippedNote";
 import { LighthouseIcon } from "@/components/LighthouseIcon";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
@@ -16,6 +18,7 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 export default function Home() {
   return (
     <>
+      <VectorSketch />
       <PixelBg />
 
       <div className="relative z-10 flex min-h-screen flex-col">
@@ -29,20 +32,22 @@ export default function Home() {
           <AuthButton />
         </header>
 
-        <main className="flex flex-1 items-center justify-center px-6 pb-12">
-          <div className="panel w-full max-w-xl px-14 pb-14 pt-12 text-center">
-            <h1 className="display-xl mb-6 text-ink">
-              Light the way
-              <br />
-              to first users
-            </h1>
+        <main className="flex flex-1 items-center justify-center px-6 py-16">
+          <div className="relative">
+            <div className="panel w-full max-w-xl px-14 pb-14 pt-12 text-center">
+              <h1 className="display-xl mb-9 text-ink">
+                Light the way
+                <br />
+                to first users
+              </h1>
 
-            <p className="mx-auto mb-10 max-w-sm text-xl leading-snug text-ink-muted">
-              Paste your URL. Get a ranked map of where to post — rules, karma,
-              and best time.
-            </p>
+              <UrlForm />
+            </div>
 
-            <UrlForm />
+            {/* description lives on a beige note clipped to the card corner */}
+            <div className="absolute -right-32 -top-14 hidden lg:block">
+              <ClippedNote />
+            </div>
           </div>
         </main>
 
