@@ -16,14 +16,14 @@ export function PixelBg() {
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const CELL = 10;
-    const MAX_A = 0.12;
+    const MAX_A = 0.2;
 
     let w = 0;
     let h = 0;
     let raf = 0;
 
     type Blob = { x: number; y: number; vx: number; vy: number; r: number; tint: string };
-    const TINTS = ["255,83,16", "210,120,40", "180,150,90"];
+    const TINTS = ["255,83,16", "255,140,40", "230,180,90"];
     let blobs: Blob[] = [];
 
     const make = (): Blob => ({
@@ -44,7 +44,7 @@ export function PixelBg() {
       canvas.style.width = w + "px";
       canvas.style.height = h + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      blobs = new Array(5).fill(0).map(make);
+      blobs = new Array(6).fill(0).map(make);
     };
 
     const drawBlob = (b: Blob) => {

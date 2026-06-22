@@ -15,24 +15,24 @@
    Mirrors tailwind.config.ts; use whichever is convenient in a given file. */
 :root {
   --color-primary: #ff5310;
-  --color-primary-hover: #ff6a30;
-  --color-primary-focus: #e0440a;
+  --color-primary-hover: #ff7a3c;
+  --color-primary-focus: #ff6a30;
 
-  --color-ink: #17150f;
-  --color-ink-muted: #5c564a;
-  --color-ink-subtle: #8a8170;
-  --color-ink-tertiary: #b3a98f;
+  --color-ink: #f1e9d6;
+  --color-ink-muted: #b9ae93;
+  --color-ink-subtle: #8b8167;
+  --color-ink-tertiary: #645b46;
 
-  --color-canvas: #f0ebdd;
-  --color-surface-1: #e9e2cf;
-  --color-surface-2: #e0d8c1;
-  --color-surface-3: #d6ccb0;
-  --color-surface-4: #cabd9c;
+  --color-canvas: #19150f;
+  --color-surface-1: #2a2417;
+  --color-surface-2: #332d1e;
+  --color-surface-3: #3d3624;
+  --color-surface-4: #47402b;
 
-  --color-hairline: #cbc1a8;
-  --color-hairline-strong: #1c1a13;
+  --color-hairline: #3a3325;
+  --color-hairline-strong: #5b5238;
 
-  --color-success: #1a7f4b;
+  --color-success: #5fcf8f;
 }
 
 /* Light cream canvas (Departure Mono / print-zine vibe). */
@@ -58,10 +58,11 @@ body {
 }
 .display-xl {
   font-family: var(--font-pixel), ui-monospace, monospace;
-  font-size: clamp(40px, 7vw, 64px);
+  font-size: clamp(32px, 5vw, 46px);
   font-weight: 400;
-  line-height: 0.98;
+  line-height: 1.06;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 .display-lg {
   font-family: var(--font-pixel), ui-monospace, monospace;
@@ -115,10 +116,10 @@ body {
 /* Content panel — print-zine box: solid cream, hard dark border + offset
    shadow (no transparency). */
 .panel {
-  background-color: var(--color-surface-1);
+  background-color: #2f2917; /* warm, slightly yellower dark */
   border: 2px solid var(--color-hairline-strong);
   border-radius: 10px;
-  box-shadow: 8px 8px 0 0 var(--color-hairline-strong);
+  box-shadow: 8px 8px 0 0 #100c06;
 }
 
 /* "Lit" word — orange and glowing, like it's burning. */

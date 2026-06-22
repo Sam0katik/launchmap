@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { UrlForm } from "@/components/UrlForm";
 import { PixelBg } from "@/components/PixelBg";
+import { LighthouseIcon } from "@/components/LighthouseIcon";
 import { AuthButton } from "@/components/AuthButton";
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -20,23 +21,24 @@ export default function Home() {
         {/* brand (click = reload) + sign-in in the corners */}
         <header className="flex h-20 items-center justify-between px-8">
           {/* plain <a> to "/" forces a full page refresh */}
-          <a href="/" className="wordmark text-4xl text-ink hover:text-primary">
+          <a href="/" className="wordmark flex items-center gap-2.5 text-4xl text-ink hover:text-primary">
+            <LighthouseIcon size={28} />
             BEACON
           </a>
           <AuthButton />
         </header>
 
         <main className="flex flex-1 items-center justify-center px-6 pb-12">
-          <div className="panel w-full max-w-lg px-12 pb-14 pt-12 text-center">
-            <h1 className="display-xl mb-7 text-ink">
-              <span className="lit">Light</span> the way
+          <div className="panel w-full max-w-xl px-12 pb-14 pt-12 text-center">
+            <h1 className="display-xl mb-6 text-ink">
+              Light the way
               <br />
               to first users
             </h1>
 
             <p className="mx-auto mb-10 max-w-sm text-xl leading-snug text-ink-muted">
-              Paste your product URL. Get a ranked map of where to post — with
-              each community&apos;s rules, karma, and best time.
+              Paste your URL. Get a ranked map of where to post for your first
+              users.
             </p>
 
             <UrlForm />
