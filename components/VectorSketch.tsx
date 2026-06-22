@@ -26,10 +26,27 @@ export function VectorSketch() {
         <path d="M280 480 A 120 120 0 0 0 360 600" />
         <path d="M360 600 A 75 75 0 0 0 435 540" />
 
-        {/* upper-right faint grid corner */}
-        <line x1="1180" y1="40" x2="1180" y2="220" />
-        <line x1="1280" y1="40" x2="1280" y2="220" />
-        <line x1="1100" y1="120" x2="1360" y2="120" />
+        {/* upper-right construction grid */}
+        <line x1="1180" y1="40" x2="1180" y2="240" />
+        <line x1="1280" y1="40" x2="1280" y2="240" />
+        <line x1="1100" y1="120" x2="1380" y2="120" />
+        <circle cx="1260" cy="150" r="96" />
+        <circle cx="1260" cy="150" r="56" />
+        <path d="M1356 150 A 96 96 0 0 1 1260 246" />
+
+        {/* lower-right concentric set */}
+        <circle cx="1300" cy="760" r="220" />
+        <circle cx="1300" cy="760" r="136" />
+        <circle cx="1300" cy="760" r="84" />
+        <line x1="1080" y1="760" x2="1520" y2="760" />
+        <line x1="1300" y1="540" x2="1300" y2="980" />
+
+        {/* mid cross-hairs + diagonals */}
+        <line x1="720" y1="0" x2="720" y2="900" strokeDasharray="2 10" />
+        <path d="M40 820 L300 560" />
+        <path d="M1180 700 L1380 540" />
+        <rect x="980" y="640" width="150" height="150" />
+        <line x1="980" y1="640" x2="1130" y2="790" />
       </g>
     </svg>
   );

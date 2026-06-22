@@ -6,6 +6,9 @@ import { LighthouseIcon } from "@/components/LighthouseIcon";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
 
+// TODO: replace with the real destination for the "scan to launch" barcode.
+const SCAN_TO_LAUNCH_URL = "#";
+
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link href={href} className="menu-link rounded-sm">
@@ -49,16 +52,23 @@ export default function Home() {
 
               <UrlForm />
 
-              {/* receipt footer: barcode */}
+              {/* receipt footer: barcode is a link (scan to launch) */}
               <div className="receipt-rule mb-5 mt-9" />
-              <div className="barcode mx-auto w-3/4" />
-              <p className="mt-3 text-xs uppercase tracking-[0.3em] text-ink-subtle">
-                * scan to launch *
-              </p>
+              <a
+                href={SCAN_TO_LAUNCH_URL}
+                className="block cursor-pointer transition-opacity hover:opacity-70"
+                aria-label="Scan to launch"
+              >
+                <div className="barcode mx-auto w-3/4" />
+                <p className="mt-3 text-xs uppercase tracking-[0.3em] text-ink-subtle">
+                  * scan to launch *
+                </p>
+              </a>
             </div>
 
-            {/* description lives on a beige note clipped to the card corner */}
-            <div className="absolute -right-48 -top-16 hidden xl:block">
+            {/* beige note clipped to the card's top-right — the clip pinches
+                both papers; the note slides out on hover */}
+            <div className="absolute -right-32 -top-7 hidden xl:block">
               <ClippedNote />
             </div>
           </div>

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-// GitHub sign-in / sign-out button. Degrades to a disabled state when Supabase
-// env is not configured (keyless dev/demo), so it never crashes the page.
+// GitHub sign-in / sign-out button. Stays a vivid solid-orange button at all
+// times; on hover only the label gets a marker highlight (like the footer
+// links). Degrades to a no-op when Supabase env is not configured.
 export function AuthButton() {
   const configured =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -29,6 +30,7 @@ export function AuthButton() {
   }, [configured]);
 
   async function signIn() {
+    if (!configured) return;
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "github",
@@ -42,28 +44,26 @@ export function AuthButton() {
     location.reload();
   }
 
-  // Fully solid/opaque. Fills white on hover.
+  // Solid vivid orange, no dimming. `group` so only the label highlights.
   const cls =
-    "focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-lg font-medium text-white transition-colors hover:bg-[#b9c4a0] hover:text-ink disabled:opacity-50";
+    "focus-ring btn-press group rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-lg font-medium text-white";
+  // Inner label: marker-highlights (sage green) on hover, like Privacy/Contact.
+  const labelCls =
+    "rounded-sm px-1 transition-colors group-hover:bg-[#b9c4a0] group-hover:text-ink";
 
-  if (!configured) {
-    return (
-      <button className={cls} disabled title="Connect Supabase to enable sign-in">
-        Sign in with GitHub
-      </button>
-    );
+  if (!ready && configured) {
+    return <span className="text-xs text-ink-tertiary">…</span>;
   }
-  if (!ready) return <span className="text-xs text-ink-tertiary">…</span>;
-  if (label) {
-    return (
-      <button className={cls} onClick={signOut}>
-        {label} · sign out
-      </button>
-    );
-  }
+
+  const text = label ? `${label} · sign out` : "Sign in with GitHub";
+
   return (
-    <button className={cls} onClick={signIn}>
-      Sign in with GitHub
+    <button
+      className={cls}
+      onClick={label ? signOut : signIn}
+      title={configured ? undefined : "Connect Supabase to enable sign-in"}
+    >
+      <span className={labelCls}>{text}</span>
     </button>
   );
 }
