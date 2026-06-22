@@ -67,40 +67,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
-  // 5. Fetch landing page text (best-effort; falls back to description).
-  const landingText = await fetchLandingText(url);
+  try {
+    // 5. Fetch landing page text (best-effort; falls back to description).
+    const landingText = await fetchLandingText(url);
 
-  // 6. Analyze with Haiku.
-  const analysis = await analyzeProduct(landingText, description);
+    // 6. Analyze with Haiku.
+    const analysis = await analyzeProduct(landingText, description);
+    if (analysis.niche_tags.length === 0 && !analysis.product_summary) {
+      return NextResponse.json({ error: "empty_landing" }, { status: 422 });
+    }
 
-  // 7. Match + rank against the curated catalog.
-  const { data: communities } = await supabase
-    .from("communities")
-    .select("*");
-  const ranked = rankCommunities(
-    analysis,
-    (communities ?? []) as Community[],
-    false // new run starts locked (free tier)
-  );
+    // 7. Match + rank against the curated catalog.
+    const { data: communities } = await supabase.from("communities").select("*");
+    const ranked = rankCommunities(
+      analysis,
+      (communities ?? []) as Community[],
+      false // new run starts locked (free tier)
+    );
 
-  // 8. Persist the run.
-  const { data: run, error } = await supabase
-    .from("runs")
-    .insert({
-      user_id: user.id,
-      product_url: url,
-      product_data: analysis,
-      result: ranked,
-      unlocked: false,
-    })
-    .select("id")
-    .single();
+    // 8. Persist the run.
+    const { data: run, error } = await supabase
+      .from("runs")
+      .insert({
+        user_id: user.id,
+        product_url: url,
+        product_data: analysis,
+        result: ranked,
+        unlocked: false,
+      })
+      .select("id")
+      .single();
 
-  if (error || !run) {
-    return NextResponse.json({ error: "persist_failed" }, { status: 500 });
+    if (error || !run) {
+      return NextResponse.json({ error: "persist_failed" }, { status: 500 });
+    }
+
+    return NextResponse.json({ runId: run.id, cached: false });
+  } catch (e) {
+    console.error("[analyze] failed:", e);
+    return NextResponse.json({ error: "analysis_failed" }, { status: 502 });
   }
-
-  return NextResponse.json({ runId: run.id, cached: false });
 }
 
 /** Fetch a landing page and crudely strip it to text. Never throws. */

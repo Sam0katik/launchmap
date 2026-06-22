@@ -108,6 +108,10 @@ function messageFor(code: string): string {
       return "Daily free limit reached. Come back tomorrow or upgrade.";
     case "invalid_input":
       return "Enter a valid URL.";
+    case "empty_landing":
+      return "Couldn't read that page — add a one-line description and retry.";
+    case "analysis_failed":
+      return "Analysis failed (API). Try again in a moment.";
     default:
       return "Something went wrong. Try again.";
   }
