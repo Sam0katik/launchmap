@@ -2,7 +2,9 @@
 // hover. Key phrases are marker-highlighted (reference style).
 export function ClippedNote() {
   return (
-    <div className="group relative w-[270px] origin-top-left rotate-[3deg] cursor-default select-none transition-transform duration-300 ease-out hover:translate-x-[170px] hover:-translate-y-8 hover:rotate-[1deg]">
+    // outer wrapper stays put (stable hover target — no flicker); inner slides
+    <div className="group relative w-[270px] select-none">
+    <div className="relative origin-top-left rotate-[3deg] transition-transform duration-300 ease-out group-hover:translate-x-[170px] group-hover:-translate-y-8 group-hover:rotate-[1deg]">
       {/* vertical wire paper clip over the top edge (reference style) */}
       <svg
         className="absolute -top-8 left-9 z-10"
@@ -38,6 +40,7 @@ export function ClippedNote() {
           <span className="hl">without getting banned</span>.
         </p>
       </div>
+    </div>
     </div>
   );
 }
