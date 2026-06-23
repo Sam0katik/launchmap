@@ -67,6 +67,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
+  // Distinguish "AI key not set in this environment" from a real API failure.
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: "ai_not_configured" }, { status: 503 });
+  }
+
   try {
     // 5. Fetch landing page text (best-effort; falls back to description).
     const landingText = await fetchLandingText(url);

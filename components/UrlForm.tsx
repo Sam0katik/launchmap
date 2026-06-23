@@ -110,6 +110,8 @@ function messageFor(code: string): string {
       return "Enter a valid URL.";
     case "empty_landing":
       return "Couldn't read that page — add a one-line description and retry.";
+    case "ai_not_configured":
+      return "AI key not set in this environment. Add ANTHROPIC_API_KEY + restart/redeploy.";
     case "analysis_failed":
       return "Analysis failed (API). Try again in a moment.";
     default:
