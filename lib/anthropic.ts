@@ -74,27 +74,40 @@ export async function generateDraft(
   community: Community,
   productUrl: string
 ): Promise<{ title: string; body: string }> {
+  const platformGuide = platformGuidance(community.platform);
+
   const msg = await client.messages.create({
     model: MODEL_DRAFT,
-    max_tokens: 800,
+    max_tokens: 900,
     system:
-      "You write a launch post draft for a specific community. Follow the " +
-      "community's stated rules and tone exactly. Write it as a genuine story, " +
-      "not an ad. The draft is a STARTING POINT the user must adapt — " +
-      "template posts get detected and banned.",
+      "You write ONE launch post draft for a specific community. The post must " +
+      "obey that community's stated rules and match its culture exactly — a " +
+      "draft that ignores the rules gets the user removed or banned, which is " +
+      "the whole problem this product exists to prevent. Write a genuine, " +
+      "specific, first-person story, never an ad or a generic template. " +
+      "Output PLAIN TEXT only: no markdown, no asterisks, no bold, no headings.",
     messages: [
       {
         role: "user",
         content:
-          `Product: ${analysis.product_summary}\n` +
-          `URL: ${productUrl}\n` +
-          `Audience: ${analysis.icp}\n\n` +
-          `Community: ${community.name} (${community.platform})\n` +
-          `Self-promo policy: ${community.self_promo_policy}` +
-          (community.self_promo_note ? ` — ${community.self_promo_note}` : "") +
-          `\n` +
-          `Rules: ${community.rules_summary ?? "n/a"}\n\n` +
-          `Return JSON: { "title": "...", "body": "..." }`,
+          `Write a post for ${community.name} (${community.platform}).\n\n` +
+          `PRODUCT\n` +
+          `- What it is: ${analysis.product_summary}\n` +
+          `- Category: ${analysis.category}\n` +
+          `- Audience: ${analysis.icp}\n` +
+          `- URL: ${productUrl}\n\n` +
+          `COMMUNITY RULES (follow exactly)\n` +
+          `- Self-promo policy: ${community.self_promo_policy}` +
+          (community.self_promo_note ? `\n- Note: ${community.self_promo_note}` : "") +
+          (community.rules_summary ? `\n- Rules: ${community.rules_summary}` : "") +
+          `\n\n` +
+          `HOW THIS PLATFORM EXPECTS POSTS\n${platformGuide}\n\n` +
+          `Make the post unmistakably about THIS product and audience — no ` +
+          `interchangeable filler that could describe any tool. If the policy ` +
+          `is megathread/comment-only, write it to fit that thread/comment, not ` +
+          `a standalone ad.\n\n` +
+          `Return ONLY JSON, plain text values, no markdown: ` +
+          `{ "title": "...", "body": "..." }`,
       },
     ],
   });
@@ -104,7 +117,43 @@ export async function generateDraft(
   const match = raw.match(/\{[\s\S]*\}/);
   const parsed = match ? JSON.parse(match[0]) : {};
   return {
-    title: parsed.title ?? "",
-    body: parsed.body ?? "",
+    title: stripMarkdown(parsed.title ?? ""),
+    body: stripMarkdown(parsed.body ?? ""),
   };
+}
+
+/** Per-platform posting culture, injected into the draft prompt. */
+function platformGuidance(platform: string): string {
+  switch (platform) {
+    case "reddit":
+      return (
+        "Reddit: casual, first-person, story-first. Open with context/why you " +
+        "built it, what it does, the tech, and the SPECIFIC feedback you want. " +
+        "No marketing voice, no superlatives. A bare link reads as spam."
+      );
+    case "hackernews":
+      return (
+        "Hacker News (Show HN): modest and technical, addressed to fellow " +
+        "engineers. NO superlatives (best/fastest/first). Go deep on how it " +
+        "works and the interesting technical decisions."
+      );
+    case "x":
+      return "X: one tight hook, concrete and specific, conversational. Short.";
+    case "discord":
+      return "Discord: friendly and brief, like talking to peers in a channel.";
+    default:
+      return "Directory: a clear, concrete one-paragraph description of the value.";
+  }
+}
+
+/** Strip markdown so submit forms get clean plain text (asterisks etc. render
+ * as literal characters on most submit pages). */
+function stripMarkdown(s: string): string {
+  return s
+    .replace(/\*\*(.*?)\*\*/g, "$1") // bold
+    .replace(/\*(.*?)\*/g, "$1") // italic
+    .replace(/`(.*?)`/g, "$1") // inline code
+    .replace(/^#{1,6}\s+/gm, "") // headings
+    .replace(/^\s*[-*]\s+/gm, "• ") // bullets → plain bullet
+    .trim();
 }

@@ -8,7 +8,7 @@ export function SiteNav() {
   return (
     <header className="relative z-20 flex h-20 items-center justify-between px-8">
       <a href="/" className="wordmark text-4xl text-ink hover:text-primary">
-        <ScrambleText text="BEACON" className="leading-none" />
+        <ScrambleText text="ZEROFANS" className="leading-none" />
       </a>
       <AuthButton />
     </header>

@@ -42,7 +42,7 @@ export default function CommunitiesPage() {
     <main className="relative z-10 mx-auto max-w-content px-6 py-10">
       <nav className="mb-8 flex h-12 items-center justify-between">
         <Link href="/" className="wordmark text-lg text-ink">
-          BEACON
+          ZEROFANS
         </Link>
         <span className="eyebrow">community db · {ALL.length}</span>
       </nav>

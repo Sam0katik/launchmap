@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
+import { LegalNav } from "@/components/LegalNav";
 
 export const metadata = {
-  title: "Privacy & data handling — Beacon",
+  title: "Privacy & data handling — ZeroFans",
 };
 
 // Plain-language privacy + data-handling page. Still an MVP policy (not legal
@@ -33,7 +34,9 @@ export default function Privacy() {
             </p>
           </header>
 
-          <div className="space-y-9 text-sm leading-relaxed text-ink-muted">
+          <LegalNav active="privacy" />
+
+          <div className="mt-8 space-y-9 text-sm leading-relaxed text-ink-muted">
             <Section title="What we collect">
               <ul className="list-disc space-y-1.5 pl-5">
                 <li>

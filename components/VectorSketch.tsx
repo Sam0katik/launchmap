@@ -12,7 +12,7 @@ export function VectorSketch({ variant = "primary" }: { variant?: Variant }) {
   return (
     <svg
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0 h-full w-full"
+      className="vector-sketch pointer-events-none fixed inset-0 z-0 h-full w-full"
       preserveAspectRatio="xMidYMid slice"
       viewBox="0 0 1440 900"
       fill="none"

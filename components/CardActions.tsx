@@ -13,6 +13,15 @@ interface Draft {
   body: string;
 }
 
+/** Defensive markdown strip for drafts cached before the server-side cleanup. */
+function clean(s: string): string {
+  return (s ?? "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/`(.*?)`/g, "$1")
+    .trim();
+}
+
 const ERR: Record<string, string> = {
   auth_required: "Sign in first.",
   locked: "Unlock the full map to draft this one.",
@@ -32,6 +41,7 @@ export function CardActions({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<"title" | "body" | null>(null);
+  const [open, setOpen] = useState(false); // draft starts collapsed
 
   async function generate() {
     if (!runId) return;
@@ -48,7 +58,7 @@ export function CardActions({
         setError(ERR[data.error] ?? "Something went wrong.");
         return;
       }
-      setDraft({ title: data.title, body: data.body });
+      setDraft({ title: clean(data.title), body: clean(data.body) });
     } catch {
       setError("Network error. Try again.");
     } finally {
@@ -77,23 +87,39 @@ export function CardActions({
   return (
     <div className="space-y-3">
       {draft && (
-        <div className="space-y-2 rounded-sm border border-hairline bg-canvas/60 p-3 text-xs">
-          <Field
-            label="Title"
-            value={draft.title}
-            copied={copied === "title"}
-            onCopy={() => copy("title", draft.title)}
-          />
-          <Field
-            label="Body"
-            value={draft.body}
-            multiline
-            copied={copied === "body"}
-            onCopy={() => copy("body", draft.body)}
-          />
-          <p className="text-[11px] text-ink-tertiary">
-            Adapt before posting — verbatim template posts get detected.
-          </p>
+        <div className="rounded-sm border border-hairline bg-canvas/60 p-3 text-xs">
+          {/* collapsible header — keeps the card compact until expanded */}
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="focus-ring flex w-full items-center justify-between rounded-sm"
+            aria-expanded={open}
+          >
+            <span className="eyebrow text-[10px] text-ink">✦ Draft ready</span>
+            <span className="text-[11px] text-ink-muted">
+              {open ? "− hide" : "+ show full"}
+            </span>
+          </button>
+
+          {open && (
+            <div className="mt-3 space-y-2">
+              <Field
+                label="Title"
+                value={draft.title}
+                copied={copied === "title"}
+                onCopy={() => copy("title", draft.title)}
+              />
+              <Field
+                label="Body"
+                value={draft.body}
+                multiline
+                copied={copied === "body"}
+                onCopy={() => copy("body", draft.body)}
+              />
+              <p className="text-[11px] text-ink-tertiary">
+                Adapt before posting — verbatim template posts get detected.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

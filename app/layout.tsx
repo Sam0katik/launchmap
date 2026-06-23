@@ -19,7 +19,7 @@ const pixel = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Beacon",
+  title: "ZeroFans",
   description:
     "Paste your product URL, get a ranked map of communities to launch in — with the rules, karma requirements, best time, a one-click submit link, and a tailored draft.",
 };

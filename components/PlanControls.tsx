@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { DAILY_LIMITS } from "@/lib/billing";
 
-// Beacon Pro upsell trigger + modal. Two presentations of the same thing:
+// ZeroFans Pro upsell trigger + modal. Two presentations of the same thing:
 //   - variant="badge"  → the status pill that sits right next to the nick
 //   - variant="button" → the larger "Upgrade to Pro" call to action
 // Either opens the same modal. Real checkout is Stage 6, so the modal CTA is
@@ -40,7 +40,7 @@ export function ProUpsell({
     variant === "badge" ? (
       <button
         onClick={() => setOpen(true)}
-        title="View Beacon Pro"
+        title="View ZeroFans Pro"
         className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-sm font-medium text-ink-muted hover:bg-surface-3"
       >
         FREE
@@ -67,7 +67,7 @@ export function ProUpsell({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
-              <span>Beacon Pro</span>
+              <span>ZeroFans Pro</span>
               <button
                 onClick={() => setOpen(false)}
                 className="menu-link rounded-sm"

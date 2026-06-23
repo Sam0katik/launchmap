@@ -20,13 +20,17 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
-  // Profile (plan) + this user's runs, in parallel.
-  const [{ data: profile }, { data: runs }] = await Promise.all([
+  // Profile (plan) + this user's runs + saved drafts, in parallel.
+  const [{ data: profile }, { data: runs }, { data: drafts }] = await Promise.all([
     supabase.from("profiles").select("plan, created_at").eq("id", user.id).maybeSingle(),
     supabase
       .from("runs")
       .select("id, product_url, product_data, unlocked, created_at")
       .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("drafts")
+      .select("title, body, run_id, created_at, communities(name, platform)")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -53,7 +57,7 @@ export default async function ProfilePage() {
           <header className="panel mb-10 px-8 pb-7 pt-6">
             <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
               <span>Account</span>
-              <span>Beacon Labs</span>
+              <span>ZeroFans Labs</span>
             </div>
             <div className="receipt-rule mb-5" />
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -69,17 +73,19 @@ export default async function ProfilePage() {
                 </div>
                 <p className="mt-2 text-sm text-ink-subtle">
                   Signed in with GitHub
-                  {isAdminEmail(user.email) && (
-                    <>
-                      {" · "}
-                      <Link href="/admin" className="text-primary hover:underline">
-                        Admin
-                      </Link>
-                    </>
-                  )}
                 </p>
               </div>
-              <ProUpsell plan={plan} variant="button" />
+              <div className="flex items-center gap-3">
+                {isAdminEmail(user.email) && (
+                  <Link
+                    href="/admin"
+                    className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-ink px-4 py-2.5 text-base font-medium text-canvas hover:opacity-90"
+                  >
+                    ⚙ Admin panel
+                  </Link>
+                )}
+                <ProUpsell plan={plan} variant="button" />
+              </div>
             </div>
           </header>
 
@@ -149,6 +155,45 @@ export default async function ProfilePage() {
                           </p>
                         </div>
                       </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* saved drafts — everything in one place */}
+          <section className="mb-12">
+            <h2 className="eyebrow mb-3">Saved drafts</h2>
+            {(drafts ?? []).length === 0 ? (
+              <div className="rounded-md border-2 border-dashed border-hairline-strong/40 px-6 py-8 text-center">
+                <p className="text-sm text-ink-subtle">
+                  No drafts yet. Generate one from any unlocked community on a map.
+                </p>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {(drafts ?? []).map((d, i) => {
+                  const community = d.communities as
+                    | { name: string; platform: string }
+                    | { name: string; platform: string }[]
+                    | null;
+                  const c = Array.isArray(community) ? community[0] : community;
+                  return (
+                    <li
+                      key={`${d.run_id}-${i}`}
+                      className="rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4"
+                    >
+                      <div className="mb-1 flex items-center justify-between gap-3">
+                        <span className="text-ink">{c?.name ?? "Community"}</span>
+                        <Link
+                          href={`/map/${d.run_id}`}
+                          className="menu-link rounded-sm text-xs text-primary"
+                        >
+                          open map →
+                        </Link>
+                      </div>
+                      <p className="truncate text-sm text-ink-muted">{d.title}</p>
                     </li>
                   );
                 })}

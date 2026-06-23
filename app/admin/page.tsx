@@ -71,7 +71,7 @@ export default async function AdminPage() {
           <header className="panel mb-10 px-8 pb-7 pt-6">
             <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
               <span>Admin</span>
-              <span>Beacon Labs · internal</span>
+              <span>ZeroFans Labs · internal</span>
             </div>
             <div className="receipt-rule mb-5" />
             <h1 className="pixel text-ink" style={{ fontSize: "clamp(24px,3vw,34px)" }}>

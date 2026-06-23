@@ -26,7 +26,7 @@ export default function Home() {
         <header className="flex h-20 items-center justify-between px-8">
           {/* plain <a> to "/" forces a full page refresh */}
           <a href="/" className="wordmark text-4xl text-ink hover:text-primary">
-            <ScrambleText text="BEACON" className="leading-none" />
+            <ScrambleText text="ZEROFANS" className="leading-none" />
           </a>
           <AuthButton />
         </header>
@@ -37,7 +37,7 @@ export default function Home() {
             <div className="panel w-full max-w-xl px-12 pb-10 pt-7 text-center">
               {/* receipt meta line */}
               <div className="mb-4 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
-                <span>Beacon Labs</span>
+                <span>ZeroFans Labs</span>
                 <span>No. 0207</span>
               </div>
               <div className="receipt-rule mb-8" />
@@ -75,6 +75,8 @@ export default function Home() {
         <footer className="border-t-2 border-hairline-strong">
           <div className="mx-auto flex h-14 max-w-content items-center justify-center gap-6 px-6 text-base text-ink-subtle">
             <FooterLink href="/privacy">Privacy</FooterLink>
+            <FooterLink href="/terms">Terms</FooterLink>
+            <FooterLink href="/refunds">Refunds</FooterLink>
             <FooterLink href="/contact">Contact</FooterLink>
           </div>
         </footer>

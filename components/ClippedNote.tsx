@@ -33,7 +33,7 @@ export function ClippedNote() {
       <div className="border-2 border-hairline-strong bg-[#cdbfa6] px-5 py-5 text-[13px] leading-relaxed text-ink shadow-[6px_8px_0_0_var(--color-hairline-strong)]">
         <p className="mb-3 text-base">Mission brief</p>
         <p>
-          Paste your URL and Beacon maps where to post. Each spot lists its{" "}
+          Paste your URL and ZeroFans maps where to post. Each spot lists its{" "}
           <span className="hl">rules</span>,{" "}
           <span className="hl">karma bar</span>, and{" "}
           <span className="hl">best time</span> — so you reach first users{" "}
