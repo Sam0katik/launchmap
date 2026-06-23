@@ -76,6 +76,7 @@ export default function Home() {
 
         <footer className="border-t-2 border-hairline-strong">
           <div className="mx-auto flex h-14 max-w-content items-center justify-center gap-6 px-6 text-base text-ink-subtle">
+            <FooterLink href="/profile">Profile</FooterLink>
             <FooterLink href="/privacy">Privacy</FooterLink>
             <FooterLink href="/contact">Contact</FooterLink>
           </div>

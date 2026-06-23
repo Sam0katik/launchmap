@@ -1,8 +1,9 @@
 import type { RankedCommunity } from "@/lib/types";
 import { buildSubmitLink } from "@/lib/submit-links";
 
-// One community card on the map. Locked cards show name + rank only; the rules,
-// karma, best time, submit link, and draft live behind the paywall.
+// One community card on the map, styled as a print-zine docket (departuremono
+// vibe): hard dark frame + offset shadow, a stamped rank box, uppercase tracked
+// meta, dashed receipt rules between sections, tabular-num match score.
 //
 // UI note (from spec §3.7): member count is intentionally NOT a primary field.
 // Activity matters more than size.
@@ -17,10 +18,10 @@ const POLICY_LABEL: Record<string, string> = {
 // Functional color-coding aids scanning (ECC: support repeated-use scanning).
 // green = safe, amber = constrained, red = risky.
 const POLICY_TONE: Record<string, string> = {
-  welcome: "text-success border-success/40",
-  megathread_only: "text-amber-400 border-amber-400/40",
-  comment_only: "text-amber-400 border-amber-400/40",
-  banned: "text-red-400 border-red-400/40",
+  welcome: "text-success border-success/50",
+  megathread_only: "text-[#b06a00] border-[#b06a00]/50",
+  comment_only: "text-[#b06a00] border-[#b06a00]/50",
+  banned: "text-red-700 border-red-700/50",
 };
 
 const KARMA_LABEL: Record<string, string> = {
@@ -39,60 +40,53 @@ export function CommunityCard({
   const { community, relevance, locked } = entry;
 
   return (
-    <div className="rounded-lg border border-hairline bg-surface-1 p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-ink-tertiary">#{rank}</span>
-            <h3 className="text-lg font-medium text-ink">{community.name}</h3>
+    <div className="flex flex-col rounded-md border-2 border-hairline-strong bg-surface-1 shadow-[4px_5px_0_0_var(--color-hairline-strong)]">
+      {/* docket header: stamped rank + name, platform eyebrow, match score */}
+      <div className="flex items-start justify-between gap-3 px-5 pb-4 pt-5">
+        <div className="flex items-start gap-3">
+          <span className="tnum mt-0.5 inline-flex h-7 min-w-7 items-center justify-center rounded-sm border-2 border-hairline-strong px-1 text-sm text-ink">
+            {rank}
+          </span>
+          <div>
+            <h3 className="text-lg leading-tight text-ink">{community.name}</h3>
+            <span className="eyebrow mt-1 block">{community.platform}</span>
           </div>
-          <span className="eyebrow mt-1 block">{community.platform}</span>
         </div>
-        <span className="tnum rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
-          {relevance}% match
+        <span className="tnum shrink-0 text-sm text-ink-muted">
+          {relevance}%
         </span>
       </div>
 
-      {locked ? (
-        <LockedBody />
-      ) : (
-        <UnlockedBody entry={entry} policyLabel={POLICY_LABEL} karmaLabel={KARMA_LABEL} />
-      )}
+      <div className="receipt-rule mx-5" />
+
+      {locked ? <LockedBody /> : <UnlockedBody entry={entry} />}
     </div>
   );
 }
 
 function LockedBody() {
   return (
-    <div className="mt-4 border-t border-hairline pt-4">
+    <div className="flex flex-1 items-center px-5 py-5">
       <p className="text-sm text-ink-subtle">
-        🔒 Rules, karma requirements, best time, one-click submit link, and a
-        tailored draft are unlocked with the full map.
+        🔒 Rules, karma bar, best time, a one-click submit link, and a tailored
+        draft unlock with the full map.
       </p>
     </div>
   );
 }
 
-function UnlockedBody({
-  entry,
-  policyLabel,
-  karmaLabel,
-}: {
-  entry: RankedCommunity;
-  policyLabel: Record<string, string>;
-  karmaLabel: Record<string, string>;
-}) {
+function UnlockedBody({ entry }: { entry: RankedCommunity }) {
   const { community } = entry;
   return (
-    <div className="mt-4 space-y-3 border-t border-hairline pt-4 text-sm">
+    <div className="flex flex-1 flex-col gap-3 px-5 py-5 text-sm">
       <div className="flex flex-wrap gap-2">
         <span
-          className={`rounded-full border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
+          className={`rounded-sm border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
         >
-          {policyLabel[community.self_promo_policy]}
+          {POLICY_LABEL[community.self_promo_policy]}
         </span>
         {community.karma_tier && (
-          <Badge>Karma: {karmaLabel[community.karma_tier]}</Badge>
+          <Badge>Karma: {KARMA_LABEL[community.karma_tier]}</Badge>
         )}
         {community.activity_level && <Badge>{community.activity_level}</Badge>}
       </div>
@@ -110,7 +104,9 @@ function UnlockedBody({
         </p>
       )}
 
-      <SubmitButton entry={entry} />
+      <div className="mt-auto pt-1">
+        <SubmitButton entry={entry} />
+      </div>
     </div>
   );
 }
@@ -126,14 +122,14 @@ function SubmitButton({ entry }: { entry: RankedCommunity }) {
   };
   const prefilled = buildSubmitLink(community, placeholder);
   const href = prefilled ?? community.url;
-  const label = prefilled ? "Open prefilled submit form" : "Open";
+  const label = prefilled ? "Open prefilled submit form →" : "Open →";
 
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="focus-ring btn-press inline-block rounded-md bg-primary px-3 py-2 text-sm font-medium text-canvas hover:bg-primary-hover"
+      className="focus-ring btn-press inline-block rounded-sm border-2 border-hairline-strong bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-hover"
     >
       {label}
     </a>
@@ -142,7 +138,7 @@ function SubmitButton({ entry }: { entry: RankedCommunity }) {
 
 function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
+    <span className="rounded-sm border border-hairline bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
       {children}
     </span>
   );
