@@ -3,10 +3,18 @@
 import { useEffect, useState } from "react";
 import { DAILY_LIMITS } from "@/lib/billing";
 
-// Plan status next to the profile nick. The "FREE" pill is a button — clicking
-// it (or the disabled Upgrade button, once live) opens the Beacon Pro upsell.
-// Billing isn't wired yet (Stage 6), so the modal CTA stays inert.
-export function PlanControls({ plan }: { plan: string }) {
+// Beacon Pro upsell trigger + modal. Two presentations of the same thing:
+//   - variant="badge"  → the status pill that sits right next to the nick
+//   - variant="button" → the larger "Upgrade to Pro" call to action
+// Either opens the same modal. Real checkout is Stage 6, so the modal CTA is
+// inert for now.
+export function ProUpsell({
+  plan,
+  variant,
+}: {
+  plan: string;
+  variant: "badge" | "button";
+}) {
   const [open, setOpen] = useState(false);
   const isPaid = plan === "paid";
 
@@ -19,31 +27,36 @@ export function PlanControls({ plan }: { plan: string }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  return (
-    <div className="flex items-center gap-3">
-      {isPaid ? (
-        <span className="rounded-sm border-2 border-success/60 bg-success/10 px-3 py-1 text-sm text-success">
-          PRO
-        </span>
-      ) : (
-        <>
-          <button
-            onClick={() => setOpen(true)}
-            className="focus-ring btn-press rounded-sm border-2 border-hairline-strong bg-surface-2 px-3 py-1 text-sm text-ink-muted hover:bg-surface-3"
-            title="View Beacon Pro"
-          >
-            FREE
-          </button>
-          <button
-            disabled
-            title="Pro upgrade goes live in Stage 6"
-            className="rounded-sm border-2 border-hairline-strong bg-primary px-3 py-1 text-sm font-medium text-white opacity-50"
-          >
-            Upgrade to Pro
-          </button>
-        </>
-      )}
+  // Paid users: the badge shows PRO and the button disappears.
+  if (isPaid) {
+    return variant === "badge" ? (
+      <span className="rounded-md border-2 border-success/60 bg-success/10 px-3 py-1.5 text-sm font-medium text-success">
+        PRO
+      </span>
+    ) : null;
+  }
 
+  const trigger =
+    variant === "badge" ? (
+      <button
+        onClick={() => setOpen(true)}
+        title="View Beacon Pro"
+        className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-sm font-medium text-ink-muted hover:bg-surface-3"
+      >
+        FREE
+      </button>
+    ) : (
+      <button
+        onClick={() => setOpen(true)}
+        className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-base font-medium text-white hover:bg-primary-hover"
+      >
+        Upgrade to Pro
+      </button>
+    );
+
+  return (
+    <>
+      {trigger}
       {open && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center bg-ink/40 px-4"
@@ -85,6 +98,6 @@ export function PlanControls({ plan }: { plan: string }) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

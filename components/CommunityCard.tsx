@@ -1,5 +1,5 @@
 import type { RankedCommunity } from "@/lib/types";
-import { buildSubmitLink } from "@/lib/submit-links";
+import { CardActions } from "@/components/CardActions";
 
 // One community card on the map, styled as a print-zine docket (departuremono
 // vibe): hard dark frame + offset shadow, a stamped rank box, uppercase tracked
@@ -40,9 +40,11 @@ function displayName(name: string): string {
 export function CommunityCard({
   rank,
   entry,
+  runId,
 }: {
   rank: number;
   entry: RankedCommunity;
+  runId?: string;
 }) {
   const { community, relevance, locked } = entry;
   const name = displayName(community.name);
@@ -87,15 +89,21 @@ export function CommunityCard({
 
       <div className="receipt-rule mx-5" />
 
-      <UnlockedBody entry={entry} />
+      <UnlockedBody entry={entry} runId={runId} />
     </div>
   );
 }
 
-function UnlockedBody({ entry }: { entry: RankedCommunity }) {
+function UnlockedBody({
+  entry,
+  runId,
+}: {
+  entry: RankedCommunity;
+  runId?: string;
+}) {
   const { community } = entry;
   return (
-    <div className="flex flex-1 flex-col gap-3 px-5 py-5 text-sm">
+    <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-5 text-sm">
       <div className="flex flex-wrap gap-2">
         <span
           className={`rounded-sm border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
@@ -115,42 +123,20 @@ function UnlockedBody({ entry }: { entry: RankedCommunity }) {
         </p>
       )}
 
-      {community.best_time && (
-        <p className="text-xs text-ink-subtle">
-          <span className="text-ink-tertiary">Best time · </span>
-          {community.best_time}
-        </p>
-      )}
-
       <div className="mt-auto pt-1">
-        <SubmitButton entry={entry} />
+        <CardActions community={community} runId={runId} />
       </div>
+
+      {/* Best time pinned to the very bottom as a receipt-style footer. */}
+      {community.best_time && (
+        <div className="-mx-5 mt-3 border-t-2 border-dashed border-hairline px-5 pt-3">
+          <p className="text-xs text-ink-subtle">
+            <span className="text-ink-tertiary">Best time · </span>
+            {community.best_time}
+          </p>
+        </div>
+      )}
     </div>
-  );
-}
-
-// "Open submit form" — uses the prefilled submit link where the platform
-// supports it (Reddit, HN, X), else a plain "Open" to the community.
-// In Stage 5 the placeholder draft below is replaced by the real Sonnet draft.
-function SubmitButton({ entry }: { entry: RankedCommunity }) {
-  const { community } = entry;
-  const placeholder = {
-    title: `Built something for ${community.niche_tags[0] ?? "makers"} — feedback welcome`,
-    body: "[Your tailored draft goes here once the map is generated]",
-  };
-  const prefilled = buildSubmitLink(community, placeholder);
-  const href = prefilled ?? community.url;
-  const label = prefilled ? "Open prefilled submit form →" : "Open →";
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="focus-ring btn-press inline-block rounded-sm border-2 border-hairline-strong bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-hover"
-    >
-      {label}
-    </a>
   );
 }
 

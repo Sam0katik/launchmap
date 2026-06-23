@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
-import { PlanControls } from "@/components/PlanControls";
+import { ProUpsell } from "@/components/PlanControls";
 import { dailyLimitForPlan } from "@/lib/billing";
+import { isAdminEmail } from "@/lib/admins";
 import type { ProductAnalysis } from "@/lib/types";
 
 // Account hub: every launch map the user has run, billing/usage, and account
@@ -57,17 +58,28 @@ export default async function ProfilePage() {
             <div className="receipt-rule mb-5" />
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h1
-                  className="pixel text-ink"
-                  style={{ fontSize: "clamp(24px,3vw,34px)" }}
-                >
-                  {username}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1
+                    className="pixel text-ink"
+                    style={{ fontSize: "clamp(24px,3vw,34px)" }}
+                  >
+                    {username}
+                  </h1>
+                  <ProUpsell plan={plan} variant="badge" />
+                </div>
                 <p className="mt-2 text-sm text-ink-subtle">
                   Signed in with GitHub
+                  {isAdminEmail(user.email) && (
+                    <>
+                      {" · "}
+                      <Link href="/admin" className="text-primary hover:underline">
+                        Admin
+                      </Link>
+                    </>
+                  )}
                 </p>
               </div>
-              <PlanControls plan={plan} />
+              <ProUpsell plan={plan} variant="button" />
             </div>
           </header>
 

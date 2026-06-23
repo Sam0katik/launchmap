@@ -10,34 +10,56 @@ import type { Community, ProductAnalysis, RankedCommunity } from "./types";
 
 const FREE_TIER_COUNT = 4; // top N shown fully on the free tier
 
-/**
- * Score one community against the product's niche tags.
- * Returns 0–100. Pure tag overlap, normalized by the product's tag count,
- * with a small bonus for active communities and a penalty for low activity.
- */
-function scoreCommunity(
-  community: Community,
-  productTags: string[]
-): number {
-  if (productTags.length === 0) return 0;
+/** Two tags match if equal or one contains the other (saas ⊂ microsaas). */
+function tagsMatch(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (a.length >= 3 && b.includes(a)) return true;
+  if (b.length >= 3 && a.includes(b)) return true;
+  return false;
+}
 
-  const tagSet = new Set(productTags.map((t) => t.toLowerCase()));
-  const overlap = community.niche_tags.filter((t) =>
-    tagSet.has(t.toLowerCase())
+/**
+ * Score one community against the product's niche tags. Returns 0–100.
+ *
+ * Earlier this normalized only by the product's tag count, so almost every
+ * community matched exactly one generic tag and landed on the same number
+ * (the infamous "36% everywhere"). This blends two signals so scores spread:
+ *   - coverage: how much of the product's intent the community covers
+ *   - density:  how focused the community is on those tags (a niche sub that
+ *               is *about* this beats a giant catch-all that merely mentions it)
+ * Activity is a small tie-breaker, not a 20-point thumb on the scale.
+ */
+function scoreCommunity(community: Community, productTags: string[]): number {
+  if (productTags.length === 0 || community.niche_tags.length === 0) return 0;
+
+  const product = productTags.map((t) => t.toLowerCase());
+  const comm = community.niche_tags.map((t) => t.toLowerCase());
+
+  // Count product tags that find a match in the community (avoids double-
+  // counting when several community tags map to one product tag).
+  const matchedProduct = product.filter((p) =>
+    comm.some((c) => tagsMatch(p, c))
+  ).length;
+  if (matchedProduct === 0) return 0;
+
+  const matchedComm = comm.filter((c) =>
+    product.some((p) => tagsMatch(p, c))
   ).length;
 
-  // Base: fraction of product tags matched, scaled to 0–80.
-  const base = (overlap / productTags.length) * 80;
+  const coverage = matchedProduct / product.length; // 0–1
+  const density = matchedComm / comm.length; // 0–1
 
-  // Activity modifier: active +20, moderate +10, low +0.
+  const base = (0.65 * coverage + 0.35 * density) * 100;
+
   const activityBonus =
     community.activity_level === "active"
-      ? 20
+      ? 6
       : community.activity_level === "moderate"
-        ? 10
+        ? 3
         : 0;
 
-  return Math.min(100, Math.round(base + activityBonus));
+  // Cap below 100 — a heuristic match is never a certainty.
+  return Math.min(97, Math.round(base * 0.9 + activityBonus));
 }
 
 /**

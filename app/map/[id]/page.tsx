@@ -49,11 +49,10 @@ export default async function MapPage({
 
           {!run.unlocked && lockedCount > 0 && (
             <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
-              <p className="text-sm text-ink-muted">
-                <span className="tnum">{lockedCount}</span> more communities are
-                locked — unlock rules, drafts, and one-click submit links for your
-                whole map.{" "}
-                <span className="text-ink-subtle">({UNLOCK_PRICE_LABEL})</span>
+              <p className="truncate text-sm text-ink-muted">
+                <span className="tnum">{lockedCount}</span> locked · unlock the
+                full map{" "}
+                <span className="text-ink-subtle">— {UNLOCK_PRICE_LABEL}</span>
               </p>
               {checkoutUrl ? (
                 <a
@@ -76,11 +75,46 @@ export default async function MapPage({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ranked.map((entry, i) => (
-              <CommunityCard key={entry.community.id} rank={i + 1} entry={entry} />
-            ))}
-          </div>
+          {(() => {
+            // Keep ranks continuous across both sections, but render full and
+            // locked cards in separate grids so short locked strips don't leave
+            // holes among the tall unlocked cards.
+            const withRank = ranked.map((entry, i) => ({ entry, rank: i + 1 }));
+            const open = withRank.filter((r) => !r.entry.locked);
+            const locked = withRank.filter((r) => r.entry.locked);
+            return (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {open.map(({ entry, rank }) => (
+                    <CommunityCard
+                      key={entry.community.id}
+                      rank={rank}
+                      entry={entry}
+                      runId={run.id}
+                    />
+                  ))}
+                </div>
+
+                {locked.length > 0 && (
+                  <>
+                    <h2 className="eyebrow mb-3 mt-10">
+                      Locked · {locked.length} more
+                    </h2>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {locked.map(({ entry, rank }) => (
+                        <CommunityCard
+                          key={entry.community.id}
+                          rank={rank}
+                          entry={entry}
+                          runId={run.id}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </main>
       </div>
     </>

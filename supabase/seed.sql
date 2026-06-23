@@ -5,7 +5,7 @@
 -- verified_at per row; re-verify against live sidebars before production and
 -- monthly thereafter. The generator warns on rows older than 45 days.
 --
--- Rows: 30 | Generated: 2026-06-17
+-- Rows: 36 | Generated: 2026-06-23
 
 truncate table communities restart identity cascade;
 
@@ -53,7 +53,7 @@ values
   ('reddit', 'r/startups', 'https://www.reddit.com/r/startups/', '{"startup","saas","founder","launch","feedback","b2b"}',
    'megathread_only', 'Use "Share Your Startup" / Feedback Friday threads; main feed is strict.',
    'Removed: self-promo in the main feed. Required: substantive discussion contributions.', 'medium', 'Account age + comment karma expected.',
-   'active', 'Fri for Feedback Friday; weekday mornings ET', null, '2026-06-17'),
+   'active', 'Feedback Friday thread; weekday mornings ET', null, '2026-06-17'),
   ('reddit', 'r/Entrepreneur', 'https://www.reddit.com/r/Entrepreneur/', '{"startup","business","founder","saas","marketing"}',
    'megathread_only', 'Strict; product mentions must emerge from valuable content. Weekly promo threads exist.',
    'Removed: "check out my product" posts. Norm: 10:1 (ten helpful contributions per promo).', 'hard', 'Established account + comment karma strongly recommended.',
@@ -133,4 +133,28 @@ values
   ('discord', 'Indie Worldwide (Discord)', 'https://indieworldwide.com/', '{"indie","saas","buildinpublic","maker","community","launch"}',
    'comment_only', 'Large indie-founder Discord; share launches in the designated #launch / #showcase channels only.',
    'Required: post in the right channel; participate, don''t just drop links.', 'easy', 'No karma; join the server (some events/membership perks paid).',
-   'active', 'Anytime — channel-based', null, '2026-06-17');
+   'active', 'Anytime — channel-based', null, '2026-06-17'),
+  ('reddit', 'r/buildinpublic', 'https://www.reddit.com/r/buildinpublic/', '{"buildinpublic","indie","saas","maker","launch","solofounder"}',
+   'welcome', 'Build-in-public community — sharing progress and launches is the whole point.',
+   'Required: share real progress, numbers, or lessons. Removed: bare ad with no story.', 'easy', 'Low barrier; participate a little first.',
+   'moderate', 'Tue-Thu mornings ET', null, '2026-06-23'),
+  ('reddit', 'r/nocode', 'https://www.reddit.com/r/nocode/', '{"nocode","indie","saas","maker","webapp","launch"}',
+   'welcome', 'No-code builders; sharing a tool or what you built is on-topic with context.',
+   'Required: tie it to the no-code workflow; add detail. Removed: drive-by promo.', 'easy', 'Low barrier.',
+   'moderate', 'Weekday mornings ET', null, '2026-06-23'),
+  ('reddit', 'r/coolgithubprojects', 'https://www.reddit.com/r/coolgithubprojects/', '{"opensource","devtool","github","cli","launch","technical"}',
+   'welcome', 'Open-source / GitHub projects, including your own, are welcome with a clear writeup.',
+   'Required: link the repo + explain what it does and the stack. Removed: closed-source ads.', 'easy', 'Low barrier; flair your post by language.',
+   'moderate', 'Weekday mornings ET', null, '2026-06-23'),
+  ('reddit', 'r/GrowthHacking', 'https://www.reddit.com/r/GrowthHacking/', '{"growth","marketing","saas","startup","launch","b2b"}',
+   'comment_only', 'Large but heavily moderated; promo only inside a real tactic or case study.',
+   'Required: lead with a growth lesson/experiment. Removed: blatant self-promo.', 'medium', 'Account history expected; new accounts filtered.',
+   'moderate', 'Weekday mornings ET', null, '2026-06-23'),
+  ('reddit', 'r/startup', 'https://www.reddit.com/r/startup/', '{"startup","founder","saas","indie","launch","feedback"}',
+   'welcome', 'General startup community; sharing for feedback is fine when framed as a question.',
+   'Required: ask for specific feedback, add context. Removed: pure link drops.', 'easy', 'Low barrier; some history helps.',
+   'moderate', 'Weekday mornings ET', null, '2026-06-23'),
+  ('reddit', 'r/ladybusiness', 'https://www.reddit.com/r/ladybusiness/', '{"founder","smallbusiness","indie","saas","marketing","launch"}',
+   'megathread_only', 'Supportive community for women founders; promo goes in the recurring share threads.',
+   'Required: use the designated promo/share thread; contribute beyond your link.', 'easy', 'Low barrier.',
+   'low', 'Share thread days; weekday mornings ET', null, '2026-06-23');

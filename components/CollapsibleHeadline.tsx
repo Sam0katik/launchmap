@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PaperPlane } from "@/components/PaperPlane";
 
 // The map's product summary used to render as a giant 6-line display heading —
 // visually heavy and pushing the actual map below the fold. This wraps it in a
@@ -32,6 +33,10 @@ export function CollapsibleHeadline({
         <span className="tnum">No. {runNo}</span>
       </div>
       <div className="receipt-rule mb-5" />
+
+      <div className="mb-3">
+        <PaperPlane size={52} bob />
+      </div>
 
       <h1
         className={`pixel text-ink ${open ? "" : longish ? "line-clamp-2" : ""}`}
