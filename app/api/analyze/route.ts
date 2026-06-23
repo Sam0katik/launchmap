@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { analyzeProduct } from "@/lib/anthropic";
 import { rankCommunities } from "@/lib/matching";
+import { dailyLimitForPlan } from "@/lib/billing";
 import type { Community } from "@/lib/types";
 
 // POST /api/analyze
@@ -18,7 +19,6 @@ const bodySchema = z.object({
   description: z.string().max(280).optional(),
 });
 
-const FREE_RUNS_PER_DAY = Number(process.env.FREE_RUNS_PER_DAY ?? 5);
 const URL_CACHE_HOURS = Number(process.env.URL_CACHE_HOURS ?? 24);
 
 export async function POST(req: NextRequest) {
@@ -56,14 +56,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ runId: cached.id, cached: true });
   }
 
-  // 4. Daily rate limit.
+  // 4. Daily rate limit — limit depends on the user's plan (free vs paid).
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", user.id)
+    .maybeSingle();
+  const dailyLimit = dailyLimitForPlan(profile?.plan);
+
   const daySince = new Date(Date.now() - 24 * 3600_000).toISOString();
   const { count } = await supabase
     .from("runs")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id)
     .gte("created_at", daySince);
-  if ((count ?? 0) >= FREE_RUNS_PER_DAY) {
+  if ((count ?? 0) >= dailyLimit) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 

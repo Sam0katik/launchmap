@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="7" fill="#1b1a16"/>
+  <!-- beacon "ping": a bright core + two radiating signal arcs -->
+  <circle cx="16" cy="17" r="3.4" fill="#ff6a14"/>
+  <path d="M10.5 11.5a7.5 7.5 0 0 1 11 0" stroke="#ff6a14" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M7.5 8.5a11.7 11.7 0 0 1 17 0" stroke="#efece2" stroke-width="2.2" stroke-linecap="round" stroke-opacity="0.85"/>
+</svg>

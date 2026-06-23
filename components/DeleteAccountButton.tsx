@@ -44,19 +44,21 @@ export function DeleteAccountButton() {
       <span className="text-sm text-ink-muted">
         This wipes your account and every saved map. Permanent.
       </span>
-      <button
-        onClick={onDelete}
-        disabled={busy}
-        className="focus-ring btn-press rounded-sm border-2 border-red-700 bg-red-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-      >
-        {busy ? "Deleting…" : "Yes, delete everything"}
-      </button>
+      {/* Cancel is the prominent (safe) default; delete is muted/outline so the
+          destructive action is deliberately the harder one to hit. */}
       <button
         onClick={() => setArmed(false)}
         disabled={busy}
-        className="menu-link rounded-sm text-sm text-ink-muted"
+        className="focus-ring btn-press rounded-sm border-2 border-hairline-strong bg-ink px-4 py-2 text-sm font-medium text-canvas disabled:opacity-60"
       >
         Cancel
+      </button>
+      <button
+        onClick={onDelete}
+        disabled={busy}
+        className="focus-ring btn-press rounded-sm border-2 border-red-700/60 px-4 py-2 text-sm text-red-700 hover:bg-red-700/10 disabled:opacity-60"
+      >
+        {busy ? "Deleting…" : "Yes, delete everything"}
       </button>
       {error && <p className="w-full text-sm text-red-700">{error}</p>}
     </div>

@@ -42,3 +42,11 @@ export function buildCheckoutUrl(runId: string): string | null {
 
 // Price shown in the UI before checkout exists. Single source of truth.
 export const UNLOCK_PRICE_LABEL = "$9 one-time";
+
+// Daily map (run) limit per plan. Single source of truth — used by /api/analyze
+// (enforcement) and the profile page (display).
+export const DAILY_LIMITS = { free: 3, paid: 5 } as const;
+
+export function dailyLimitForPlan(plan: string | null | undefined): number {
+  return plan === "paid" ? DAILY_LIMITS.paid : DAILY_LIMITS.free;
+}
