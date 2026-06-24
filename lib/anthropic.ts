@@ -119,6 +119,10 @@ export async function generateDraft(
           `\n\n` +
           `HOW THIS PLATFORM EXPECTS POSTS\n${platformGuide}\n\n` +
           `HARD REQUIREMENTS\n` +
+          `- Tailor the angle and the opening line specifically to THIS ` +
+          `community's audience and why THEY would care — do not reuse a ` +
+          `one-size-fits-all hook. The version for this community should read ` +
+          `differently from how you'd pitch the same product elsewhere.\n` +
           `- Reference at least one concrete detail of THIS product (a real ` +
           `feature, the specific problem it solves, or who uses it). Zero ` +
           `interchangeable filler.\n` +

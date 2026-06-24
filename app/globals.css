@@ -229,37 +229,30 @@ body {
   }
 }
 
-/* Background vector sketch — the line-art "draws" itself (dashoffset) and the
-   whole group drifts slowly, so the backdrop feels alive. Low cost: few dozen
-   strokes. Disabled under reduced-motion. */
+/* Background vector sketch — the line-art perpetually "draws" itself
+   (dashoffset) while staying fixed in place. Slow, low cost, calm. Disabled
+   under reduced-motion. */
 @keyframes sketch-draw {
-  0% { stroke-dashoffset: 900; }
-  55%, 100% { stroke-dashoffset: 0; }
-}
-@keyframes sketch-drift {
-  0%   { transform: translate(0px, 0px) rotate(0deg); }
-  25%  { transform: translate(26px, -16px) rotate(0.4deg); }
-  50%  { transform: translate(8px, 22px) rotate(-0.3deg); }
-  75%  { transform: translate(-22px, 10px) rotate(0.5deg); }
-  100% { transform: translate(0px, 0px) rotate(0deg); }
+  0%   { stroke-dashoffset: 900; }
+  50%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -900; }
 }
 .vector-sketch g {
-  transform-origin: center;
-  /* always-on, smooth, slow loop so the backdrop is perceptibly alive */
-  animation: sketch-drift 30s ease-in-out infinite;
+  /* stays put — no drifting around the background */
+  transform: none;
 }
 .vector-sketch circle,
 .vector-sketch line,
 .vector-sketch rect,
 .vector-sketch path {
   stroke-dasharray: 900;
-  /* draw in once on load, then stay; the group keeps drifting for life */
-  animation: sketch-draw 3.5s ease-out forwards;
+  /* draw forever, slowly — the strokes keep tracing themselves in place */
+  animation: sketch-draw 26s linear infinite;
 }
-/* stagger so strokes draw in like a hand sketching, not all at once */
-.vector-sketch :nth-child(3n) { animation-delay: 0.5s; }
-.vector-sketch :nth-child(3n + 1) { animation-delay: 1.1s; }
-.vector-sketch :nth-child(5n) { animation-delay: 1.7s; }
+/* stagger so strokes trace at different phases, not all in lockstep */
+.vector-sketch :nth-child(3n) { animation-delay: -4s; }
+.vector-sketch :nth-child(3n + 1) { animation-delay: -9s; }
+.vector-sketch :nth-child(5n) { animation-delay: -14s; }
 
 @media (prefers-reduced-motion: reduce) {
   .vector-sketch g,

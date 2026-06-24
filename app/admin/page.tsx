@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminUser } from "@/lib/admins";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
+import { AdminPlanToggle } from "@/components/AdminPlanToggle";
 
 // Owner dashboard: every user, their plan, and run activity. Gated by the
 // ADMIN_EMAILS allowlist; non-admins get a 404 (the page's existence is hidden).
@@ -102,6 +103,7 @@ export default async function AdminPage() {
                   <Th>Unlocked</Th>
                   <Th>Joined</Th>
                   <Th>Last map</Th>
+                  <Th>Test access</Th>
                 </tr>
               </thead>
               <tbody>
@@ -124,6 +126,9 @@ export default async function AdminPage() {
                     <Td className="tnum">{r.unlocked}</Td>
                     <Td className="text-ink-subtle">{fmt(r.joined)}</Td>
                     <Td className="text-ink-subtle">{fmt(r.last)}</Td>
+                    <Td>
+                      <AdminPlanToggle userId={r.id} plan={r.plan} />
+                    </Td>
                   </tr>
                 ))}
                 {rows.length === 0 && (

@@ -4,7 +4,11 @@ import { CommunityCard } from "@/components/CommunityCard";
 import { CollapsibleHeadline } from "@/components/CollapsibleHeadline";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
-import { buildCheckoutUrl, UNLOCK_PRICE_LABEL } from "@/lib/billing";
+import {
+  buildCheckoutUrl,
+  UNLOCK_PRICE_LABEL,
+  MAX_DRAFT_REGENS,
+} from "@/lib/billing";
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 
 // The map result screen. Reads a persisted run, renders ranked community cards.
@@ -24,8 +28,34 @@ export default async function MapPage({
 
   if (!run) notFound();
 
+  // Saved drafts for this run, so a returning user sees their drafts already
+  // there (no need to re-generate / re-spend the API). Keyed by community id.
+  // select("*") rather than naming regen_count, so the page still loads drafts
+  // even before migration 0005 adds that column.
+  const { data: savedDrafts } = await supabase
+    .from("drafts")
+    .select("*")
+    .eq("run_id", run.id);
+
+  const draftByCommunity = new Map<
+    number,
+    { title: string; body: string; regenLeft: number }
+  >();
+  for (const d of savedDrafts ?? []) {
+    draftByCommunity.set(d.community_id as number, {
+      title: d.title as string,
+      body: d.body as string,
+      regenLeft: Math.max(0, MAX_DRAFT_REGENS - ((d.regen_count as number) ?? 0)),
+    });
+  }
+
   const analysis = run.product_data as ProductAnalysis | null;
-  const ranked = (run.result ?? []) as RankedCommunity[];
+  const rankedRaw = (run.result ?? []) as RankedCommunity[];
+  // run.unlocked is the source of truth: when set (paid / Pro), every entry is
+  // unlocked regardless of the locked flags baked into the stored result.
+  const ranked: RankedCommunity[] = run.unlocked
+    ? rankedRaw.map((r) => ({ ...r, locked: false }))
+    : rankedRaw;
   const lockedCount = ranked.filter((r) => r.locked).length;
   // Short, stable run label for the receipt meta line.
   const runNo = String(run.id).replace(/-/g, "").slice(0, 8).toUpperCase();
@@ -82,14 +112,22 @@ export default async function MapPage({
             const locked = withRank.filter((r) => r.entry.locked);
             return (
               <>
-                <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {/* Masonry (CSS columns): an expanded draft only lengthens its
+                    own column instead of stretching the whole row, so cards stay
+                    packed and don't spread apart. */}
+                <div className="columns-1 gap-4 [column-fill:_balance] sm:columns-2 lg:columns-3">
                   {open.map(({ entry, rank }) => (
-                    <CommunityCard
+                    <div
                       key={entry.community.id}
-                      rank={rank}
-                      entry={entry}
-                      runId={run.id}
-                    />
+                      className="mb-4 break-inside-avoid"
+                    >
+                      <CommunityCard
+                        rank={rank}
+                        entry={entry}
+                        runId={run.id}
+                        initialDraft={draftByCommunity.get(entry.community.id)}
+                      />
+                    </div>
                   ))}
                 </div>
 
