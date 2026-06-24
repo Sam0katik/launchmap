@@ -28,9 +28,6 @@ export default function Privacy() {
             <h1 className="pixel text-ink" style={{ fontSize: "clamp(26px,3.4vw,38px)" }}>
               What we store, and why
             </h1>
-            <p className="mt-3 text-sm text-ink-subtle">
-              MVP policy — replace with finalized terms before public launch.
-            </p>
           </header>
 
           <LegalNav active="privacy" />

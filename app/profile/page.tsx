@@ -5,6 +5,7 @@ import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { ProUpsell } from "@/components/PlanControls";
+import { SavedDrafts } from "@/components/SavedDrafts";
 import { dailyLimitForPlan } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
 import type { ProductAnalysis } from "@/lib/types";
@@ -45,6 +46,30 @@ export default async function ProfilePage() {
   const plan = profile?.plan ?? "free";
   const dailyLimit = dailyLimitForPlan(plan);
 
+  // Label each run so a saved draft can show which project it belongs to.
+  const projectByRun = new Map<string, string>();
+  for (const r of runList) {
+    const a = r.product_data as ProductAnalysis | null;
+    projectByRun.set(
+      r.id as string,
+      a?.category?.trim() || hostnameOf(r.product_url)
+    );
+  }
+
+  const draftItems = (drafts ?? []).map((d) => {
+    const community = d.communities as
+      | { name: string; platform: string }
+      | { name: string; platform: string }[]
+      | null;
+    const c = Array.isArray(community) ? community[0] : community;
+    return {
+      runId: d.run_id as string,
+      community: c?.name ?? "Community",
+      title: d.title as string,
+      project: projectByRun.get(d.run_id as string) ?? "—",
+    };
+  });
+
   return (
     <>
       <VectorSketch variant="alt" />
@@ -55,8 +80,8 @@ export default async function ProfilePage() {
         <main className="mx-auto w-full max-w-content px-6 pb-20 pt-4">
           {/* identity header */}
           <header className="panel mb-10 px-8 pb-7 pt-6">
-            <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
-              <span>Account</span>
+            <div className="mb-3 flex items-center justify-between gap-3 text-xs uppercase tracking-widest text-ink-subtle">
+              <span>Account · Signed in with GitHub</span>
               <span>ZeroFans Labs</span>
             </div>
             <div className="receipt-rule mb-5" />
@@ -70,9 +95,6 @@ export default async function ProfilePage() {
                     {username}
                   </h1>
                 </div>
-                <p className="mt-2 text-sm text-ink-subtle">
-                  Signed in with GitHub
-                </p>
               </div>
               <div className="flex items-center gap-3">
                 {isAdminUser({
@@ -102,11 +124,13 @@ export default async function ProfilePage() {
               />
               <Stat label="Total maps" value={String(runList.length)} />
             </div>
-            <p className="mt-4 text-sm text-ink-subtle">
-              Pro lifts the daily limit and unlocks full maps — tap{" "}
-              <span className="text-ink">Upgrade to Pro</span> to see what&apos;s
-              included.
-            </p>
+            {plan !== "paid" && (
+              <p className="mt-4 text-sm text-ink-subtle">
+                Pro lifts the daily limit and unlocks full maps — tap{" "}
+                <span className="text-ink">Upgrade to Pro</span> to see
+                what&apos;s included.
+              </p>
+            )}
           </section>
 
           {/* run history */}
@@ -164,44 +188,8 @@ export default async function ProfilePage() {
             )}
           </section>
 
-          {/* saved drafts — everything in one place */}
-          <section className="mb-12">
-            <h2 className="eyebrow mb-3">Saved drafts</h2>
-            {(drafts ?? []).length === 0 ? (
-              <div className="rounded-md border-2 border-dashed border-hairline-strong/40 px-6 py-8 text-center">
-                <p className="text-sm text-ink-subtle">
-                  No drafts yet. Generate one from any unlocked community on a map.
-                </p>
-              </div>
-            ) : (
-              <ul className="space-y-3">
-                {(drafts ?? []).map((d, i) => {
-                  const community = d.communities as
-                    | { name: string; platform: string }
-                    | { name: string; platform: string }[]
-                    | null;
-                  const c = Array.isArray(community) ? community[0] : community;
-                  return (
-                    <li
-                      key={`${d.run_id}-${i}`}
-                      className="rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4"
-                    >
-                      <div className="mb-1 flex items-center justify-between gap-3">
-                        <span className="text-ink">{c?.name ?? "Community"}</span>
-                        <Link
-                          href={`/map/${d.run_id}`}
-                          className="menu-link rounded-sm text-xs text-primary"
-                        >
-                          open map →
-                        </Link>
-                      </div>
-                      <p className="truncate text-sm text-ink-muted">{d.title}</p>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+          {/* saved drafts — collapsible, each tagged with its project */}
+          <SavedDrafts items={draftItems} />
 
           {/* danger zone */}
           <section>

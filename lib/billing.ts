@@ -69,7 +69,7 @@ export const MAX_DRAFT_REGENS = 2;
 
 // Daily map (run) limit per plan. Single source of truth — used by /api/analyze
 // (enforcement) and the profile page (display).
-export const DAILY_LIMITS = { free: 3, paid: 5 } as const;
+export const DAILY_LIMITS = { free: 1, paid: 2 } as const;
 
 export function dailyLimitForPlan(plan: string | null | undefined): number {
   return plan === "paid" ? DAILY_LIMITS.paid : DAILY_LIMITS.free;
