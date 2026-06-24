@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAdminEmail } from "@/lib/admins";
+import { isAdminUser } from "@/lib/admins";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 
@@ -16,7 +16,13 @@ export default async function AdminPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
-  if (!isAdminEmail(user.email)) notFound();
+  if (
+    !isAdminUser({
+      email: user.email,
+      username: user.user_metadata?.user_name as string,
+    })
+  )
+    notFound();
 
   const admin = createAdminClient();
 

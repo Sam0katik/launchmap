@@ -6,7 +6,7 @@ import { SiteNav } from "@/components/SiteNav";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { ProUpsell } from "@/components/PlanControls";
 import { dailyLimitForPlan } from "@/lib/billing";
-import { isAdminEmail } from "@/lib/admins";
+import { isAdminUser } from "@/lib/admins";
 import type { ProductAnalysis } from "@/lib/types";
 
 // Account hub: every launch map the user has run, billing/usage, and account
@@ -69,14 +69,16 @@ export default async function ProfilePage() {
                   >
                     {username}
                   </h1>
-                  <ProUpsell plan={plan} variant="badge" />
                 </div>
                 <p className="mt-2 text-sm text-ink-subtle">
                   Signed in with GitHub
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                {isAdminEmail(user.email) && (
+                {isAdminUser({
+                  email: user.email,
+                  username: user.user_metadata?.user_name as string,
+                }) && (
                   <Link
                     href="/admin"
                     className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-ink px-4 py-2.5 text-base font-medium text-canvas hover:opacity-90"
@@ -102,7 +104,7 @@ export default async function ProfilePage() {
             </div>
             <p className="mt-4 text-sm text-ink-subtle">
               Pro lifts the daily limit and unlocks full maps — tap{" "}
-              <span className="text-ink">FREE</span> above to see what&apos;s
+              <span className="text-ink">Upgrade to Pro</span> to see what&apos;s
               included.
             </p>
           </section>

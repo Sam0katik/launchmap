@@ -24,9 +24,6 @@ export default function Terms() {
             <h1 className="pixel text-ink" style={{ fontSize: "clamp(26px,3.4vw,38px)" }}>
               Terms of Service
             </h1>
-            <p className="mt-3 text-sm text-ink-subtle">
-              Last updated {new Date().toLocaleDateString()}.
-            </p>
           </header>
 
           <LegalNav active="terms" />
@@ -102,8 +99,7 @@ export default function Terms() {
 
             <Section title="8. Changes & contact">
               <p>
-                We may update these terms; material changes will be reflected by
-                the date above. Questions:{" "}
+                We may update these terms from time to time. Questions:{" "}
                 <Link href="/contact" className="text-primary hover:underline">
                   contact us
                 </Link>

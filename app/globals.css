@@ -93,8 +93,23 @@ body {
 .mascot-bob {
   animation: mascot-bob 3s ease-in-out infinite;
 }
+
+/* Mascot "flying" — a continuous airborne glide: drifts forward, lifts, and
+   pitches slightly, so the plane reads as in-flight rather than hovering. */
+@keyframes mascot-fly {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(7px, -7px) rotate(-4deg); }
+  50%  { transform: translate(0, -11px) rotate(0deg); }
+  75%  { transform: translate(-6px, -6px) rotate(3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+.mascot-fly {
+  animation: mascot-fly 5s ease-in-out infinite;
+  will-change: transform;
+}
 @media (prefers-reduced-motion: reduce) {
-  .mascot-bob { animation: none; }
+  .mascot-bob,
+  .mascot-fly { animation: none; }
 }
 
 /* Dynamic numbers (% match, counters) must not jitter as digits change. */
@@ -222,11 +237,16 @@ body {
   55%, 100% { stroke-dashoffset: 0; }
 }
 @keyframes sketch-drift {
-  0%, 100% { transform: translate(0px, 0px); }
-  50% { transform: translate(10px, -8px); }
+  0%   { transform: translate(0px, 0px) rotate(0deg); }
+  25%  { transform: translate(26px, -16px) rotate(0.4deg); }
+  50%  { transform: translate(8px, 22px) rotate(-0.3deg); }
+  75%  { transform: translate(-22px, 10px) rotate(0.5deg); }
+  100% { transform: translate(0px, 0px) rotate(0deg); }
 }
 .vector-sketch g {
-  animation: sketch-drift 22s ease-in-out infinite;
+  transform-origin: center;
+  /* always-on, smooth, slow loop so the backdrop is perceptibly alive */
+  animation: sketch-drift 30s ease-in-out infinite;
 }
 .vector-sketch circle,
 .vector-sketch line,

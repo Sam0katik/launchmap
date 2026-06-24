@@ -88,17 +88,18 @@ export function CardActions({
     <div className="space-y-3">
       {draft && (
         <div className="rounded-sm border border-hairline bg-canvas/60 p-3 text-xs">
-          {/* collapsible header — keeps the card compact until expanded */}
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="focus-ring flex w-full items-center justify-between rounded-sm"
-            aria-expanded={open}
-          >
+          {/* collapsible header — keeps the card compact until expanded. The
+              toggle is a distinct, larger button set apart from the label. */}
+          <div className="flex items-center justify-between gap-3">
             <span className="eyebrow text-[10px] text-ink">✦ Draft ready</span>
-            <span className="text-[11px] text-ink-muted">
-              {open ? "− hide" : "+ show full"}
-            </span>
-          </button>
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-3"
+              aria-expanded={open}
+            >
+              {open ? "− Hide" : "+ Show full"}
+            </button>
+          </div>
 
           {open && (
             <div className="mt-3 space-y-2">

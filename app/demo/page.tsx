@@ -59,7 +59,7 @@ export default function DemoPage({
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ranked.map((entry, i) => (
           <CommunityCard key={entry.community.id} rank={i + 1} entry={entry} />
         ))}

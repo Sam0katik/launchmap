@@ -6,9 +6,13 @@
 export function PaperPlane({
   size = 56,
   bob = false,
+  fly = false,
 }: {
   size?: number;
   bob?: boolean;
+  /** Continuous "flying" drift — gentle forward glide with a slight pitch,
+   *  for headers where the plane should feel airborne, not just bobbing. */
+  fly?: boolean;
 }) {
   // 18×13 grid. [x, y, width], height 1.
   const top: Array<[number, number, number]> = [
@@ -34,7 +38,7 @@ export function PaperPlane({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      className={bob ? "mascot-bob" : undefined}
+      className={fly ? "mascot-fly" : bob ? "mascot-bob" : undefined}
       style={{ shapeRendering: "crispEdges" }}
     >
       {/* lit top wing — ink */}

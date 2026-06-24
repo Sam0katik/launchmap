@@ -42,8 +42,6 @@ export default async function MapPage({
           <CollapsibleHeadline
             summary={analysis?.product_summary ?? ""}
             fallback={run.product_url}
-            category={analysis?.category}
-            icp={analysis?.icp}
             runNo={runNo}
           />
 
@@ -84,7 +82,7 @@ export default async function MapPage({
             const locked = withRank.filter((r) => r.entry.locked);
             return (
               <>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {open.map(({ entry, rank }) => (
                     <CommunityCard
                       key={entry.community.id}
@@ -100,7 +98,7 @@ export default async function MapPage({
                     <h2 className="eyebrow mb-3 mt-10">
                       Locked · {locked.length} more
                     </h2>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {locked.map(({ entry, rank }) => (
                         <CommunityCard
                           key={entry.community.id}
