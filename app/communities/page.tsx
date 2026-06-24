@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import communities from "@/data/communities.json";
+import { PaperPlane } from "@/components/PaperPlane";
 import type { Community } from "@/lib/types";
 
 // Convenient read-only access to the whole community DB: searchable, filterable
@@ -48,6 +49,9 @@ export default function CommunitiesPage() {
       </nav>
 
       <header className="mb-6">
+        <div className="mb-2">
+          <PaperPlane size={44} fly />
+        </div>
         <h1 className="display-lg mb-2 text-ink">Community database</h1>
         <p className="readable text-sm text-ink-subtle">
           The curated catalog. Add rows with <code className="text-ink-muted">npm run db:add</code>{" "}

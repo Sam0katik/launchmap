@@ -23,9 +23,6 @@ export default function Refunds() {
             <h1 className="pixel text-ink" style={{ fontSize: "clamp(26px,3.4vw,38px)" }}>
               Refund &amp; cancellation
             </h1>
-            <p className="mt-3 text-sm text-ink-subtle">
-              Last updated {new Date().toLocaleDateString()}.
-            </p>
           </header>
 
           <LegalNav active="refunds" />

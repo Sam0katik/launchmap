@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- paper-plane silhouette, no background — orange so it shows on light and dark tabs -->
-  <path d="M3 6 L30 16 L3 26 L10 16 Z" fill="#ff6a14"/>
-  <path d="M10 16 L30 16 L3 26 Z" fill="#d2560f"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" shape-rendering="crispEdges">
+  <!-- pixel paper-plane dart, right-pointing — orange so it reads on light and dark tabs -->
+  <!-- lit top wing -->
+  <rect x="2" y="2" width="4" height="2" fill="#ff6a14"/>
+  <rect x="2" y="4" width="8" height="2" fill="#ff6a14"/>
+  <!-- centre row reaching the sharp nose at the right tip -->
+  <rect x="2" y="6" width="12" height="2" fill="#ff8a3d"/>
+  <!-- shaded underside -->
+  <rect x="2" y="8" width="8" height="2" fill="#d2560f"/>
+  <rect x="2" y="10" width="4" height="2" fill="#d2560f"/>
 </svg>

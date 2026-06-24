@@ -11,14 +11,10 @@ import { PaperPlane } from "@/components/PaperPlane";
 export function CollapsibleHeadline({
   summary,
   fallback,
-  category,
-  icp,
   runNo,
 }: {
   summary: string;
   fallback: string;
-  category?: string;
-  icp?: string;
   runNo: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -35,7 +31,7 @@ export function CollapsibleHeadline({
       <div className="receipt-rule mb-5" />
 
       <div className="mb-3">
-        <PaperPlane size={52} bob />
+        <PaperPlane size={52} fly />
       </div>
 
       <h1
@@ -48,14 +44,6 @@ export function CollapsibleHeadline({
       >
         {text}
       </h1>
-
-      {(category || icp) && (
-        <p className="mt-3 text-sm text-ink-subtle">
-          {category}
-          {category && icp ? " · for " : ""}
-          {icp}
-        </p>
-      )}
 
       {longish && (
         <button

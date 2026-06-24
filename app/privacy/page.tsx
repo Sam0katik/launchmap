@@ -29,8 +29,7 @@ export default function Privacy() {
               What we store, and why
             </h1>
             <p className="mt-3 text-sm text-ink-subtle">
-              Last updated {new Date().toLocaleDateString()}. MVP policy — replace
-              with finalized terms before public launch.
+              MVP policy — replace with finalized terms before public launch.
             </p>
           </header>
 
@@ -89,12 +88,21 @@ export default function Privacy() {
                   identity only.
                 </li>
                 <li>
-                  <strong className="text-ink">Lemon Squeezy</strong> — merchant
-                  of record for payments. They handle checkout and card data; we
-                  never see your card details.
+                  <strong className="text-ink">Our payment provider</strong> —
+                  handles checkout and payment data when you unlock a map; we
+                  never see or store your card/payment details.
                 </li>
               </ul>
               <p className="mt-3">We do not sell your data.</p>
+            </Section>
+
+            <Section title="Cookies">
+              <p>
+                We use a single essential cookie: the Supabase session that keeps
+                you signed in. It is strictly necessary for the site to work, so
+                no consent banner is required. We set no advertising, analytics,
+                or cross-site tracking cookies.
+              </p>
             </Section>
 
             <Section title="Payments">

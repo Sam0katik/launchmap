@@ -39,8 +39,14 @@ export async function analyzeProduct(
           `  "product_summary": "one sentence on what it does",\n` +
           `  "category": "short product category",\n` +
           `  "icp": "ideal customer profile in one phrase",\n` +
-          `  "niche_tags": ["3-5", "lowercase", "tags"]\n` +
-          `}`,
+          `  "niche_tags": ["5-8", "lowercase", "tags"]\n` +
+          `}\n\n` +
+          `Tag rules: order from MOST specific to most general. Prefer precise ` +
+          `tags that describe THIS product (e.g. "nocode", "devtool", ` +
+          `"opensource", "marketplace", "chrome-extension", "fintech") over ` +
+          `generic ones like "saas" or "startup". Single words or hyphenated, ` +
+          `no spaces. These tags decide which communities match, so be accurate, ` +
+          `not broad.`,
       },
     ],
   });
@@ -75,38 +81,55 @@ export async function generateDraft(
   productUrl: string
 ): Promise<{ title: string; body: string }> {
   const platformGuide = platformGuidance(community.platform);
+  const tags = analysis.niche_tags.filter(Boolean).join(", ");
 
   const msg = await client.messages.create({
     model: MODEL_DRAFT,
-    max_tokens: 900,
+    max_tokens: 700,
+    // A touch of temperature so two products never get the same shaped post.
+    temperature: 0.85,
     system:
-      "You write ONE launch post draft for a specific community. The post must " +
-      "obey that community's stated rules and match its culture exactly — a " +
-      "draft that ignores the rules gets the user removed or banned, which is " +
-      "the whole problem this product exists to prevent. Write a genuine, " +
-      "specific, first-person story, never an ad or a generic template. " +
-      "Output PLAIN TEXT only: no markdown, no asterisks, no bold, no headings.",
+      "You write ONE launch post draft for a specific online community, on " +
+      "behalf of the indie maker who built the product. Your single most " +
+      "important job is that this post does NOT get the user removed, " +
+      "shadowbanned, or flagged as spam — that is the entire reason this tool " +
+      "exists. To achieve that the post must: (1) obey the community's stated " +
+      "self-promo rules exactly, (2) sound like a real human wrote it about " +
+      "this specific product — never a template that could describe any tool, " +
+      "(3) lead with substance (a problem, a story, or a concrete detail), not " +
+      "a pitch, and mention the product/link only once and naturally, (4) be " +
+      "SHORT. Long promotional walls of text are the #1 thing that gets " +
+      "removed. Output PLAIN TEXT only: no markdown, asterisks, bold, headings, " +
+      "or emoji.",
     messages: [
       {
         role: "user",
         content:
           `Write a post for ${community.name} (${community.platform}).\n\n` +
-          `PRODUCT\n` +
+          `THIS SPECIFIC PRODUCT (make the post unmistakably about it)\n` +
           `- What it is: ${analysis.product_summary}\n` +
           `- Category: ${analysis.category}\n` +
-          `- Audience: ${analysis.icp}\n` +
+          `- Who it's for: ${analysis.icp}\n` +
+          (tags ? `- Specifics: ${tags}\n` : "") +
           `- URL: ${productUrl}\n\n` +
-          `COMMUNITY RULES (follow exactly)\n` +
+          `COMMUNITY RULES (follow exactly — breaking these = a ban)\n` +
           `- Self-promo policy: ${community.self_promo_policy}` +
           (community.self_promo_note ? `\n- Note: ${community.self_promo_note}` : "") +
           (community.rules_summary ? `\n- Rules: ${community.rules_summary}` : "") +
           `\n\n` +
           `HOW THIS PLATFORM EXPECTS POSTS\n${platformGuide}\n\n` +
-          `Make the post unmistakably about THIS product and audience — no ` +
-          `interchangeable filler that could describe any tool. If the policy ` +
-          `is megathread/comment-only, write it to fit that thread/comment, not ` +
-          `a standalone ad.\n\n` +
-          `Return ONLY JSON, plain text values, no markdown: ` +
+          `HARD REQUIREMENTS\n` +
+          `- Reference at least one concrete detail of THIS product (a real ` +
+          `feature, the specific problem it solves, or who uses it). Zero ` +
+          `interchangeable filler.\n` +
+          `- Ask a genuine question or invite specific feedback at the end so ` +
+          `it reads as a discussion starter, not an ad.\n` +
+          `- No hype words (best, revolutionary, game-changer, ultimate, ` +
+          `amazing, effortless). Plain, honest, slightly understated.\n` +
+          `- If the policy is megathread_only or comment_only, write a short ` +
+          `comment for that thread, NOT a standalone post, and set the title to ` +
+          `the thread/comment context.\n\n` +
+          `Return ONLY JSON, plain-text values, no markdown:\n` +
           `{ "title": "...", "body": "..." }`,
       },
     ],
@@ -122,27 +145,43 @@ export async function generateDraft(
   };
 }
 
-/** Per-platform posting culture, injected into the draft prompt. */
+/** Per-platform posting culture + length budget, injected into the draft
+ *  prompt. Length caps matter most: over-long posts are the top trigger for
+ *  spam removal, and they make the on-card draft unwieldy. */
 function platformGuidance(platform: string): string {
   switch (platform) {
     case "reddit":
       return (
-        "Reddit: casual, first-person, story-first. Open with context/why you " +
-        "built it, what it does, the tech, and the SPECIFIC feedback you want. " +
-        "No marketing voice, no superlatives. A bare link reads as spam."
+        "Reddit: casual, first-person, story-first. Open with the problem or " +
+        "the reason you built it, then what it does in one or two plain " +
+        "sentences, then the specific feedback you want. Keep the whole body " +
+        "under ~120 words / 5 short paragraphs max — Reddit punishes long " +
+        "self-promo. One link, in-line, not a bare link. Title: lowercase-ish, " +
+        "specific, no clickbait, under ~12 words."
       );
     case "hackernews":
       return (
-        "Hacker News (Show HN): modest and technical, addressed to fellow " +
-        "engineers. NO superlatives (best/fastest/first). Go deep on how it " +
-        "works and the interesting technical decisions."
+        "Hacker News (Show HN): modest and technical, to fellow engineers. NO " +
+        "superlatives. 2–4 sentences on what it does and the one genuinely " +
+        'interesting technical decision. Title must start with "Show HN: ". ' +
+        "Keep the body under ~90 words."
       );
     case "x":
-      return "X: one tight hook, concrete and specific, conversational. Short.";
+      return (
+        "X: one tight hook, concrete and specific, conversational, under ~280 " +
+        "characters total. Title = the tweet itself; keep body empty or a one-" +
+        "line follow-up."
+      );
     case "discord":
-      return "Discord: friendly and brief, like talking to peers in a channel.";
+      return (
+        "Discord: friendly and brief, like talking to peers in a channel. 2–3 " +
+        "sentences, no pitch energy, under ~60 words."
+      );
     default:
-      return "Directory: a clear, concrete one-paragraph description of the value.";
+      return (
+        "Directory: one concrete paragraph (under ~60 words) on the value and " +
+        "who it's for. Title = the product's tagline, specific and plain."
+      );
   }
 }
 
