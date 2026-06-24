@@ -63,6 +63,10 @@ export function buildCheckoutUrl(runId: string): string | null {
 // Price shown in the UI before checkout exists. Single source of truth.
 export const UNLOCK_PRICE_LABEL = "$9 one-time";
 
+// How many times a single draft may be regenerated (on top of the first
+// generation) before we refuse — caps Anthropic spend per (run, community).
+export const MAX_DRAFT_REGENS = 2;
+
 // Daily map (run) limit per plan. Single source of truth — used by /api/analyze
 // (enforcement) and the profile page (display).
 export const DAILY_LIMITS = { free: 3, paid: 5 } as const;

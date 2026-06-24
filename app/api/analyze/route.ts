@@ -63,6 +63,8 @@ export async function POST(req: NextRequest) {
     .eq("id", user.id)
     .maybeSingle();
   const dailyLimit = dailyLimitForPlan(profile?.plan);
+  // Pro users have no per-map paywall — their maps come fully unlocked.
+  const isPaid = profile?.plan === "paid";
 
   const daySince = new Date(Date.now() - 24 * 3600_000).toISOString();
   const { count } = await supabase
@@ -94,7 +96,7 @@ export async function POST(req: NextRequest) {
     const ranked = rankCommunities(
       analysis,
       (communities ?? []) as Community[],
-      false // new run starts locked (free tier)
+      isPaid // Pro → fully unlocked; free → top 4 only
     );
 
     // 8. Persist the run.
@@ -105,7 +107,7 @@ export async function POST(req: NextRequest) {
         product_url: url,
         product_data: analysis,
         result: ranked,
-        unlocked: false,
+        unlocked: isPaid,
       })
       .select("id")
       .single();
