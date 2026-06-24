@@ -39,6 +39,13 @@ export async function POST(req: NextRequest) {
   }
   const { url, description } = parsed.data;
 
+  // SSRF guard: we fetch this URL server-side, so refuse anything that points at
+  // localhost, link-local (cloud metadata) or private network ranges, and only
+  // allow http(s). Stops a submitted URL from reading internal services.
+  if (!isSafePublicUrl(url)) {
+    return NextResponse.json({ error: "invalid_url" }, { status: 400 });
+  }
+
   // 3. URL cache — return an existing recent run for the same URL, no AI spend.
   const cacheSince = new Date(
     Date.now() - URL_CACHE_HOURS * 3600_000
@@ -121,6 +128,35 @@ export async function POST(req: NextRequest) {
     console.error("[analyze] failed:", e);
     return NextResponse.json({ error: "analysis_failed" }, { status: 502 });
   }
+}
+
+/** True only for public http(s) URLs — blocks localhost, link-local (cloud
+ *  metadata at 169.254.169.254) and RFC-1918 private ranges to prevent SSRF. */
+function isSafePublicUrl(raw: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+
+  const host = u.hostname.toLowerCase();
+  if (host === "localhost" || host.endsWith(".localhost")) return false;
+  if (host === "0.0.0.0" || host === "::1" || host === "[::1]") return false;
+  if (host === "metadata" || host.endsWith(".internal")) return false;
+
+  // Literal IPv4 in private / loopback / link-local ranges.
+  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const [a, b] = [Number(m[1]), Number(m[2])];
+    if (a === 127 || a === 10 || a === 0) return false;
+    if (a === 169 && b === 254) return false; // link-local / metadata
+    if (a === 192 && b === 168) return false;
+    if (a === 172 && b >= 16 && b <= 31) return false;
+    if (a === 100 && b >= 64 && b <= 127) return false; // CGNAT
+  }
+  return true;
 }
 
 /** Fetch a landing page and crudely strip it to text. Never throws. */

@@ -4,6 +4,7 @@ import { VectorSketch } from "@/components/VectorSketch";
 import { ClippedNote } from "@/components/ClippedNote";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
+import { SidePaperPlane } from "@/components/SidePaperPlane";
 
 // TODO: replace with the real destination for the "scan to launch" barcode.
 const SCAN_TO_LAUNCH_URL = "#";
@@ -41,6 +42,11 @@ export default function Home() {
                 <span>No. 0207</span>
               </div>
               <div className="receipt-rule mb-8" />
+
+              {/* side-view paper plane so it's clearly an origami plane */}
+              <div className="mb-5 flex justify-center">
+                <SidePaperPlane size={92} fly />
+              </div>
 
               <h1 className="display-xl mb-9 text-ink">
                 Light the way
