@@ -12,7 +12,7 @@ import {
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 
 // The map result screen. Reads a persisted run, renders ranked community cards.
-// Free tier shows the top 4 fully; the rest are locked until unlocked.
+// Basic (free) analysis shows the top publics; the rest unlock per-map for $3.
 export default async function MapPage({
   params,
 }: {
@@ -77,9 +77,10 @@ export default async function MapPage({
 
           {!run.unlocked && lockedCount > 0 && (
             <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
-              <p className="truncate text-sm text-ink-muted">
-                <span className="tnum">{lockedCount}</span> locked · unlock the
-                full map{" "}
+              <p className="text-sm text-ink-muted">
+                Paid analysis: unlock all{" "}
+                <span className="tnum">{lockedCount}</span> more publics + 2
+                tailored posts each{" "}
                 <span className="text-ink-subtle">— {UNLOCK_PRICE_LABEL}</span>
               </p>
               {checkoutUrl ? (
@@ -87,17 +88,17 @@ export default async function MapPage({
                   href={checkoutUrl}
                   className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-hover"
                 >
-                  Unlock full map →
+                  Unlock all publics → {UNLOCK_PRICE_LABEL}
                 </a>
               ) : (
-                // Billing not provisioned yet (Stage 6). Keep the CTA visible but
+                // Billing provider not provisioned yet. Keep the CTA visible but
                 // inert so the layout and intent are already in place.
                 <button
                   disabled
-                  title="Checkout goes live in Stage 6"
+                  title="Payment provider not connected yet"
                   className="shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-sm font-medium text-white opacity-60"
                 >
-                  Unlock full map
+                  Unlock all publics — {UNLOCK_PRICE_LABEL}
                 </button>
               )}
             </div>

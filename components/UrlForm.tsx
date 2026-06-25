@@ -104,8 +104,8 @@ function messageFor(code: string): string {
   switch (code) {
     case "auth_required":
       return "Sign in with GitHub first.";
-    case "rate_limited":
-      return "Daily free limit reached. Come back tomorrow or upgrade.";
+    case "map_limit":
+      return "You can keep 2 maps at a time. Delete one in your profile to analyze a new product.";
     case "invalid_input":
       return "Enter a valid URL.";
     case "empty_landing":

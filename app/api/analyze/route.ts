@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { analyzeProduct } from "@/lib/anthropic";
 import { rankCommunities } from "@/lib/matching";
-import { dailyLimitForPlan } from "@/lib/billing";
+import { MAX_MAPS_PER_ACCOUNT } from "@/lib/billing";
 import type { Community } from "@/lib/types";
 
 // POST /api/analyze
@@ -63,24 +63,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ runId: cached.id, cached: true });
   }
 
-  // 4. Daily rate limit — limit depends on the user's plan (free vs paid).
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan")
-    .eq("id", user.id)
-    .maybeSingle();
-  const dailyLimit = dailyLimitForPlan(profile?.plan);
-  // Pro users have no per-map paywall — their maps come fully unlocked.
-  const isPaid = profile?.plan === "paid";
-
-  const daySince = new Date(Date.now() - 24 * 3600_000).toISOString();
+  // 4. Account cap — a user keeps at most MAX_MAPS_PER_ACCOUNT maps at once.
+  // The analysis itself is free; deleting a map frees a slot.
   const { count } = await supabase
     .from("runs")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .gte("created_at", daySince);
-  if ((count ?? 0) >= dailyLimit) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+    .eq("user_id", user.id);
+  if ((count ?? 0) >= MAX_MAPS_PER_ACCOUNT) {
+    return NextResponse.json({ error: "map_limit" }, { status: 429 });
   }
 
   // Distinguish "AI key not set in this environment" from a real API failure.
@@ -103,7 +93,7 @@ export async function POST(req: NextRequest) {
     const ranked = rankCommunities(
       analysis,
       (communities ?? []) as Community[],
-      isPaid // Pro → fully unlocked; free → top 4 only
+      false // basic analysis: top publics free, rest unlock with the $3 payment
     );
 
     // 8. Persist the run.
@@ -114,7 +104,7 @@ export async function POST(req: NextRequest) {
         product_url: url,
         product_data: analysis,
         result: ranked,
-        unlocked: isPaid,
+        unlocked: false,
       })
       .select("id")
       .single();

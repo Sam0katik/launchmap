@@ -61,16 +61,13 @@ export function buildCheckoutUrl(runId: string): string | null {
 }
 
 // Price shown in the UI before checkout exists. Single source of truth.
-export const UNLOCK_PRICE_LABEL = "$9 one-time";
+// One-time, per project (map) — unlocks all publics + posts.
+export const UNLOCK_PRICE_LABEL = "$3 one-time";
 
-// How many times a single draft may be regenerated (on top of the first
-// generation) before we refuse — caps Anthropic spend per (run, community).
-export const MAX_DRAFT_REGENS = 2;
+// How many posts can be generated per community (1 initial + regenerations).
+// Set so each public gets up to 2 posts to choose from.
+export const MAX_DRAFT_REGENS = 1;
 
-// Daily map (run) limit per plan. Single source of truth — used by /api/analyze
-// (enforcement) and the profile page (display).
-export const DAILY_LIMITS = { free: 1, paid: 2 } as const;
-
-export function dailyLimitForPlan(plan: string | null | undefined): number {
-  return plan === "paid" ? DAILY_LIMITS.paid : DAILY_LIMITS.free;
-}
+// Max launch maps (roadmaps) a user may keep at once. Each gets a free basic
+// analysis; deleting one frees a slot. Paid unlock is per-map, not per-account.
+export const MAX_MAPS_PER_ACCOUNT = 2;

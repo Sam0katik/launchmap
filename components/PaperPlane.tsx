@@ -7,13 +7,20 @@ export function PaperPlane({
   size = 56,
   bob = false,
   fly = false,
+  tone = "ink",
 }: {
   size?: number;
   bob?: boolean;
   /** Continuous "flying" drift — gentle forward glide with a slight pitch,
    *  for headers where the plane should feel airborne, not just bobbing. */
   fly?: boolean;
+  /** Colour scheme: "ink" (dark, default) or "white" (white origami). */
+  tone?: "ink" | "white";
 }) {
+  const colors =
+    tone === "white"
+      ? { top: "#ffffff", under: "#c9c6bf", fold: "#8a877f" }
+      : { top: "#1b1a16", under: "#56524a", fold: "#efece2" };
   // 18×13 grid. [x, y, width], height 1.
   const top: Array<[number, number, number]> = [
     [3, 1, 2],
@@ -41,16 +48,16 @@ export function PaperPlane({
       className={fly ? "mascot-fly" : bob ? "mascot-bob" : undefined}
       style={{ shapeRendering: "crispEdges" }}
     >
-      {/* lit top wing — ink */}
+      {/* lit top wing */}
       {top.map(([x, y, w], i) => (
-        <rect key={`t${i}`} x={x} y={y} width={w} height={1} fill="#1b1a16" />
+        <rect key={`t${i}`} x={x} y={y} width={w} height={1} fill={colors.top} />
       ))}
       {/* shaded underside — mid tone */}
       {under.map(([x, y, w], i) => (
-        <rect key={`u${i}`} x={x} y={y} width={w} height={1} fill="#56524a" />
+        <rect key={`u${i}`} x={x} y={y} width={w} height={1} fill={colors.under} />
       ))}
-      {/* centre fold ridge (cream) reads as the paper fold between the wings */}
-      <rect x={8} y={6} width={8} height={1} fill="#efece2" />
+      {/* centre fold ridge reads as the paper fold between the wings */}
+      <rect x={8} y={6} width={8} height={1} fill={colors.fold} />
       {/* sharp orange nose at the right tip of the centre row */}
       <rect x={15} y={6} width={3} height={1} fill="#ff6a14" />
     </svg>

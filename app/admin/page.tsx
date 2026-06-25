@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminUser } from "@/lib/admins";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
-import { AdminPlanToggle } from "@/components/AdminPlanToggle";
+import { AdminUnlockToggle } from "@/components/AdminUnlockToggle";
 
 // Owner dashboard: every user, their plan, and run activity. Gated by the
 // ADMIN_EMAILS allowlist; non-admins get a 404 (the page's existence is hidden).
@@ -35,9 +35,7 @@ export default async function AdminPage() {
   ]);
 
   const authUsers = usersRes.data?.users ?? [];
-  const planById = new Map(
-    (profilesRes.data ?? []).map((p) => [p.id as string, p.plan as string])
-  );
+  void profilesRes; // plans removed; profiles no longer surfaced here
 
   // Aggregate run activity per user.
   type Agg = { total: number; unlocked: number; last: string | null };
@@ -59,7 +57,6 @@ export default async function AdminPage() {
         id: u.id,
         name: (u.user_metadata?.user_name as string) ?? "—",
         email: u.email ?? "—",
-        plan: planById.get(u.id) ?? "free",
         joined: u.created_at,
         ...agg,
       };
@@ -67,7 +64,7 @@ export default async function AdminPage() {
     .sort((a, b) => (b.last ?? "").localeCompare(a.last ?? ""));
 
   const totalMaps = (runsRes.data ?? []).length;
-  const paidUsers = rows.filter((r) => r.plan === "paid").length;
+  const unlockedUsers = rows.filter((r) => r.unlocked > 0).length;
 
   return (
     <>
@@ -89,7 +86,7 @@ export default async function AdminPage() {
           <section className="mb-10 grid gap-4 sm:grid-cols-3">
             <Stat label="Users" value={String(rows.length)} />
             <Stat label="Maps generated" value={String(totalMaps)} />
-            <Stat label="Paid users" value={String(paidUsers)} />
+            <Stat label="Users with unlocks" value={String(unlockedUsers)} />
           </section>
 
           <h2 className="eyebrow mb-3">All users</h2>
@@ -98,7 +95,6 @@ export default async function AdminPage() {
               <thead>
                 <tr className="border-b-2 border-hairline-strong text-left text-xs uppercase tracking-widest text-ink-subtle">
                   <Th>User</Th>
-                  <Th>Plan</Th>
                   <Th>Maps</Th>
                   <Th>Unlocked</Th>
                   <Th>Joined</Th>
@@ -113,21 +109,15 @@ export default async function AdminPage() {
                       <span className="text-ink">{r.name}</span>
                       <span className="block text-xs text-ink-subtle">{r.email}</span>
                     </Td>
-                    <Td>
-                      <span
-                        className={
-                          r.plan === "paid" ? "text-success" : "text-ink-muted"
-                        }
-                      >
-                        {r.plan}
-                      </span>
-                    </Td>
                     <Td className="tnum">{r.total}</Td>
                     <Td className="tnum">{r.unlocked}</Td>
                     <Td className="text-ink-subtle">{fmt(r.joined)}</Td>
                     <Td className="text-ink-subtle">{fmt(r.last)}</Td>
                     <Td>
-                      <AdminPlanToggle userId={r.id} plan={r.plan} />
+                      <AdminUnlockToggle
+                        userId={r.id}
+                        unlocked={r.unlocked > 0}
+                      />
                     </Td>
                   </tr>
                 ))}
