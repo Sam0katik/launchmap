@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import communities from "@/data/communities.json";
 import { PaperPlane } from "@/components/PaperPlane";
+import { RedditGuide } from "@/components/RedditGuide";
 import type { Community } from "@/lib/types";
 
 // Convenient read-only access to the whole community DB: searchable, filterable
@@ -54,11 +55,12 @@ export default function CommunitiesPage() {
         </div>
         <h1 className="display-lg mb-2 text-ink">Community database</h1>
         <p className="readable text-sm text-ink-subtle">
-          The curated catalog. Add rows with <code className="text-ink-muted">npm run db:add</code>{" "}
-          (or edit <code className="text-ink-muted">data/communities.json</code> +{" "}
-          <code className="text-ink-muted">npm run db:seed-gen</code>).
+          The curated catalog of where to launch — with each community&apos;s
+          self-promo policy, karma bar, and best time to post.
         </p>
       </header>
+
+      <RedditGuide />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <input

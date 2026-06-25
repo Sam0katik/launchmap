@@ -3,26 +3,25 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Admin-only control: flip a user's plan between free and Pro. Used from the
-// operator dashboard to grant test access (Pro unlocks full maps + drafts).
-export function AdminPlanToggle({
+// Admin-only control: unlock (or relock) all of a user's maps so the operator
+// can preview the paid "all publics + posts" experience for testing.
+export function AdminUnlockToggle({
   userId,
-  plan,
+  unlocked,
 }: {
   userId: string;
-  plan: string;
+  unlocked: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const router = useRouter();
-  const next = plan === "paid" ? "free" : "paid";
 
   async function toggle() {
     setBusy(true);
     try {
-      const res = await fetch("/api/admin/set-plan", {
+      const res = await fetch("/api/admin/test-unlock", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ userId, plan: next }),
+        body: JSON.stringify({ userId, unlocked: !unlocked }),
       });
       if (res.ok) router.refresh();
     } finally {
@@ -36,7 +35,7 @@ export function AdminPlanToggle({
       disabled={busy}
       className="focus-ring btn-press rounded-sm border-2 border-hairline-strong bg-surface-2 px-2.5 py-1 text-xs text-ink hover:bg-surface-3 disabled:opacity-50"
     >
-      {busy ? "…" : next === "paid" ? "Make Pro" : "Make Free"}
+      {busy ? "…" : unlocked ? "Lock maps" : "Unlock maps"}
     </button>
   );
 }

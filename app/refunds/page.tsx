@@ -30,9 +30,10 @@ export default function Refunds() {
           <div className="mt-8 space-y-9 text-sm leading-relaxed text-ink-muted">
             <Section title="Digital goods">
               <p>
-                ZeroFans sells digital access (map unlocks and/or a Pro plan).
-                Because access and AI generation are delivered immediately, sales
-                are generally final once the purchased feature has been used.
+                ZeroFans sells one-time digital access — a per-project map unlock
+                (all publics + tailored posts). Because access and AI generation
+                are delivered immediately, sales are generally final once the
+                purchased map has been used.
               </p>
             </Section>
 
@@ -53,9 +54,8 @@ export default function Refunds() {
 
             <Section title="Cancellation">
               <p>
-                If a recurring Pro plan is offered, you can cancel anytime; access
-                continues until the end of the paid period and is not prorated.
-                One-time map unlocks are not recurring and require no cancellation.
+                Map unlocks are one-time purchases — there is no recurring
+                subscription and nothing to cancel.
               </p>
             </Section>
 

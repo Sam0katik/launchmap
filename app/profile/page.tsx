@@ -4,15 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
-import { ProUpsell } from "@/components/PlanControls";
+import { DeleteMapButton } from "@/components/DeleteMapButton";
 import { SavedDrafts } from "@/components/SavedDrafts";
-import { dailyLimitForPlan } from "@/lib/billing";
+import { MAX_MAPS_PER_ACCOUNT } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
 import type { ProductAnalysis } from "@/lib/types";
 
-// Account hub: every launch map the user has run, billing/usage, and account
-// management (sign-out lives in the nav; deletion lives here). Server component,
-// RLS-scoped — a user only ever sees their own rows.
+// Account hub: every launch map the user has run, usage, and account management
+// (sign-out lives in the nav; deletion lives here). Server component, RLS-scoped
+// — a user only ever sees their own rows.
 export default async function ProfilePage() {
   const supabase = createClient();
 
@@ -21,9 +21,8 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
-  // Profile (plan) + this user's runs + saved drafts, in parallel.
-  const [{ data: profile }, { data: runs }, { data: drafts }] = await Promise.all([
-    supabase.from("profiles").select("plan, created_at").eq("id", user.id).maybeSingle(),
+  // This user's runs + saved drafts, in parallel.
+  const [{ data: runs }, { data: drafts }] = await Promise.all([
     supabase
       .from("runs")
       .select("id, product_url, product_data, unlocked, created_at")
@@ -36,15 +35,9 @@ export default async function ProfilePage() {
   ]);
 
   const runList = runs ?? [];
-  const since = Date.now() - 24 * 3600_000;
-  const usedToday = runList.filter(
-    (r) => new Date(r.created_at).getTime() >= since
-  ).length;
 
   const username =
     (user.user_metadata?.user_name as string) ?? user.email ?? "you";
-  const plan = profile?.plan ?? "free";
-  const dailyLimit = dailyLimitForPlan(plan);
 
   // Label each run so a saved draft can show which project it belongs to.
   const projectByRun = new Map<string, string>();
@@ -108,29 +101,28 @@ export default async function ProfilePage() {
                     ⚙ Admin panel
                   </Link>
                 )}
-                <ProUpsell plan={plan} variant="button" />
               </div>
             </div>
           </header>
 
-          {/* billing / usage */}
+          {/* usage */}
           <section className="mb-10">
-            <h2 className="eyebrow mb-3">Billing &amp; usage</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Stat label="Plan" value={plan === "paid" ? "Pro" : "Free"} />
+            <h2 className="eyebrow mb-3">Usage</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
               <Stat
-                label="Maps today"
-                value={`${usedToday} / ${dailyLimit}`}
+                label="Maps"
+                value={`${runList.length} / ${MAX_MAPS_PER_ACCOUNT}`}
               />
-              <Stat label="Total maps" value={String(runList.length)} />
+              <Stat
+                label="Unlocked maps"
+                value={String(runList.filter((r) => r.unlocked).length)}
+              />
             </div>
-            {plan !== "paid" && (
-              <p className="mt-4 text-sm text-ink-subtle">
-                Pro lifts the daily limit and unlocks full maps — tap{" "}
-                <span className="text-ink">Upgrade to Pro</span> to see
-                what&apos;s included.
-              </p>
-            )}
+            <p className="mt-4 text-sm text-ink-subtle">
+              You can keep {MAX_MAPS_PER_ACCOUNT} maps at once — each gets a free
+              analysis. Delete one below to analyze a new product. Unlock all
+              publics and posts on any map for a one-time {`$`}3.
+            </p>
           </section>
 
           {/* run history */}
@@ -155,10 +147,10 @@ export default async function ProfilePage() {
                   const host = hostnameOf(run.product_url);
                   const title = a?.category?.trim() || host;
                   return (
-                    <li key={run.id}>
+                    <li key={run.id} className="flex items-stretch gap-2">
                       <Link
                         href={`/map/${run.id}`}
-                        className="focus-ring btn-press flex items-center justify-between gap-4 rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4 shadow-[3px_4px_0_0_var(--color-hairline-strong)] hover:bg-surface-2"
+                        className="focus-ring btn-press flex flex-1 items-center justify-between gap-4 rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4 shadow-[3px_4px_0_0_var(--color-hairline-strong)] hover:bg-surface-2"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-ink">{title}</p>
@@ -174,13 +166,16 @@ export default async function ProfilePage() {
                                 : "border-hairline text-ink-tertiary"
                             }`}
                           >
-                            {run.unlocked ? "Unlocked" : "Free tier"}
+                            {run.unlocked ? "Unlocked" : "Basic"}
                           </span>
                           <p className="mt-1 text-xs text-ink-tertiary">
                             {new Date(run.created_at).toLocaleDateString()}
                           </p>
                         </div>
                       </Link>
+                      <div className="flex items-center">
+                        <DeleteMapButton runId={run.id} />
+                      </div>
                     </li>
                   );
                 })}
