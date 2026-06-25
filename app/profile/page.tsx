@@ -63,30 +63,6 @@ export default async function ProfilePage() {
     };
   });
 
-  // Label each run so a saved draft can show which project it belongs to.
-  const projectByRun = new Map<string, string>();
-  for (const r of runList) {
-    const a = r.product_data as ProductAnalysis | null;
-    projectByRun.set(
-      r.id as string,
-      a?.category?.trim() || hostnameOf(r.product_url)
-    );
-  }
-
-  const draftItems = (drafts ?? []).map((d) => {
-    const community = d.communities as
-      | { name: string; platform: string }
-      | { name: string; platform: string }[]
-      | null;
-    const c = Array.isArray(community) ? community[0] : community;
-    return {
-      runId: d.run_id as string,
-      community: c?.name ?? "Community",
-      title: d.title as string,
-      project: projectByRun.get(d.run_id as string) ?? "—",
-    };
-  });
-
   return (
     <>
       <VectorSketch variant="alt" />
