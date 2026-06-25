@@ -6,7 +6,8 @@ import { SiteNav } from "@/components/SiteNav";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { DeleteMapButton } from "@/components/DeleteMapButton";
 import { SavedDrafts } from "@/components/SavedDrafts";
-import { MAX_MAPS_PER_ACCOUNT } from "@/lib/billing";
+import { RedditGuide } from "@/components/RedditGuide";
+import { MAX_MAPS_PER_ACCOUNT, MAX_DRAFT_REGENS } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
 import type { ProductAnalysis } from "@/lib/types";
 
@@ -30,7 +31,9 @@ export default async function ProfilePage() {
       .order("created_at", { ascending: false }),
     supabase
       .from("drafts")
-      .select("title, body, run_id, created_at, communities(name, platform)")
+      .select(
+        "title, body, run_id, community_id, regen_count, created_at, communities(name, platform, submit_template)"
+      )
       .order("created_at", { ascending: false }),
   ]);
 
@@ -49,17 +52,27 @@ export default async function ProfilePage() {
     );
   }
 
+  type DraftCommunity = {
+    name: string;
+    platform: string;
+    submit_template: string | null;
+  };
   const draftItems = (drafts ?? []).map((d) => {
     const community = d.communities as
-      | { name: string; platform: string }
-      | { name: string; platform: string }[]
+      | DraftCommunity
+      | DraftCommunity[]
       | null;
     const c = Array.isArray(community) ? community[0] : community;
     return {
       runId: d.run_id as string,
+      communityId: d.community_id as number,
       community: c?.name ?? "Community",
-      title: d.title as string,
+      platform: c?.platform ?? "",
+      submitTemplate: c?.submit_template ?? null,
       project: projectByRun.get(d.run_id as string) ?? "—",
+      title: d.title as string,
+      body: d.body as string,
+      regenLeft: Math.max(0, MAX_DRAFT_REGENS - ((d.regen_count as number) ?? 0)),
     };
   });
 
@@ -188,8 +201,15 @@ export default async function ProfilePage() {
             )}
           </section>
 
-          {/* saved drafts — collapsible, each tagged with its project */}
+          {/* ready posts — full text, copy, regenerate, submit link */}
           <SavedDrafts items={draftItems} />
+
+          {/* Reddit account playbook — sits with the posts so the how-to-post
+              guidance is right next to what you're about to post */}
+          <section className="mb-12">
+            <h2 className="eyebrow mb-3">Posting playbook</h2>
+            <RedditGuide />
+          </section>
 
           {/* danger zone */}
           <section>
