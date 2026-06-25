@@ -89,18 +89,21 @@ export async function generateDraft(
     // A touch of temperature so two products never get the same shaped post.
     temperature: 0.85,
     system:
-      "You write ONE launch post draft for a specific online community, on " +
-      "behalf of the indie maker who built the product. Your single most " +
-      "important job is that this post does NOT get the user removed, " +
-      "shadowbanned, or flagged as spam — that is the entire reason this tool " +
-      "exists. To achieve that the post must: (1) obey the community's stated " +
-      "self-promo rules exactly, (2) sound like a real human wrote it about " +
-      "this specific product — never a template that could describe any tool, " +
-      "(3) lead with substance (a problem, a story, or a concrete detail), not " +
-      "a pitch, and mention the product/link only once and naturally, (4) be " +
-      "SHORT. Long promotional walls of text are the #1 thing that gets " +
-      "removed. Output PLAIN TEXT only: no markdown, asterisks, bold, headings, " +
-      "or emoji.",
+      "You ghost-write ONE launch post for an indie maker, in their voice. The " +
+      "post must NOT get them removed, shadowbanned, or flagged as spam — that " +
+      "is the whole point. Rules: (1) obey the community's stated self-promo " +
+      "policy exactly; (2) sound like a specific tired human who built one real " +
+      "thing, not marketing copy; (3) lead with a concrete problem or moment, " +
+      "mention the product and link ONCE, naturally; (4) be short.\n\n" +
+      "Write the way real people write on these platforms: lowercase is fine, " +
+      "small asides are fine, slightly unpolished is GOOD. Use concrete nouns " +
+      "and one real detail. \n\n" +
+      "NEVER do these AI tells (they get posts detected and downvoted): no " +
+      "'I'm excited to share', no 'game-changer / revolutionary / seamless / " +
+      "effortless / powerful / cutting-edge', no rhetorical-question openers " +
+      "('Ever wished...?'), no tidy three-item lists of benefits, no em-dash " +
+      "essay cadence, no emoji, no hashtags, no sign-off, no title-case " +
+      "headlines. Output PLAIN TEXT only — no markdown.",
     messages: [
       {
         role: "user",
@@ -118,6 +121,16 @@ export async function generateDraft(
           (community.rules_summary ? `\n- Rules: ${community.rules_summary}` : "") +
           `\n\n` +
           `HOW THIS PLATFORM EXPECTS POSTS\n${platformGuide}\n\n` +
+          `VOICE EXAMPLE (match the TONE, not the content — this is a different ` +
+          `product):\n` +
+          `"""\n` +
+          `spent the last two months building a tiny tool because i kept losing ` +
+          `track of which subreddits i'd already posted my side project in. it ` +
+          `just keeps a checklist per launch and warns me about each sub's ` +
+          `rules so i stop getting auto-removed. still rough but it's saved me ` +
+          `a couple bans already. would love to know how you all keep your ` +
+          `launches organized — spreadsheet? notion? something better?\n` +
+          `"""\n\n` +
           `HARD REQUIREMENTS\n` +
           `- Tailor the angle and the opening line specifically to THIS ` +
           `community's audience and why THEY would care — do not reuse a ` +
@@ -156,35 +169,44 @@ function platformGuidance(platform: string): string {
   switch (platform) {
     case "reddit":
       return (
-        "Reddit: casual, first-person, story-first. Open with the problem or " +
-        "the reason you built it, then what it does in one or two plain " +
-        "sentences, then the specific feedback you want. Keep the whole body " +
-        "under ~120 words / 5 short paragraphs max — Reddit punishes long " +
-        "self-promo. One link, in-line, not a bare link. Title: lowercase-ish, " +
-        "specific, no clickbait, under ~12 words."
+        "Reddit — a forum post to strangers who owe you nothing.\n" +
+        "Structure: (1) one line on the itch/problem or why you built it; (2) " +
+        "one or two plain sentences on what it does, with the link in-line " +
+        "once; (3) end with a specific question that invites discussion.\n" +
+        "Voice: first person, lowercase ok, a little self-deprecating ('still " +
+        "rough'). Title: specific, lowercase-ish, under ~12 words, no clickbait. " +
+        "Body under ~110 words. A bare link or a pitch deck = instant removal."
       );
     case "hackernews":
       return (
-        "Hacker News (Show HN): modest and technical, to fellow engineers. NO " +
-        "superlatives. 2–4 sentences on what it does and the one genuinely " +
-        'interesting technical decision. Title must start with "Show HN: ". ' +
-        "Keep the body under ~90 words."
+        "Hacker News (Show HN) — an audience of engineers who smell marketing " +
+        "instantly.\n" +
+        "Structure: what it is in one sentence, then the ONE technically " +
+        "interesting decision or constraint (stack, an algorithm, a tradeoff). " +
+        "No benefits talk, no superlatives.\n" +
+        'Title MUST start with "Show HN: ". Body under ~90 words.'
       );
     case "x":
       return (
-        "X: one tight hook, concrete and specific, conversational, under ~280 " +
-        "characters total. Title = the tweet itself; keep body empty or a one-" +
-        "line follow-up."
+        "X/Twitter — one scroll-stopping line, not a thread.\n" +
+        "Concrete and specific, conversational, under ~280 characters total. " +
+        "Title = the tweet itself; leave body empty or a single follow-up line. " +
+        "No hashtags."
       );
     case "discord":
       return (
-        "Discord: friendly and brief, like talking to peers in a channel. 2–3 " +
-        "sentences, no pitch energy, under ~60 words."
+        "Discord — a casual message in a peers channel, NOT a post.\n" +
+        "Structure: talk like you're dropping a line to people you know — 2–3 " +
+        "short sentences, what you made + why, link once, then a light ask " +
+        "('lmk what you think'). No headline energy, no formatting, no pitch. " +
+        "Under ~55 words. The 'title' field should just be a short intro line."
       );
     default:
       return (
-        "Directory: one concrete paragraph (under ~60 words) on the value and " +
-        "who it's for. Title = the product's tagline, specific and plain."
+        "Directory listing — a scannable description, not a story.\n" +
+        "One concrete paragraph (under ~55 words): what it is, who it's for, " +
+        "the single clearest benefit. Title = a plain, specific tagline (no " +
+        "hype words)."
       );
   }
 }

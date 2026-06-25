@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CommunityCard } from "@/components/CommunityCard";
 import { CollapsibleHeadline } from "@/components/CollapsibleHeadline";
+import { AccountGuidePanel } from "@/components/AccountGuidePanel";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import {
@@ -74,6 +75,8 @@ export default async function MapPage({
             fallback={run.product_url}
             runNo={runNo}
           />
+
+          {run.unlocked && <AccountGuidePanel />}
 
           {!run.unlocked && lockedCount > 0 && (
             <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
