@@ -147,18 +147,25 @@ export default async function ProfilePage() {
                   const host = hostnameOf(run.product_url);
                   const title = a?.category?.trim() || host;
                   return (
-                    <li key={run.id} className="flex items-stretch gap-2">
+                    <li
+                      key={run.id}
+                      className="relative flex items-center justify-between gap-4 rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4 shadow-[3px_4px_0_0_var(--color-hairline-strong)] transition-colors hover:bg-surface-2"
+                    >
+                      {/* stretched link makes the whole card clickable while the
+                          Delete button (above it) stays its own control */}
                       <Link
                         href={`/map/${run.id}`}
-                        className="focus-ring btn-press flex flex-1 items-center justify-between gap-4 rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4 shadow-[3px_4px_0_0_var(--color-hairline-strong)] hover:bg-surface-2"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-ink">{title}</p>
-                          <p className="mt-0.5 truncate text-xs text-ink-subtle">
-                            {host}
-                          </p>
-                        </div>
-                        <div className="shrink-0 text-right">
+                        aria-label={`Open ${title}`}
+                        className="focus-ring absolute inset-0 rounded-md"
+                      />
+                      <div className="pointer-events-none min-w-0">
+                        <p className="truncate text-ink">{title}</p>
+                        <p className="mt-0.5 truncate text-xs text-ink-subtle">
+                          {host}
+                        </p>
+                      </div>
+                      <div className="relative flex shrink-0 items-center gap-3">
+                        <div className="pointer-events-none text-right">
                           <span
                             className={`rounded-sm border px-2 py-0.5 text-xs ${
                               run.unlocked
@@ -172,8 +179,6 @@ export default async function ProfilePage() {
                             {new Date(run.created_at).toLocaleDateString()}
                           </p>
                         </div>
-                      </Link>
-                      <div className="flex items-center">
                         <DeleteMapButton runId={run.id} />
                       </div>
                     </li>
