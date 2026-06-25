@@ -132,6 +132,12 @@ export async function generateDraft(
           `launches organized — spreadsheet? notion? something better?\n` +
           `"""\n\n` +
           `HARD REQUIREMENTS\n` +
+          `- Link placement: if the self-promo policy is "welcome", include the ` +
+          `URL once, in-line and in context (not a bare link). If it is ` +
+          `megathread_only / comment_only / anything stricter, do NOT paste a ` +
+          `raw URL in the body — name the product instead and write it assuming ` +
+          `the link goes in a comment or the allowed thread (many subs ` +
+          `auto-remove posts that contain external links).\n` +
           `- Tailor the angle and the opening line specifically to THIS ` +
           `community's audience and why THEY would care — do not reuse a ` +
           `one-size-fits-all hook. The version for this community should read ` +
