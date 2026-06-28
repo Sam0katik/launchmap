@@ -60,9 +60,14 @@ export function buildCheckoutUrl(runId: string): string | null {
   }
 }
 
-// Price shown in the UI before checkout exists. Single source of truth.
-// One-time, per project (map) — unlocks all publics + their posting briefs.
+// Per-map unlock price (one-time) — unlocks all publics + posting briefs.
+export const UNLOCK_PRICE_CENTS = 300;
 export const UNLOCK_PRICE_LABEL = "$3 one-time";
+
+/** Format a cents amount as a USD string, e.g. 1050 → "$10.50". */
+export function formatUsd(cents: number): string {
+  return `$${(Math.max(0, cents) / 100).toFixed(2)}`;
+}
 
 // Max launch maps (roadmaps) a user may keep at once. Each gets a free basic
 // analysis; deleting one frees a slot. Paid unlock is per-map, not per-account.
