@@ -1,5 +1,5 @@
 import type { RankedCommunity } from "@/lib/types";
-import { CardActions, type InitialDraft } from "@/components/CardActions";
+import { PostingBrief } from "@/components/PostingBrief";
 
 // One community card on the map, styled as a print-zine docket (departuremono
 // vibe): hard dark frame + offset shadow, a stamped rank box, uppercase tracked
@@ -40,13 +40,9 @@ function displayName(name: string): string {
 export function CommunityCard({
   rank,
   entry,
-  runId,
-  initialDraft,
 }: {
   rank: number;
   entry: RankedCommunity;
-  runId?: string;
-  initialDraft?: InitialDraft;
 }) {
   const { community, relevance, locked } = entry;
   const name = displayName(community.name);
@@ -91,20 +87,12 @@ export function CommunityCard({
 
       <div className="receipt-rule mx-5" />
 
-      <UnlockedBody entry={entry} runId={runId} initialDraft={initialDraft} />
+      <UnlockedBody entry={entry} />
     </div>
   );
 }
 
-function UnlockedBody({
-  entry,
-  runId,
-  initialDraft,
-}: {
-  entry: RankedCommunity;
-  runId?: string;
-  initialDraft?: InitialDraft;
-}) {
+function UnlockedBody({ entry }: { entry: RankedCommunity }) {
   const { community } = entry;
   return (
     <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-5 text-sm">
@@ -128,11 +116,7 @@ function UnlockedBody({
       )}
 
       <div className="mt-auto pt-1">
-        <CardActions
-          community={community}
-          runId={runId}
-          initialDraft={initialDraft}
-        />
+        <PostingBrief community={community} />
       </div>
 
       {/* Best time pinned to the very bottom as a receipt-style footer. */}

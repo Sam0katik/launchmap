@@ -61,12 +61,8 @@ export function buildCheckoutUrl(runId: string): string | null {
 }
 
 // Price shown in the UI before checkout exists. Single source of truth.
-// One-time, per project (map) — unlocks all publics + posts.
+// One-time, per project (map) — unlocks all publics + their posting briefs.
 export const UNLOCK_PRICE_LABEL = "$3 one-time";
-
-// How many posts can be generated per community (1 initial + regenerations).
-// Set so each public gets up to 2 posts to choose from.
-export const MAX_DRAFT_REGENS = 1;
 
 // Max launch maps (roadmaps) a user may keep at once. Each gets a free basic
 // analysis; deleting one frees a slot. Paid unlock is per-map, not per-account.
