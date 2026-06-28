@@ -6,7 +6,8 @@ import { SiteNav } from "@/components/SiteNav";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { DeleteMapButton } from "@/components/DeleteMapButton";
 import { RedditGuide } from "@/components/RedditGuide";
-import { MAX_MAPS_PER_ACCOUNT } from "@/lib/billing";
+import { TopUpButton } from "@/components/TopUpButton";
+import { MAX_MAPS_PER_ACCOUNT, UNLOCK_PRICE_LABEL, formatUsd } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
 import type { ProductAnalysis } from "@/lib/types";
 
@@ -21,14 +22,26 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
-  // This user's runs.
-  const { data: runs } = await supabase
-    .from("runs")
-    .select("id, product_url, product_data, unlocked, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  // This user's runs + balance.
+  const [{ data: runs }, { data: profile }] = await Promise.all([
+    supabase
+      .from("runs")
+      .select("id, product_url, product_data, unlocked, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("balance_cents")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
 
   const runList = runs ?? [];
+  const balanceCents = (profile?.balance_cents as number) ?? 0;
+  const isAdmin = isAdminUser({
+    email: user.email,
+    username: user.user_metadata?.user_name as string,
+  });
 
   const username =
     (user.user_metadata?.user_name as string) ?? user.email ?? "you";
@@ -60,10 +73,7 @@ export default async function ProfilePage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {isAdminUser({
-                  email: user.email,
-                  username: user.user_metadata?.user_name as string,
-                }) && (
+                {isAdmin && (
                   <Link
                     href="/admin"
                     className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-ink px-4 py-2.5 text-base font-medium text-canvas hover:opacity-90"
@@ -75,10 +85,17 @@ export default async function ProfilePage() {
             </div>
           </header>
 
-          {/* usage */}
+          {/* balance + usage */}
           <section className="mb-10">
-            <h2 className="eyebrow mb-3">Usage</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <h2 className="eyebrow mb-3">Balance &amp; usage</h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4">
+                <p className="eyebrow mb-1">Balance</p>
+                <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
+                <div className="mt-3">
+                  <TopUpButton userId={user.id} isAdmin={isAdmin} />
+                </div>
+              </div>
               <Stat
                 label="Maps"
                 value={`${runList.length} / ${MAX_MAPS_PER_ACCOUNT}`}
@@ -89,9 +106,10 @@ export default async function ProfilePage() {
               />
             </div>
             <p className="mt-4 text-sm text-ink-subtle">
-              You can keep {MAX_MAPS_PER_ACCOUNT} maps at once — each gets a free
-              analysis. Delete one below to analyze a new product. Unlock all
-              publics and posts on any map for a one-time {`$`}3.
+              Top up your balance, then unlock any map for {UNLOCK_PRICE_LABEL} —
+              all publics + their posting briefs. You can keep{" "}
+              {MAX_MAPS_PER_ACCOUNT} maps at once; delete one below to analyze a
+              new product.
             </p>
           </section>
 

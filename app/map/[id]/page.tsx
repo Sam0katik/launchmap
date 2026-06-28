@@ -3,9 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { CommunityCard } from "@/components/CommunityCard";
 import { CollapsibleHeadline } from "@/components/CollapsibleHeadline";
 import { AccountGuidePanel } from "@/components/AccountGuidePanel";
+import { UnlockButton } from "@/components/UnlockButton";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
-import { buildCheckoutUrl, UNLOCK_PRICE_LABEL } from "@/lib/billing";
+import { UNLOCK_PRICE_LABEL } from "@/lib/billing";
+import { isAdminUser } from "@/lib/admins";
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 
 // The map result screen. Reads a persisted run, renders ranked community cards.
@@ -25,6 +27,24 @@ export default async function MapPage({
 
   if (!run) notFound();
 
+  // Viewer (for balance + admin unlock). The map is RLS-scoped to the owner.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAdmin = isAdminUser({
+    email: user?.email,
+    username: user?.user_metadata?.user_name as string,
+  });
+  let balanceCents = 0;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("balance_cents")
+      .eq("id", user.id)
+      .maybeSingle();
+    balanceCents = (profile?.balance_cents as number) ?? 0;
+  }
+
   const analysis = run.product_data as ProductAnalysis | null;
   const rankedRaw = (run.result ?? []) as RankedCommunity[];
   // run.unlocked is the source of truth: when set (paid / Pro), every entry is
@@ -35,7 +55,6 @@ export default async function MapPage({
   const lockedCount = ranked.filter((r) => r.locked).length;
   // Short, stable run label for the receipt meta line.
   const runNo = String(run.id).replace(/-/g, "").slice(0, 8).toUpperCase();
-  const checkoutUrl = run.unlocked ? null : buildCheckoutUrl(run.id);
 
   return (
     <>
@@ -61,24 +80,12 @@ export default async function MapPage({
                 posting brief (rules + skeleton) for each{" "}
                 <span className="text-ink-subtle">— {UNLOCK_PRICE_LABEL}</span>
               </p>
-              {checkoutUrl ? (
-                <a
-                  href={checkoutUrl}
-                  className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-hover"
-                >
-                  Unlock all publics → {UNLOCK_PRICE_LABEL}
-                </a>
-              ) : (
-                // Billing provider not provisioned yet. Keep the CTA visible but
-                // inert so the layout and intent are already in place.
-                <button
-                  disabled
-                  title="Payment provider not connected yet"
-                  className="shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-sm font-medium text-white opacity-60"
-                >
-                  Unlock all publics — {UNLOCK_PRICE_LABEL}
-                </button>
-              )}
+              <UnlockButton
+                runId={run.id}
+                balanceCents={balanceCents}
+                isAdmin={isAdmin}
+                priceLabel={UNLOCK_PRICE_LABEL}
+              />
             </div>
           )}
 
@@ -103,43 +110,57 @@ export default async function MapPage({
           )}
 
           {(() => {
-            // Keep ranks continuous across both sections, but render full and
-            // locked cards in separate grids so short locked strips don't leave
-            // holes among the tall unlocked cards.
+            // Reddit is the primary launch channel — give it its own section,
+            // separate from directories / HN / Discord / X.
             const withRank = ranked.map((entry, i) => ({ entry, rank: i + 1 }));
-            const open = withRank.filter((r) => !r.entry.locked);
-            const locked = withRank.filter((r) => r.entry.locked);
+            const reddit = withRank.filter(
+              (r) => r.entry.community.platform === "reddit"
+            );
+            const other = withRank.filter(
+              (r) => r.entry.community.platform !== "reddit"
+            );
+            const Grid = ({
+              items,
+            }: {
+              items: { entry: RankedCommunity; rank: number }[];
+            }) => (
+              <div className="columns-1 gap-4 [column-fill:_balance] sm:columns-2 lg:columns-3">
+                {items.map(({ entry, rank }) => (
+                  <div
+                    key={entry.community.id}
+                    className="mb-4 break-inside-avoid"
+                  >
+                    <CommunityCard rank={rank} entry={entry} />
+                  </div>
+                ))}
+              </div>
+            );
             return (
               <>
-                {/* Masonry (CSS columns): an expanded draft only lengthens its
-                    own column instead of stretching the whole row, so cards stay
-                    packed and don't spread apart. */}
-                <div className="columns-1 gap-4 [column-fill:_balance] sm:columns-2 lg:columns-3">
-                  {open.map(({ entry, rank }) => (
-                    <div
-                      key={entry.community.id}
-                      className="mb-4 break-inside-avoid"
-                    >
-                      <CommunityCard rank={rank} entry={entry} />
+                {reddit.length > 0 && (
+                  <section className="mb-10">
+                    <div className="mb-3 flex items-baseline gap-3">
+                      <h2 className="display-lg text-ink" style={{ fontSize: "clamp(22px,3vw,30px)" }}>
+                        Reddit
+                      </h2>
+                      <span className="eyebrow">main channel · {reddit.length}</span>
                     </div>
-                  ))}
-                </div>
+                    <Grid items={reddit} />
+                  </section>
+                )}
 
-                {locked.length > 0 && (
-                  <>
-                    <h2 className="eyebrow mb-3 mt-10">
-                      Locked · {locked.length} more
-                    </h2>
-                    <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {locked.map(({ entry, rank }) => (
-                        <CommunityCard
-                          key={entry.community.id}
-                          rank={rank}
-                          entry={entry}
-                        />
-                      ))}
+                {other.length > 0 && (
+                  <section>
+                    <div className="mb-3 flex items-baseline gap-3">
+                      <h2 className="display-lg text-ink" style={{ fontSize: "clamp(22px,3vw,30px)" }}>
+                        Other channels
+                      </h2>
+                      <span className="eyebrow">
+                        directories · communities · {other.length}
+                      </span>
                     </div>
-                  </>
+                    <Grid items={other} />
+                  </section>
                 )}
               </>
             );
