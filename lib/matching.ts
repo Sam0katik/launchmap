@@ -107,10 +107,37 @@ function scoreCommunity(
   return Math.min(96, Math.round(base * 0.9 + activityBonus));
 }
 
+// Always show at least this many communities — even an off-domain product (e.g.
+// a consumer app outside the indie/SaaS set) should get a usable map.
+const MIN_RESULTS = 8;
+
+/**
+ * Generic "you can launch almost anything here" score, used to backfill when
+ * tag matching finds too few communities. Broad directories (Product Hunt,
+ * BetaList…) and general startup/maker subs accept any product; niche subs do
+ * not, so they stay at 0. Returns a modest score that ranks below real matches.
+ */
+function generalityScore(community: Community): number {
+  const tags = community.niche_tags.map((t) => t.toLowerCase());
+  const isDirectory = community.platform === "directory";
+  const broad = tags.some((t) =>
+    ["launch", "startup", "maker", "indie", "sideproject", "feedback", "showcase"].includes(t)
+  );
+  if (!isDirectory && !broad) return 0;
+  const activityBonus =
+    community.activity_level === "active"
+      ? 12
+      : community.activity_level === "moderate"
+        ? 8
+        : 5;
+  return 13 + activityBonus; // ~18–25, always below a genuine tag match
+}
+
 /**
  * Rank all communities for a product. Returns up to 25 entries sorted by
  * relevance desc, with the top `FREE_TIER_COUNT` unlocked and the rest locked
- * (until the map is paid for).
+ * (until the map is paid for). Backfills broadly-applicable communities so the
+ * map is never (near) empty.
  */
 export function rankCommunities(
   analysis: ProductAnalysis,
@@ -119,7 +146,7 @@ export function rankCommunities(
 ): RankedCommunity[] {
   const { idf, fallback } = buildIdf(communities);
 
-  const scored = communities
+  let scored = communities
     .map((community) => ({
       community,
       relevance: scoreCommunity(community, analysis.niche_tags, idf, fallback),
@@ -127,6 +154,18 @@ export function rankCommunities(
     .filter((r) => r.relevance > 0)
     .sort((a, b) => b.relevance - a.relevance)
     .slice(0, 25);
+
+  // Backfill with broadly-applicable communities when matching is thin.
+  if (scored.length < MIN_RESULTS) {
+    const have = new Set(scored.map((r) => r.community.id));
+    const general = communities
+      .filter((c) => !have.has(c.id))
+      .map((community) => ({ community, relevance: generalityScore(community) }))
+      .filter((r) => r.relevance > 0)
+      .sort((a, b) => b.relevance - a.relevance)
+      .slice(0, MIN_RESULTS - scored.length);
+    scored = scored.concat(general);
+  }
 
   return scored.map((r, i) => ({
     ...r,

@@ -82,6 +82,26 @@ export default async function MapPage({
             </div>
           )}
 
+          {ranked.length === 0 && (
+            <div className="panel px-8 py-10 text-center">
+              <p className="text-sm text-ink-muted">
+                No strong community matches for this product yet — it may sit
+                outside our curated indie / SaaS / maker set.
+              </p>
+              <p className="mt-2 text-sm text-ink-subtle">
+                Try a clearer one-line description on the{" "}
+                <a href="/" className="text-primary hover:underline">
+                  home page
+                </a>
+                , or browse the full{" "}
+                <a href="/communities" className="text-primary hover:underline">
+                  community database
+                </a>
+                .
+              </p>
+            </div>
+          )}
+
           {(() => {
             // Keep ranks continuous across both sections, but render full and
             // locked cards in separate grids so short locked strips don't leave
