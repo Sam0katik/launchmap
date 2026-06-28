@@ -5,11 +5,7 @@ import { CollapsibleHeadline } from "@/components/CollapsibleHeadline";
 import { AccountGuidePanel } from "@/components/AccountGuidePanel";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
-import {
-  buildCheckoutUrl,
-  UNLOCK_PRICE_LABEL,
-  MAX_DRAFT_REGENS,
-} from "@/lib/billing";
+import { buildCheckoutUrl, UNLOCK_PRICE_LABEL } from "@/lib/billing";
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 
 // The map result screen. Reads a persisted run, renders ranked community cards.
@@ -28,27 +24,6 @@ export default async function MapPage({
     .maybeSingle();
 
   if (!run) notFound();
-
-  // Saved drafts for this run, so a returning user sees their drafts already
-  // there (no need to re-generate / re-spend the API). Keyed by community id.
-  // select("*") rather than naming regen_count, so the page still loads drafts
-  // even before migration 0005 adds that column.
-  const { data: savedDrafts } = await supabase
-    .from("drafts")
-    .select("*")
-    .eq("run_id", run.id);
-
-  const draftByCommunity = new Map<
-    number,
-    { title: string; body: string; regenLeft: number }
-  >();
-  for (const d of savedDrafts ?? []) {
-    draftByCommunity.set(d.community_id as number, {
-      title: d.title as string,
-      body: d.body as string,
-      regenLeft: Math.max(0, MAX_DRAFT_REGENS - ((d.regen_count as number) ?? 0)),
-    });
-  }
 
   const analysis = run.product_data as ProductAnalysis | null;
   const rankedRaw = (run.result ?? []) as RankedCommunity[];
@@ -82,8 +57,8 @@ export default async function MapPage({
             <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
               <p className="text-sm text-ink-muted">
                 Paid analysis: unlock all{" "}
-                <span className="tnum">{lockedCount}</span> more publics + 2
-                tailored posts each{" "}
+                <span className="tnum">{lockedCount}</span> more publics + a
+                posting brief (rules + skeleton) for each{" "}
                 <span className="text-ink-subtle">— {UNLOCK_PRICE_LABEL}</span>
               </p>
               {checkoutUrl ? (
@@ -125,12 +100,7 @@ export default async function MapPage({
                       key={entry.community.id}
                       className="mb-4 break-inside-avoid"
                     >
-                      <CommunityCard
-                        rank={rank}
-                        entry={entry}
-                        runId={run.id}
-                        initialDraft={draftByCommunity.get(entry.community.id)}
-                      />
+                      <CommunityCard rank={rank} entry={entry} />
                     </div>
                   ))}
                 </div>
@@ -146,7 +116,6 @@ export default async function MapPage({
                           key={entry.community.id}
                           rank={rank}
                           entry={entry}
-                          runId={run.id}
                         />
                       ))}
                     </div>

@@ -56,3 +56,23 @@ export function buildSubmitLink(
       return null;
   }
 }
+
+/**
+ * An EMPTY submit/compose link — opens the community's posting surface with no
+ * pre-filled text, so the user writes their own post (following the brief).
+ * Returns null when there's no compose deep-link (Discord, most directories).
+ */
+export function bareSubmitLink(community: Community): string | null {
+  switch (community.platform) {
+    case "reddit": {
+      const sub = community.name.replace(/^r\//i, "").trim();
+      return `https://www.reddit.com/r/${sub}/submit`;
+    }
+    case "hackernews":
+      return "https://news.ycombinator.com/submit";
+    case "x":
+      return "https://x.com/compose/tweet";
+    default:
+      return null;
+  }
+}
