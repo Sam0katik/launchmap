@@ -1,10 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none">
-  <!-- origami paper plane (send-icon shape), pointing up-right. White fill with a
-       dark outline so it reads as a folded paper plane on both light and dark tabs. -->
-  <!-- upper wing -->
-  <path d="M14.5 2.5 L2 6.6 L7.2 8.4 Z" fill="#ffffff" stroke="#1b1a16" stroke-width="0.7" stroke-linejoin="round"/>
-  <!-- lower wing (the fold underside) -->
-  <path d="M14.5 2.5 L7.2 8.4 L5.6 13 Z" fill="#d7d4cb" stroke="#1b1a16" stroke-width="0.7" stroke-linejoin="round"/>
-  <!-- orange nose accent -->
-  <circle cx="14.2" cy="2.8" r="0.9" fill="#ff6a14"/>
+  <!-- filled origami paper plane (send shape), pointing up-right. Brand orange
+       with a lighter fold underside — no outline. -->
+  <path d="M14.6 2.2 L1.8 6.8 L7.3 8.6 Z" fill="#ff6a14"/>
+  <path d="M14.6 2.2 L7.3 8.6 L5.7 13.4 Z" fill="#d2560f"/>
 </svg>

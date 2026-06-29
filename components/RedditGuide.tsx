@@ -54,21 +54,24 @@ export function RedditGuide() {
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="mb-8 rounded-lg border-2 border-hairline-strong bg-surface-1">
+    <section className="mb-8 overflow-hidden rounded-lg border-2 border-primary/50 bg-primary/5 shadow-[4px_5px_0_0_var(--color-hairline-strong)]">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className="focus-ring flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
       >
-        <div>
-          <h2 className="text-base text-ink">
-            How to not get banned &amp; build Reddit karma
-          </h2>
-          <p className="mt-0.5 text-xs text-ink-subtle">
-            Account setup, the 90/10 rule, karma, shadowban checks
-          </p>
+        <div className="flex items-center gap-3">
+          <span className="text-lg">🛟</span>
+          <div>
+            <h2 className="text-base text-ink">
+              How to not get banned &amp; build Reddit karma
+            </h2>
+            <p className="mt-0.5 text-xs text-ink-subtle">
+              Account setup, the 90/10 rule, karma, shadowban checks
+            </p>
+          </div>
         </div>
-        <span className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-xs font-medium text-ink">
+        <span className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-3 py-1.5 text-xs font-medium text-white">
           {open ? "− Hide" : "+ Read"}
         </span>
       </button>

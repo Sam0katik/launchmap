@@ -29,6 +29,12 @@ function displayName(name: string): string {
   return name.replace(/\s*\([^)]*\)\s*$/, "").trim();
 }
 
+function formatMembers(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
+  return String(n);
+}
+
 export function CommunityCard({
   rank,
   entry,
@@ -47,10 +53,18 @@ export function CommunityCard({
         <span className="tnum mt-0.5 inline-flex h-7 min-w-7 items-center justify-center rounded-sm border-2 border-hairline-strong px-1 text-sm text-ink">
           {rank}
         </span>
-        <div>
+        <div className="min-w-0 flex-1">
           <h3 className="text-lg leading-tight text-ink">{name}</h3>
           <span className="eyebrow mt-1 block">{community.platform}</span>
         </div>
+        {community.members ? (
+          <span
+            className="tnum shrink-0 rounded-sm border border-hairline px-1.5 py-0.5 text-[11px] text-ink-muted"
+            title={`${community.members.toLocaleString()} members`}
+          >
+            {formatMembers(community.members)}
+          </span>
+        ) : null}
       </div>
 
       <div className="receipt-rule mx-5" />

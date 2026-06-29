@@ -63,13 +63,15 @@ rows.forEach((r, i) => {
 const q = (v) => (v == null ? "null" : `'${String(v).replace(/'/g, "''")}'`);
 const arr = (a) => `'{${a.map((t) => `"${String(t).replace(/"/g, '\\"')}"`).join(",")}}'`;
 
+const num = (v) => (v == null ? "null" : String(Math.round(Number(v))));
+
 const values = rows
   .map(
     (r) =>
       `  (${q(r.platform)}, ${q(r.name)}, ${q(r.url)}, ${arr(r.niche_tags)},\n` +
       `   ${q(r.self_promo_policy)}, ${q(r.self_promo_note)},\n` +
       `   ${q(r.rules_summary)}, ${q(r.karma_tier)}, ${q(r.karma_note)},\n` +
-      `   ${q(r.activity_level)}, ${q(r.best_time)}, ${q(r.submit_template)}, ${q(r.verified_at)})`
+      `   ${q(r.activity_level)}, ${q(r.best_time)}, ${q(r.submit_template)}, ${q(r.verified_at)}, ${num(r.members)})`
   )
   .join(",\n");
 
@@ -87,7 +89,7 @@ truncate table communities restart identity cascade;
 insert into communities
   (platform, name, url, niche_tags, self_promo_policy, self_promo_note,
    rules_summary, karma_tier, karma_note, activity_level, best_time,
-   submit_template, verified_at)
+   submit_template, verified_at, members)
 values
 ${values};
 `;

@@ -12,7 +12,6 @@ const BACKEND_READY = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 export function UrlForm() {
   const router = useRouter();
   const [url, setUrl] = useState("");
-  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,9 +30,7 @@ export function UrlForm() {
 
     // Demo mode — no backend yet.
     if (!BACKEND_READY) {
-      const qs = new URLSearchParams({ url });
-      if (description) qs.set("note", description);
-      router.push(`/demo?${qs.toString()}`);
+      router.push(`/demo?${new URLSearchParams({ url }).toString()}`);
       return;
     }
 
@@ -42,7 +39,7 @@ export function UrlForm() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url, description: description || undefined }),
+        body: JSON.stringify({ url }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -57,35 +54,19 @@ export function UrlForm() {
     }
   }
 
-  const DESC_MAX = 100;
   const inputCls =
     "focus-ring w-full rounded-md border-2 border-hairline-strong bg-canvas px-5 py-4 text-xl text-ink placeholder:text-ink-tertiary";
 
   return (
     <form onSubmit={onSubmit} className="w-full">
-      <div className="space-y-3">
-        <input
-          type="url"
-          required
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://your-product.com"
-          className={inputCls}
-        />
-        <div>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value.slice(0, DESC_MAX))}
-            maxLength={DESC_MAX}
-            placeholder="One line about your product (sharpens matching)"
-            className={inputCls}
-          />
-          <div className="mt-1.5 pr-1 text-right text-sm tabular-nums text-ink-tertiary">
-            {description.length}/{DESC_MAX}
-          </div>
-        </div>
-      </div>
+      <input
+        type="url"
+        required
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder="https://your-product.com"
+        className={inputCls}
+      />
 
       {/* emphasized print-style CTA, with a noticeable gap */}
       <button
