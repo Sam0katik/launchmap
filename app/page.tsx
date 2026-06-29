@@ -4,7 +4,6 @@ import { VectorSketch } from "@/components/VectorSketch";
 import { ClippedNote } from "@/components/ClippedNote";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
-import { PaperPlane } from "@/components/PaperPlane";
 
 // TODO: replace with the real destination for the "scan to launch" barcode.
 const SCAN_TO_LAUNCH_URL = "#";
@@ -25,14 +24,9 @@ export default function Home() {
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* brand (click = reload) + sign-in in the corners */}
         <header className="flex h-20 items-center justify-between px-8">
-          {/* plain <a> to "/" forces a full page refresh — wordmark + a white
-              pixel paper-plane to its right */}
-          <a
-            href="/"
-            className="wordmark flex items-center gap-3 text-4xl text-ink hover:text-primary"
-          >
+          {/* plain <a> to "/" forces a full page refresh */}
+          <a href="/" className="wordmark text-4xl text-ink hover:text-primary">
             <ScrambleText text="ZEROFANS" className="leading-none" />
-            <PaperPlane size={40} tone="white" fly />
           </a>
           <AuthButton />
         </header>

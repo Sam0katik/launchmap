@@ -32,6 +32,7 @@ export interface Community {
   best_time: string | null;
   submit_template: string | null;
   verified_at: string; // ISO date
+  members?: number | null; // real subscriber/member count (reach)
   created_at?: string;
 }
 
