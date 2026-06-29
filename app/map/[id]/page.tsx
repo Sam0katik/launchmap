@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { CommunityCard } from "@/components/CommunityCard";
 import { CollapsibleHeadline } from "@/components/CollapsibleHeadline";
 import { AccountGuidePanel } from "@/components/AccountGuidePanel";
+import { LaunchChecklist } from "@/components/LaunchChecklist";
 import { UnlockButton } from "@/components/UnlockButton";
 import { FlyingPlane } from "@/components/FlyingPlane";
 import { VectorSketch } from "@/components/VectorSketch";
@@ -22,7 +23,7 @@ export default async function MapPage({
 
   const { data: run } = await supabase
     .from("runs")
-    .select("id, product_url, product_data, result, unlocked")
+    .select("id, product_url, product_data, result, unlocked, checklist")
     .eq("id", params.id)
     .maybeSingle();
 
@@ -57,6 +58,45 @@ export default async function MapPage({
   // Short, stable run label for the receipt meta line.
   const runNo = String(run.id).replace(/-/g, "").slice(0, 8).toUpperCase();
 
+  // Launch checklist (unlocked maps): order the route easy-wins first.
+  const POLICY_RANK: Record<string, number> = {
+    welcome: 0,
+    megathread_only: 1,
+    comment_only: 2,
+    banned: 3,
+  };
+  const KARMA_RANK: Record<string, number> = { easy: 0, medium: 1, hard: 2 };
+  const POLICY_META: Record<string, { label: string; tone: "ok" | "warn" | "bad" }> = {
+    welcome: { label: "Welcome", tone: "ok" },
+    megathread_only: { label: "Megathread", tone: "warn" },
+    comment_only: { label: "Comments", tone: "warn" },
+    banned: { label: "No promo", tone: "bad" },
+  };
+  const checklistItems = [...ranked]
+    .sort((a, b) => {
+      const pa = POLICY_RANK[a.community.self_promo_policy] ?? 1;
+      const pb = POLICY_RANK[b.community.self_promo_policy] ?? 1;
+      if (pa !== pb) return pa - pb;
+      const ka = KARMA_RANK[a.community.karma_tier ?? "medium"] ?? 1;
+      const kb = KARMA_RANK[b.community.karma_tier ?? "medium"] ?? 1;
+      return ka - kb;
+    })
+    .map((r) => {
+      const meta = POLICY_META[r.community.self_promo_policy] ?? POLICY_META.welcome;
+      return {
+        communityId: r.community.id,
+        name: r.community.name.replace(/\s*\([^)]*\)\s*$/, "").trim(),
+        platform: r.community.platform,
+        policyLabel: meta.label,
+        policyTone: meta.tone,
+        bestTime: r.community.best_time ?? null,
+        href: r.community.url,
+      };
+    });
+  const checklistDone = Array.isArray(run.checklist)
+    ? (run.checklist as number[])
+    : [];
+
   return (
     <>
       <VectorSketch variant="alt" />
@@ -72,7 +112,16 @@ export default async function MapPage({
             runNo={runNo}
           />
 
-          {run.unlocked && <AccountGuidePanel />}
+          {run.unlocked && (
+            <>
+              <LaunchChecklist
+                runId={run.id}
+                items={checklistItems}
+                initialDone={checklistDone}
+              />
+              <AccountGuidePanel />
+            </>
+          )}
 
           {!run.unlocked && lockedCount > 0 && (
             <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
