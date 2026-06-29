@@ -1,33 +1,44 @@
-import type { Community } from "./types";
+import type { Community, ProductAnalysis } from "./types";
 
-// Build a per-community "posting brief" — the rules a user must follow to post
-// here without getting removed/banned, plus a fill-in skeleton so they write
-// their OWN post in the correct shape. No AI: this is derived from the curated
-// community fields + platform conventions, so it's accurate and free.
+// Per-community posting brief — the rules to follow here (derived from the
+// curated community fields + platform conventions) plus a fill-in skeleton and,
+// when a product analysis is available, a tailored angle to lead with. No
+// per-request AI: accurate, free, and specific to THIS community.
 
 export interface PostingBrief {
-  where: string; // where/how to post (standalone vs thread vs comment)
-  links: string; // link policy
-  length: string; // recommended length for this platform
-  title: string; // title/headline format
-  karma: string; // karma bar (honest)
-  account: string; // account-age guidance
+  policyLabel: string;
+  policyTone: "ok" | "warn" | "bad";
+  where: string;
+  linkChip: string; // short can/can't summary
+  linkTone: "ok" | "warn" | "bad";
+  length: string;
+  title: string;
+  karmaTier: string | null; // "Easy" | "Medium" | "Hard"
+  karmaNote: string;
   bestTime: string | null;
-  dos: string[];
-  donts: string[];
-  skeleton: string[]; // fill-in lines the user completes
+  rules: string | null; // real per-community removal reasons (from the DB)
+  angle: string | null; // a product strength to lead with
+  skeleton: string[];
+  warn: string; // the single most important "don't"
 }
+
+const POLICY: Record<string, { label: string; tone: "ok" | "warn" | "bad" }> = {
+  welcome: { label: "Welcome", tone: "ok" },
+  megathread_only: { label: "Megathread only", tone: "warn" },
+  comment_only: { label: "Comments only", tone: "warn" },
+  banned: { label: "No self-promo", tone: "bad" },
+};
 
 function lengthFor(platform: string): string {
   switch (platform) {
     case "reddit":
-      return "Short — a few sentences, under ~110 words. Long self-promo gets removed.";
+      return "A few sentences, under ~110 words.";
     case "hackernews":
-      return "Under ~90 words. One sentence on what it is + the one interesting technical detail.";
+      return "Under ~90 words + the URL.";
     case "x":
-      return "One line, under 280 characters. No thread, no hashtags.";
+      return "One line, under 280 chars.";
     case "discord":
-      return "2–3 sentences (~55 words). A message, not a post.";
+      return "2–3 sentences (~55 words).";
     default:
       return "One short paragraph (~55 words).";
   }
@@ -36,50 +47,33 @@ function lengthFor(platform: string): string {
 function titleFor(platform: string): string {
   switch (platform) {
     case "reddit":
-      return "Specific, lowercase-ish, under ~12 words. No clickbait, no Title Case.";
+      return "Specific, lowercase-ish, ≤12 words.";
     case "hackernews":
-      return 'Must start with "Show HN:" then a plain, specific title.';
+      return 'Start with "Show HN:".';
     case "x":
-      return "The post itself is the title — make the first words count.";
+      return "The post itself.";
     case "discord":
-      return "No headline — just start the message.";
+      return "No headline — just start.";
     default:
-      return "A plain, specific tagline (no hype words).";
+      return "A plain, specific tagline.";
   }
 }
 
-function karmaFor(community: Community): string {
-  const note = community.karma_note ? ` ${community.karma_note}` : "";
-  // Honest: Reddit doesn't publish exact thresholds — these are practical bars.
-  switch (community.karma_tier) {
-    case "easy":
-      return `Low bar. New-ish accounts are usually fine, but comment for a few days first to clear the spam filter.${note}`;
-    case "medium":
-      return `Medium bar. Build some history first — roughly 50–100+ comment karma helps you clear the filter.${note}`;
-    case "hard":
-      return `High bar. Established account with real karma; brand-new accounts get filtered or auto-removed.${note}`;
-    default:
-      return `Comment a bit first to clear the new-user spam filter.${note}`;
-  }
-}
-
-function linksFor(community: Community): string {
+function linkInfo(community: Community): { chip: string; tone: "ok" | "warn" | "bad" } {
   if (community.platform === "reddit") {
     switch (community.self_promo_policy) {
       case "welcome":
-        return "One link allowed, in context (not a bare link).";
+        return { chip: "Link OK, in context", tone: "ok" };
       case "megathread_only":
       case "comment_only":
-        return "Put your link in a comment or the allowed thread — posts that contain external links are often auto-removed here.";
+        return { chip: "Link in comments only", tone: "warn" };
       case "banned":
-        return "No links / no self-promo.";
-      default:
-        return "Keep links in context; never post a bare link.";
+        return { chip: "No links", tone: "bad" };
     }
   }
-  if (community.platform === "hackernews") return "The link is the submission (URL field).";
-  if (community.platform === "discord") return "Drop the link inline, once.";
-  return "Link is part of the listing.";
+  if (community.platform === "hackernews") return { chip: "URL is the post", tone: "ok" };
+  if (community.platform === "discord") return { chip: "Link inline, once", tone: "ok" };
+  return { chip: "Link in the listing", tone: "ok" };
 }
 
 function whereFor(community: Community): string {
@@ -88,7 +82,7 @@ function whereFor(community: Community): string {
       case "hackernews":
         return "Submit as a Show HN with your URL.";
       case "discord":
-        return "Post in the right channel (usually #showcase / #i-made-this).";
+        return "Post in #showcase / #i-made-this.";
       default:
         return "Submit through the listing form.";
     }
@@ -97,13 +91,13 @@ function whereFor(community: Community): string {
     case "welcome":
       return "Post it as a normal standalone post.";
     case "megathread_only":
-      return `Only in the weekly / megathread — standalone launch posts get removed.${community.self_promo_note ? ` (${community.self_promo_note})` : ""}`;
+      return "Only in the weekly / megathread.";
     case "comment_only":
-      return "Share it as a comment in the relevant thread, not a new post.";
+      return "Share it as a comment in a relevant thread.";
     case "banned":
-      return "No self-promotion here — engage only, don't post your product.";
+      return "Engage only — don't post your product.";
     default:
-      return "Check the rules for where self-promo is allowed.";
+      return "Check the rules for where promo is allowed.";
   }
 }
 
@@ -111,55 +105,61 @@ function skeletonFor(platform: string): string[] {
   switch (platform) {
     case "reddit":
       return [
-        "[1 line — the problem you hit, or why you built it]",
-        "[1–2 lines — what it does, plainly + your link in context]",
-        "[a specific question for this community so it reads as a discussion]",
+        "the problem you hit, or why you built it",
+        "what it does, plainly + your link in context",
+        "a specific question so it reads as discussion",
       ];
     case "hackernews":
       return [
         "Show HN: [specific, plain title]",
-        "[what it is in one sentence + the one genuinely interesting technical decision]",
+        "what it is + the one interesting technical decision",
       ];
     case "x":
-      return ["[one concrete hook line — what it is, who it's for — under 280 chars]"];
+      return ["one concrete hook — what it is, who it's for (≤280 chars)"];
     case "discord":
-      return [
-        "[casual intro — what you made and why, 1–2 sentences]",
-        "[your link]",
-        "[light ask: 'lmk what you think']",
-      ];
+      return ["casual intro — what you made + why", "your link", "light ask: 'lmk what you think'"];
     default:
-      return [
-        "[plain tagline]",
-        "[one paragraph: what it is, who it's for, the clearest single benefit]",
-      ];
+      return ["plain tagline", "one paragraph: what it is, who it's for, the clearest benefit"];
   }
 }
 
-export function buildBrief(community: Community): PostingBrief {
-  const dos = [
-    "Write it in your own words — a real, specific human voice.",
-    "Reference one concrete detail (a real feature or the exact problem it solves).",
-  ];
-  const donts = [
-    "No hype words (best, revolutionary, game-changer, seamless, effortless).",
-    "No emoji, hashtags, or sign-off. No verbatim AI text — it gets detected.",
-  ];
-  if (community.platform === "reddit") {
-    dos.push("Comment on other posts here first so you're not a drive-by.");
-    donts.push("No link shorteners (bit.ly etc.) — near-universal auto-removal.");
-  }
+function angleFor(community: Community, analysis?: ProductAnalysis | null): string | null {
+  const strengths = analysis?.strengths?.filter(Boolean) ?? [];
+  if (strengths.length === 0) return null;
+  // Pick a stable strength per community so different cards surface different
+  // angles instead of all repeating the first one.
+  return strengths[community.id % strengths.length];
+}
+
+export function buildBrief(
+  community: Community,
+  analysis?: ProductAnalysis | null
+): PostingBrief {
+  const policy = POLICY[community.self_promo_policy] ?? POLICY.welcome;
+  const link = linkInfo(community);
+  const karmaTier = community.karma_tier
+    ? community.karma_tier[0].toUpperCase() + community.karma_tier.slice(1)
+    : null;
+
+  const warn =
+    community.platform === "reddit"
+      ? "No bare links, no shorteners, no verbatim AI text — all get auto-removed."
+      : "No hype words, no verbatim AI text.";
 
   return {
+    policyLabel: policy.label,
+    policyTone: policy.tone,
     where: whereFor(community),
-    links: linksFor(community),
+    linkChip: link.chip,
+    linkTone: link.tone,
     length: lengthFor(community.platform),
     title: titleFor(community.platform),
-    karma: karmaFor(community),
-    account: "Use an account 2–4+ weeks old with a verified email.",
+    karmaTier,
+    karmaNote: community.karma_note ?? "",
     bestTime: community.best_time ?? null,
-    dos,
-    donts,
+    rules: community.rules_summary ?? community.self_promo_note ?? null,
+    angle: angleFor(community, analysis),
     skeleton: skeletonFor(community.platform),
+    warn,
   };
 }

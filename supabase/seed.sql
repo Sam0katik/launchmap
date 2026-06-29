@@ -5,7 +5,7 @@
 -- verified_at per row; re-verify against live sidebars before production and
 -- monthly thereafter. The generator warns on rows older than 45 days.
 --
--- Rows: 50 | Generated: 2026-06-28
+-- Rows: 58 | Generated: 2026-06-28
 
 truncate table communities restart identity cascade;
 
@@ -213,4 +213,36 @@ values
   ('directory', 'Hashnode', 'https://hashnode.com', '{"devtool","blog","webdev","community","opensource","launch"}',
    'welcome', 'Dev blogging community; publish a build/launch write-up to reach developers.',
    'Write a genuine post; bare promo underperforms.', 'easy', 'Open; quality posts surface.',
-   'moderate', 'Tue-Thu 9-13 ET', null, '2026-06-28');
+   'moderate', 'Tue-Thu 9-13 ET', null, '2026-06-28'),
+  ('reddit', 'r/reactjs', 'https://www.reddit.com/r/reactjs/', '{"react","frontend","devtool","webdev","javascript","webapp"}',
+   'megathread_only', 'Show off your React project in the pinned ''Show /r/reactjs'' weekly thread.',
+   'Removed: standalone self-promo / blog spam. Use the weekly show-off thread.', 'medium', 'Dev audience; technical substance expected.',
+   'active', 'Tue-Thu 9-13 ET', null, '2026-06-28'),
+  ('reddit', 'r/Frontend', 'https://www.reddit.com/r/Frontend/', '{"frontend","webdev","devtool","design","webapp","javascript"}',
+   'comment_only', 'Share work for feedback; outright promo is limited.',
+   'Removed: low-effort promo. Frame as a feedback/learning post.', 'medium', 'Contribute first; the sub dislikes drive-by promo.',
+   'moderate', 'Tue-Thu 9-13 ET', null, '2026-06-28'),
+  ('reddit', 'r/iOSProgramming', 'https://www.reddit.com/r/iOSProgramming/', '{"ios","mobile","app","devtool","swift","indie"}',
+   'comment_only', 'Self-promo of your app is restricted to designated threads.',
+   'Removed: app-launch posts outside allowed threads.', 'medium', 'Developer audience; show the technical side.',
+   'moderate', 'Tue-Thu 10-14 ET', null, '2026-06-28'),
+  ('reddit', 'r/androiddev', 'https://www.reddit.com/r/androiddev/', '{"android","mobile","app","devtool","kotlin","indie"}',
+   'comment_only', 'Promo is limited; use the periodic self-promo / showcase threads.',
+   'Removed: standalone app promo outside allowed threads.', 'medium', 'Technical sub; lead with how it''s built.',
+   'moderate', 'Tue-Thu 10-14 ET', null, '2026-06-28'),
+  ('reddit', 'r/AppIdeas', 'https://www.reddit.com/r/AppIdeas/', '{"app","ideas","startup","indie","mobile","webapp"}',
+   'welcome', 'Sharing an app idea or early build for feedback is on-topic.',
+   'Removed: pure ads. Keep it discussion-first.', 'easy', 'Low bar, smaller audience.',
+   'low', 'Tue-Thu 10-14 ET', null, '2026-06-28'),
+  ('directory', 'Toolify', 'https://www.toolify.ai', '{"ai","aitools","directory","launch","saas","discovery"}',
+   'welcome', 'Large AI-tools directory; submit if your product is AI-powered.',
+   'Submit the AI tool with a clear description and category.', 'easy', 'No karma; AI products.',
+   'active', null, null, '2026-06-28'),
+  ('directory', 'Futurepedia', 'https://www.futurepedia.io', '{"ai","aitools","directory","launch","saas","discovery"}',
+   'welcome', 'Popular AI-tools directory; submit your AI product.',
+   'Submit the AI tool; featured placement may be paid.', 'easy', 'No karma; AI products.',
+   'active', null, null, '2026-06-28'),
+  ('directory', 'BetaPage', 'https://betapage.co', '{"startup","launch","directory","saas","indie","beta"}',
+   'welcome', 'Startup-discovery directory; submit your product/startup.',
+   'Submit with a clear pitch and category.', 'easy', 'No karma; submission-based.',
+   'moderate', null, null, '2026-06-28');

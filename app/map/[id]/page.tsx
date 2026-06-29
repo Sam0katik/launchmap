@@ -4,6 +4,7 @@ import { CommunityCard } from "@/components/CommunityCard";
 import { CollapsibleHeadline } from "@/components/CollapsibleHeadline";
 import { AccountGuidePanel } from "@/components/AccountGuidePanel";
 import { UnlockButton } from "@/components/UnlockButton";
+import { FlyingPlane } from "@/components/FlyingPlane";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { UNLOCK_PRICE_LABEL } from "@/lib/billing";
@@ -59,6 +60,7 @@ export default async function MapPage({
   return (
     <>
       <VectorSketch variant="alt" />
+      <FlyingPlane />
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <SiteNav />
@@ -130,20 +132,25 @@ export default async function MapPage({
                     key={entry.community.id}
                     className="mb-4 break-inside-avoid"
                   >
-                    <CommunityCard rank={rank} entry={entry} />
+                    <CommunityCard rank={rank} entry={entry} analysis={analysis} />
                   </div>
                 ))}
               </div>
+            );
+            const Count = ({ n }: { n: number }) => (
+              <span className="tnum inline-flex h-7 min-w-7 items-center justify-center rounded-md border-2 border-hairline-strong px-2 text-sm text-ink">
+                {n}
+              </span>
             );
             return (
               <>
                 {reddit.length > 0 && (
                   <section className="mb-10">
-                    <div className="mb-3 flex items-baseline gap-3">
+                    <div className="mb-4 flex items-center gap-3">
                       <h2 className="display-lg text-ink" style={{ fontSize: "clamp(22px,3vw,30px)" }}>
                         Reddit
                       </h2>
-                      <span className="eyebrow">main channel · {reddit.length}</span>
+                      <Count n={reddit.length} />
                     </div>
                     <Grid items={reddit} />
                   </section>
@@ -151,13 +158,11 @@ export default async function MapPage({
 
                 {other.length > 0 && (
                   <section>
-                    <div className="mb-3 flex items-baseline gap-3">
+                    <div className="mb-4 flex items-center gap-3">
                       <h2 className="display-lg text-ink" style={{ fontSize: "clamp(22px,3vw,30px)" }}>
                         Other channels
                       </h2>
-                      <span className="eyebrow">
-                        directories · communities · {other.length}
-                      </span>
+                      <Count n={other.length} />
                     </div>
                     <Grid items={other} />
                   </section>

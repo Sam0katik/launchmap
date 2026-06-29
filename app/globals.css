@@ -112,6 +112,21 @@ body {
   .mascot-fly { animation: none; }
 }
 
+/* Background plane drifting slowly across the screen (left → right), with a
+   gentle vertical sway, looping forever. Ambient — sits behind content. */
+@keyframes plane-across {
+  0%   { transform: translate(-8vw, 0) rotate(0deg); }
+  50%  { transform: translate(52vw, 26px) rotate(2deg); }
+  100% { transform: translate(112vw, 0) rotate(0deg); }
+}
+.plane-across {
+  animation: plane-across 34s linear infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .plane-across { animation: none; }
+}
+
 /* Dynamic numbers (% match, counters) must not jitter as digits change. */
 .tnum {
   font-variant-numeric: tabular-nums;

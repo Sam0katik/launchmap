@@ -78,7 +78,7 @@ export function UrlForm() {
             value={description}
             onChange={(e) => setDescription(e.target.value.slice(0, DESC_MAX))}
             maxLength={DESC_MAX}
-            placeholder="One line about it (optional)"
+            placeholder="One line about your product (sharpens matching)"
             className={inputCls}
           />
           <div className="mt-1.5 pr-1 text-right text-sm tabular-nums text-ink-tertiary">

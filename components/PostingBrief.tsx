@@ -3,23 +3,34 @@
 import { useState } from "react";
 import { buildBrief } from "@/lib/posting-brief";
 import { bareSubmitLink } from "@/lib/submit-links";
-import type { Community } from "@/lib/types";
+import type { Community, ProductAnalysis } from "@/lib/types";
 
-// Per-community posting brief: the exact rules to follow here (where to post,
-// links, length, title, karma, timing) plus a fill-in skeleton so the user
-// writes their OWN compliant post. No AI — derived from the curated rules.
-export function PostingBrief({ community }: { community: Community }) {
+const TONE: Record<string, string> = {
+  ok: "border-success/50 text-success bg-success/5",
+  warn: "border-[#b06a00]/50 text-[#b06a00] bg-[#b06a00]/5",
+  bad: "border-red-700/50 text-red-700 bg-red-700/5",
+};
+
+// Per-community posting brief: rules to follow here + a tailored angle + a
+// fill-in skeleton. Color-coded and compact so it reads at a glance.
+export function PostingBrief({
+  community,
+  analysis,
+}: {
+  community: Community;
+  analysis?: ProductAnalysis | null;
+}) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const brief = buildBrief(community);
+  const brief = buildBrief(community, analysis);
   const submitHref = bareSubmitLink(community) ?? community.url;
-  const submitLabel = bareSubmitLink(community)
-    ? "Open submit form →"
-    : "Open →";
+  const submitLabel = bareSubmitLink(community) ? "Open submit form" : "Open";
 
   async function copySkeleton() {
     try {
-      await navigator.clipboard.writeText(brief.skeleton.join("\n\n"));
+      await navigator.clipboard.writeText(
+        brief.skeleton.map((s, i) => `${i + 1}. ${s}`).join("\n")
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch {
@@ -29,60 +40,88 @@ export function PostingBrief({ community }: { community: Community }) {
 
   return (
     <div className="space-y-2">
-      <div className="rounded-sm border border-hairline bg-canvas/60 p-3 text-xs">
-        <div className="flex items-center justify-between gap-3">
-          <span className="eyebrow text-[10px] text-ink">✦ Posting brief</span>
+      <div className="rounded-md border border-hairline bg-canvas/50 p-3 text-xs">
+        <div className="flex items-center justify-between gap-2">
+          <span className="eyebrow text-[10px] text-ink">Posting brief</span>
           <button
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-3"
+            className="focus-ring btn-press rounded border border-hairline-strong bg-surface-2 px-2 py-0.5 text-[11px] text-ink hover:bg-surface-3"
           >
-            {open ? "− Hide" : "+ Show rules"}
+            {open ? "Hide" : "Show rules"}
           </button>
         </div>
 
         {open && (
-          <div className="mt-3 space-y-3">
-            <dl className="space-y-2">
-              <Row label="Where" value={brief.where} />
-              <Row label="Links" value={brief.links} />
-              <Row label="Length" value={brief.length} />
-              <Row label="Title" value={brief.title} />
-              <Row label="Karma" value={brief.karma} />
-              <Row label="Account" value={brief.account} />
-              {brief.bestTime && <Row label="Best time" value={brief.bestTime} />}
-            </dl>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <List label="Do" items={brief.dos} tone="ok" />
-              <List label="Don't" items={brief.donts} tone="bad" />
+          <div className="mt-2.5 space-y-2.5">
+            {/* status chips */}
+            <div className="flex flex-wrap gap-1.5">
+              <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.policyTone]}`}>
+                {brief.policyLabel}
+              </span>
+              <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.linkTone]}`}>
+                {brief.linkChip}
+              </span>
+              {brief.karmaTier && (
+                <span className="rounded border border-hairline px-1.5 py-0.5 text-[11px] text-ink-muted">
+                  Karma: {brief.karmaTier}
+                </span>
+              )}
             </div>
 
-            {/* fill-in skeleton — the user writes the real post into this shape */}
-            <div className="rounded-sm border border-hairline bg-surface-2/60 p-2.5">
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="eyebrow text-[10px]">Skeleton — write your own</span>
+            {/* angle to lead with — the product-specific advice */}
+            {brief.angle && (
+              <div className="rounded border border-primary/40 bg-primary/5 px-2.5 py-1.5">
+                <span className="eyebrow text-[9px] text-primary">Lead with</span>
+                <p className="mt-0.5 text-ink">{brief.angle}</p>
+              </div>
+            )}
+
+            {/* compact facts */}
+            <dl className="grid grid-cols-[64px_1fr] gap-x-2 gap-y-1">
+              <Row label="Where" value={brief.where} />
+              <Row label="Length" value={brief.length} />
+              <Row label="Title" value={brief.title} />
+              {brief.bestTime && <Row label="Time" value={brief.bestTime} />}
+            </dl>
+
+            {/* real per-community rules */}
+            {brief.rules && (
+              <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
+                <span className="eyebrow text-[9px] text-ink-subtle">
+                  Rules &amp; removal
+                </span>
+                <p className="mt-0.5 text-ink-muted">{brief.rules}</p>
+              </div>
+            )}
+            {brief.karmaNote && (
+              <p className="text-[11px] text-ink-tertiary">⚑ {brief.karmaNote}</p>
+            )}
+
+            {/* skeleton */}
+            <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-2">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="eyebrow text-[9px] text-ink-subtle">
+                  Skeleton — write your own
+                </span>
                 <button
                   onClick={copySkeleton}
-                  className="menu-link rounded-sm text-[11px] text-ink-muted"
+                  className="menu-link rounded text-[10px] text-ink-muted"
                 >
                   {copied ? "copied" : "copy"}
                 </button>
               </div>
-              <ol className="space-y-1.5">
+              <ol className="space-y-1">
                 {brief.skeleton.map((line, i) => (
-                  <li key={i} className="flex gap-2 text-ink-muted">
-                    <span className="tnum text-ink-tertiary">{i + 1}.</span>
+                  <li key={i} className="flex gap-1.5 text-ink-muted">
+                    <span className="tnum text-primary">{i + 1}</span>
                     <span>{line}</span>
                   </li>
                 ))}
               </ol>
             </div>
 
-            <p className="text-[11px] text-ink-tertiary">
-              Write it yourself in your own words — it reads human and won&apos;t
-              get auto-flagged like a template.
-            </p>
+            <p className="text-[11px] text-ink-tertiary">{brief.warn}</p>
           </div>
         )}
       </div>
@@ -91,9 +130,9 @@ export function PostingBrief({ community }: { community: Community }) {
         href={submitHref}
         target="_blank"
         rel="noopener noreferrer"
-        className="focus-ring btn-press inline-block rounded-sm border-2 border-hairline-strong bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+        className="focus-ring btn-press inline-block rounded border-2 border-hairline-strong bg-primary px-2.5 py-1 text-xs font-medium text-white hover:bg-primary-hover"
       >
-        {submitLabel}
+        {submitLabel} →
       </a>
     </div>
   );
@@ -101,37 +140,9 @@ export function PostingBrief({ community }: { community: Community }) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex gap-2">
-      <dt className="eyebrow w-20 shrink-0 text-[10px]">{label}</dt>
+    <>
+      <dt className="eyebrow text-[9px] text-ink-subtle">{label}</dt>
       <dd className="text-ink-muted">{value}</dd>
-    </div>
-  );
-}
-
-function List({
-  label,
-  items,
-  tone,
-}: {
-  label: string;
-  items: string[];
-  tone: "ok" | "bad";
-}) {
-  return (
-    <div>
-      <span
-        className={`eyebrow text-[10px] ${tone === "ok" ? "text-success" : "text-red-700"}`}
-      >
-        {label}
-      </span>
-      <ul className="mt-1 space-y-1 text-ink-muted">
-        {items.map((it, i) => (
-          <li key={i} className="flex gap-1.5">
-            <span className="text-ink-tertiary">·</span>
-            <span>{it}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    </>
   );
 }
