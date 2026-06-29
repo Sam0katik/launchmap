@@ -1,14 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" shape-rendering="crispEdges">
-  <!-- white pixel paper-plane (origami dart), nose pointing right, vertically centred -->
-  <!-- lit top wing (white) -->
-  <rect x="3" y="4"  width="2"  height="1" fill="#ffffff"/>
-  <rect x="3" y="5"  width="5"  height="1" fill="#ffffff"/>
-  <rect x="3" y="6"  width="8"  height="1" fill="#ffffff"/>
-  <!-- centre crease row reaching the sharp nose at the right tip -->
-  <rect x="3" y="7"  width="11" height="1" fill="#ffffff"/>
-  <rect x="3" y="8"  width="9"  height="1" fill="#e2e2e2"/>
-  <!-- shaded underside (light grey) so the paper fold reads -->
-  <rect x="3" y="9"  width="6"  height="1" fill="#b8b8b8"/>
-  <rect x="3" y="10" width="4"  height="1" fill="#b8b8b8"/>
-  <rect x="3" y="11" width="2"  height="1" fill="#b8b8b8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none">
+  <!-- origami paper plane (send-icon shape), pointing up-right. White fill with a
+       dark outline so it reads as a folded paper plane on both light and dark tabs. -->
+  <!-- upper wing -->
+  <path d="M14.5 2.5 L2 6.6 L7.2 8.4 Z" fill="#ffffff" stroke="#1b1a16" stroke-width="0.7" stroke-linejoin="round"/>
+  <!-- lower wing (the fold underside) -->
+  <path d="M14.5 2.5 L7.2 8.4 L5.6 13 Z" fill="#d7d4cb" stroke="#1b1a16" stroke-width="0.7" stroke-linejoin="round"/>
+  <!-- orange nose accent -->
+  <circle cx="14.2" cy="2.8" r="0.9" fill="#ff6a14"/>
 </svg>

@@ -41,6 +41,8 @@ export interface ProductAnalysis {
   category: string;
   icp: string;
   niche_tags: string[];
+  // Concrete, specific strengths/angles a maker can lead a post with.
+  strengths?: string[];
 }
 
 // One ranked entry in a generated map.

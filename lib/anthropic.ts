@@ -37,14 +37,19 @@ export async function analyzeProduct(
           `  "product_summary": "one sentence on what it does",\n` +
           `  "category": "short product category",\n` +
           `  "icp": "ideal customer profile in one phrase",\n` +
-          `  "niche_tags": ["5-8", "lowercase", "tags"]\n` +
+          `  "niche_tags": ["5-8", "lowercase", "tags"],\n` +
+          `  "strengths": ["2-3 short, concrete angles a maker could lead a post with"]\n` +
           `}\n\n` +
           `Tag rules: order from MOST specific to most general. Prefer precise ` +
           `tags that describe THIS product (e.g. "nocode", "devtool", ` +
           `"opensource", "marketplace", "chrome-extension", "fintech") over ` +
           `generic ones like "saas" or "startup". Single words or hyphenated, ` +
           `no spaces. These tags decide which communities match, so be accurate, ` +
-          `not broad.`,
+          `not broad.\n\n` +
+          `strengths: each is a SPECIFIC, honest selling angle grounded in the ` +
+          `content (e.g. "saves X hours of manual work", "the only tool that ` +
+          `does Y", "built for Z audience specifically"). 4-9 words each, no ` +
+          `hype words. These become posting advice, so make them real and usable.`,
       },
     ],
   });
@@ -64,6 +69,9 @@ function parseAnalysis(raw: string): ProductAnalysis {
     icp: parsed.icp ?? "",
     niche_tags: Array.isArray(parsed.niche_tags)
       ? parsed.niche_tags.map((t: unknown) => String(t).toLowerCase())
+      : [],
+    strengths: Array.isArray(parsed.strengths)
+      ? parsed.strengths.map((s: unknown) => String(s)).slice(0, 3)
       : [],
   };
 }

@@ -5,6 +5,8 @@ import { isAdminUser } from "@/lib/admins";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { AdminUnlockToggle } from "@/components/AdminUnlockToggle";
+import { AdminTopUpButton } from "@/components/AdminTopUpButton";
+import { formatUsd } from "@/lib/billing";
 
 // Owner dashboard: every user, their plan, and run activity. Gated by the
 // ADMIN_EMAILS allowlist; non-admins get a 404 (the page's existence is hidden).
@@ -27,15 +29,20 @@ export default async function AdminPage() {
 
   const admin = createAdminClient();
 
-  // Auth users + profiles (plan) + all runs, in parallel.
+  // Auth users + profiles (balance) + all runs, in parallel.
   const [usersRes, profilesRes, runsRes] = await Promise.all([
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-    admin.from("profiles").select("id, plan"),
+    admin.from("profiles").select("id, balance_cents"),
     admin.from("runs").select("user_id, unlocked, created_at"),
   ]);
 
   const authUsers = usersRes.data?.users ?? [];
-  void profilesRes; // plans removed; profiles no longer surfaced here
+  const balanceById = new Map(
+    (profilesRes.data ?? []).map((p) => [
+      p.id as string,
+      (p.balance_cents as number) ?? 0,
+    ])
+  );
 
   // Aggregate run activity per user.
   type Agg = { total: number; unlocked: number; last: string | null };
@@ -58,6 +65,7 @@ export default async function AdminPage() {
         name: (u.user_metadata?.user_name as string) ?? "—",
         email: u.email ?? "—",
         joined: u.created_at,
+        balanceCents: balanceById.get(u.id) ?? 0,
         ...agg,
       };
     })
@@ -95,11 +103,11 @@ export default async function AdminPage() {
               <thead>
                 <tr className="border-b-2 border-hairline-strong text-left text-xs uppercase tracking-widest text-ink-subtle">
                   <Th>User</Th>
+                  <Th>Balance</Th>
                   <Th>Maps</Th>
                   <Th>Unlocked</Th>
-                  <Th>Joined</Th>
                   <Th>Last map</Th>
-                  <Th>Test access</Th>
+                  <Th>Actions</Th>
                 </tr>
               </thead>
               <tbody>
@@ -109,15 +117,18 @@ export default async function AdminPage() {
                       <span className="text-ink">{r.name}</span>
                       <span className="block text-xs text-ink-subtle">{r.email}</span>
                     </Td>
+                    <Td className="tnum">{formatUsd(r.balanceCents)}</Td>
                     <Td className="tnum">{r.total}</Td>
                     <Td className="tnum">{r.unlocked}</Td>
-                    <Td className="text-ink-subtle">{fmt(r.joined)}</Td>
                     <Td className="text-ink-subtle">{fmt(r.last)}</Td>
                     <Td>
-                      <AdminUnlockToggle
-                        userId={r.id}
-                        unlocked={r.unlocked > 0}
-                      />
+                      <div className="flex items-center gap-2">
+                        <AdminTopUpButton userId={r.id} />
+                        <AdminUnlockToggle
+                          userId={r.id}
+                          unlocked={r.unlocked > 0}
+                        />
+                      </div>
                     </Td>
                   </tr>
                 ))}

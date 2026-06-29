@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatUsd } from "@/lib/billing";
 
-// Unlock a map by spending internal balance (admins unlock free). Shows the
-// price, handles insufficient balance, and refreshes the page on success.
+// Unlock a map by spending internal balance (admins unlock free). Two-step:
+// click "Spend $3" → confirm (no refunds) → charge. Refreshes on success.
 export function UnlockButton({
   runId,
   balanceCents,
@@ -18,6 +18,7 @@ export function UnlockButton({
   isAdmin: boolean;
   priceLabel: string;
 }) {
+  const [armed, setArmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [short, setShort] = useState(false);
   const router = useRouter();
@@ -33,6 +34,7 @@ export function UnlockButton({
       });
       if (res.status === 402) {
         setShort(true);
+        setArmed(false);
         return;
       }
       if (res.ok) router.refresh();
@@ -41,32 +43,63 @@ export function UnlockButton({
     }
   }
 
-  return (
-    <div className="shrink-0 text-right">
+  if (isAdmin) {
+    return (
       <button
         onClick={unlock}
         disabled={busy}
-        className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+        className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
       >
-        {busy
-          ? "Unlocking…"
-          : isAdmin
-            ? "Unlock all publics (admin) →"
-            : `Unlock all publics — ${priceLabel}`}
+        {busy ? "Unlocking…" : "Unlock (admin)"}
       </button>
-      {!isAdmin && (
+    );
+  }
+
+  if (!armed) {
+    return (
+      <div className="shrink-0 text-right">
+        <button
+          onClick={() => setArmed(true)}
+          className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+        >
+          Spend $3
+        </button>
         <p className="mt-1 text-xs text-ink-tertiary">
           Balance: {formatUsd(balanceCents)}
         </p>
-      )}
-      {short && (
-        <p className="mt-1 text-xs text-red-700">
-          Not enough balance.{" "}
-          <Link href="/profile" className="underline">
-            Top up
-          </Link>
-        </p>
-      )}
+        {short && (
+          <p className="mt-1 text-xs text-red-700">
+            Not enough balance.{" "}
+            <Link href="/profile" className="underline">
+              Top up
+            </Link>
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="shrink-0 text-right">
+      <p className="mb-1.5 text-xs text-ink-muted">
+        Charge {priceLabel.replace(" one-time", "")} now? No refunds.
+      </p>
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setArmed(false)}
+          disabled={busy}
+          className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-sm text-ink disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={unlock}
+          disabled={busy}
+          className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+        >
+          {busy ? "Charging…" : "Confirm — spend $3"}
+        </button>
+      </div>
     </div>
   );
 }

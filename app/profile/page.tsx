@@ -93,7 +93,7 @@ export default async function ProfilePage() {
                 <p className="eyebrow mb-1">Balance</p>
                 <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
                 <div className="mt-3">
-                  <TopUpButton userId={user.id} isAdmin={isAdmin} />
+                  <TopUpButton />
                 </div>
               </div>
               <Stat
