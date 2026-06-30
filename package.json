@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "db:seed-gen": "node scripts/gen-seed.mjs",
     "db:add": "node scripts/add-community.mjs",
-    "db:reddit-verify": "node scripts/reddit-verify.mjs"
+    "db:reddit-verify": "node scripts/reddit-verify.mjs",
+    "db:reddit-fetch": "node scripts/reddit-fetch.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",

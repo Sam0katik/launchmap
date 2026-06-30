@@ -1,5 +1,6 @@
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 import { PostingBrief } from "@/components/PostingBrief";
+import { CommunityAvatar } from "@/components/CommunityAvatar";
 
 // One community card on the map, styled as a print-zine docket. All cards share
 // the same frame; locked ones show a lock placeholder instead of the brief, so
@@ -48,6 +49,7 @@ export function CommunityCard({
   return (
     <div className="flex flex-col rounded-md border-2 border-hairline-strong bg-surface-1 shadow-[4px_5px_0_0_var(--color-hairline-strong)]">
       <div className="flex items-start gap-3 px-5 pb-4 pt-5">
+        <CommunityAvatar icon={community.icon} name={name} />
         <div className="min-w-0 flex-1">
           <h3 className="text-lg leading-tight text-ink">{name}</h3>
           <span className="eyebrow mt-1 block">{community.platform}</span>

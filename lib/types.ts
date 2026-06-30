@@ -33,6 +33,7 @@ export interface Community {
   submit_template: string | null;
   verified_at: string; // ISO date
   members?: number | null; // real subscriber/member count (reach)
+  icon?: string | null; // avatar URL (Reddit community_icon / directory favicon)
   created_at?: string;
 }
 
