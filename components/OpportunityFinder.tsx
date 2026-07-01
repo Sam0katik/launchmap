@@ -118,11 +118,18 @@ export function OpportunityFinder({
         </p>
       )}
 
+      {busy && (
+        <p className="text-sm text-ink-subtle">
+          Searching Reddit — this takes ~20–40 seconds, hang tight<Dots />
+        </p>
+      )}
+
       {error && <p className="text-sm text-red-700">{error}</p>}
 
       {unlocked && threads && threads.length === 0 && !busy && (
         <p className="text-sm text-ink-tertiary">
-          No fresh threads found right now — try again later.
+          No threads came back — Reddit sometimes rate-limits the search. Give it
+          a moment and hit Refresh.
         </p>
       )}
 
