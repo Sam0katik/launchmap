@@ -26,10 +26,13 @@ export interface RedditThread {
   comments: number | null;
 }
 
-/** Start an actor run searching recent posts for `query`. Returns the run id. */
-export async function startRedditSearch(query: string): Promise<string | null> {
+/** Start an actor run searching recent posts for `query`. Returns the run id,
+ *  or an { error } with a short detail so failures are diagnosable. */
+export async function startRedditSearch(
+  query: string
+): Promise<{ runId: string } | { error: string }> {
   const token = process.env.APIFY_TOKEN;
-  if (!token) return null;
+  if (!token) return { error: "no_token" };
   // Input matched to trudax/reddit-scraper-lite's schema. includeMediaLinks
   // must be true to get up-votes + comment counts. The actor scrapes through
   // Apify's own residential proxy (billed per result), which is why it works
@@ -49,16 +52,24 @@ export async function startRedditSearch(query: string): Promise<string | null> {
     maxComments: 0,
     proxy: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
   };
-  const res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-    signal: AbortSignal.timeout(9000),
-  });
-  if (!res.ok) return null;
+  let res: Response;
+  try {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      signal: AbortSignal.timeout(9000),
+    });
+  } catch {
+    return { error: "network" };
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { error: `apify_${res.status}: ${body.slice(0, 160)}` };
+  }
   const data = await res.json().catch(() => null);
   const id = data?.data?.id;
-  return typeof id === "string" ? id : null;
+  return typeof id === "string" ? { runId: id } : { error: "no_run_id" };
 }
 
 interface RunResult {

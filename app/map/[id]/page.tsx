@@ -110,6 +110,7 @@ export default async function MapPage({
           <OpportunityFinder
             runId={run.id}
             enabled={apifyConfigured()}
+            unlocked={!!run.unlocked}
             initialThreads={
               (run.opportunities as OppThread[] | null) ?? null
             }

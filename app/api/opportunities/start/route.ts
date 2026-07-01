@@ -32,11 +32,15 @@ export async function POST(req: NextRequest) {
   // Ownership + keywords via RLS read.
   const { data: run } = await supabase
     .from("runs")
-    .select("id, product_data")
+    .select("id, product_data, unlocked")
     .eq("id", parsed.data.runId)
     .maybeSingle();
   if (!run) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  // Paid feature — only unlocked maps can spend an actor run.
+  if (!run.unlocked) {
+    return NextResponse.json({ error: "locked" }, { status: 403 });
   }
 
   const analysis = run.product_data as ProductAnalysis | null;
@@ -46,9 +50,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "no_keywords" }, { status: 422 });
   }
 
-  const apifyRunId = await startRedditSearch(query);
-  if (!apifyRunId) {
-    return NextResponse.json({ error: "start_failed" }, { status: 502 });
+  const started = await startRedditSearch(query);
+  if ("error" in started) {
+    return NextResponse.json(
+      { error: "start_failed", detail: started.error },
+      { status: 502 }
+    );
   }
-  return NextResponse.json({ ok: true, apifyRunId, query });
+  return NextResponse.json({ ok: true, apifyRunId: started.runId, query });
 }
