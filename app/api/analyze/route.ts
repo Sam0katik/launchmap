@@ -149,14 +149,31 @@ function isSafePublicUrl(raw: string): boolean {
   return true;
 }
 
-/** Fetch a landing page and crudely strip it to text. Never throws. */
+/** Fetch a landing page and crudely strip it to text. Never throws.
+ *  Redirects are followed manually so every hop's target is re-checked with the
+ *  SSRF guard — otherwise a public URL could 3xx-redirect into a private range
+ *  (e.g. cloud metadata) and slip past the initial check. */
 async function fetchLandingText(url: string): Promise<string> {
   try {
-    const res = await fetch(url, {
-      headers: { "user-agent": "LaunchMapBot/0.1 (+https://launchmap.app)" },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return "";
+    let current = url;
+    let res: Response | null = null;
+    for (let hop = 0; hop < 5; hop++) {
+      if (!isSafePublicUrl(current)) return "";
+      res = await fetch(current, {
+        headers: { "user-agent": "LaunchMapBot/0.1 (+https://launchmap.app)" },
+        signal: AbortSignal.timeout(8000),
+        redirect: "manual",
+      });
+      // 3xx with a Location → re-validate the next hop before following it.
+      if (res.status >= 300 && res.status < 400) {
+        const loc = res.headers.get("location");
+        if (!loc) break;
+        current = new URL(loc, current).toString();
+        continue;
+      }
+      break;
+    }
+    if (!res || !res.ok) return "";
     const html = await res.text();
     return html
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
