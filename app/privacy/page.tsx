@@ -110,7 +110,7 @@ export default function Privacy() {
                 up through a third-party crypto payment processor&apos;s hosted
                 checkout — the payment happens entirely on their page, and we
                 receive only a signature-verified confirmation that a top-up
-                succeeded. Unlocking a full map then spends $3 from that balance.
+                succeeded. Unlocking a full map then spends $2 from that balance.
               </p>
               <p className="mt-3">
                 We store only your balance and a paid/unpaid flag per map. We

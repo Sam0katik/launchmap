@@ -11,24 +11,27 @@ interface Karma {
   createdUtc: number;
 }
 
-// Small Reddit mark (snoo-ish) so the collapsed control is recognisable.
+// Reddit Snoo mark — orange disc, white alien head, antenna + smile.
 function RedditGlyph({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden>
       <circle cx="10" cy="10" r="10" fill="#FF4500" />
-      <circle cx="10" cy="12" r="5.4" fill="#fff" />
-      <circle cx="7.6" cy="11.4" r="1.15" fill="#FF4500" />
-      <circle cx="12.4" cy="11.4" r="1.15" fill="#FF4500" />
+      {/* antenna */}
+      <line x1="10.1" y1="10.5" x2="13.4" y2="5.2" stroke="#fff" strokeWidth="1" />
+      <circle cx="13.7" cy="4.7" r="1.4" fill="#fff" />
+      {/* head */}
+      <ellipse cx="10" cy="11.7" rx="6" ry="4.3" fill="#fff" />
+      {/* eyes */}
+      <circle cx="7.7" cy="11.2" r="1.15" fill="#FF4500" />
+      <circle cx="12.3" cy="11.2" r="1.15" fill="#FF4500" />
+      {/* smile */}
       <path
-        d="M7.7 14c.6.5 1.4.7 2.3.7s1.7-.2 2.3-.7"
+        d="M7.8 13.5c.6.55 1.4.8 2.2.8s1.6-.25 2.2-.8"
         stroke="#FF4500"
         strokeWidth="0.9"
         strokeLinecap="round"
         fill="none"
       />
-      <circle cx="15.2" cy="6.6" r="1.5" fill="#fff" />
-      <path d="M10 6.6 13.9 5.9" stroke="#fff" strokeWidth="0.9" strokeLinecap="round" />
-      <circle cx="10" cy="6.6" r="0.8" fill="#fff" />
     </svg>
   );
 }

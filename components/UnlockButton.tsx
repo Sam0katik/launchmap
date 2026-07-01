@@ -58,7 +58,7 @@ export function UnlockButton({
           onClick={() => setArmed(true)}
           className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
         >
-          Spend $3
+          Spend {priceLabel.replace(" one-time", "")}
         </button>
         <p className="mt-1 text-xs text-ink-tertiary">
           Balance: {formatUsd(balanceCents)}
@@ -93,7 +93,11 @@ export function UnlockButton({
           disabled={busy}
           className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
         >
-          {busy ? <>Charging<Dots /></> : "Confirm — spend $3"}
+          {busy ? (
+            <>Charging<Dots /></>
+          ) : (
+            `Confirm — spend ${priceLabel.replace(" one-time", "")}`
+          )}
         </button>
       </div>
     </div>
