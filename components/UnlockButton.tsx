@@ -24,26 +24,30 @@ export function UnlockButton({
   async function unlock() {
     setBusy(true);
     setShort(false);
-    try {
-      // One retry on a concurrency conflict (409); otherwise proceed.
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const res = await fetch("/api/unlock", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ runId }),
-        });
-        if (res.status === 402) {
-          setShort(true);
-          setArmed(false);
-          return;
-        }
-        if (res.status === 409) continue; // lost the race — try once more
-        if (res.ok) router.refresh();
+    // One retry on a concurrency conflict (409); otherwise proceed.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const res = await fetch("/api/unlock", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ runId }),
+      });
+      if (res.status === 402) {
+        setShort(true);
+        setArmed(false);
+        setBusy(false);
         return;
       }
-    } finally {
+      if (res.status === 409) continue; // lost the race — try once more
+      if (res.ok) {
+        // Leave the spinner on: the whole unlock panel unmounts once the map
+        // refreshes, so resetting busy would just flash it back to idle.
+        router.refresh();
+        return;
+      }
       setBusy(false);
+      return;
     }
+    setBusy(false);
   }
 
   if (!armed) {

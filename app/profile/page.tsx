@@ -9,7 +9,7 @@ import { RedditGuide } from "@/components/RedditGuide";
 import { TopUpButton } from "@/components/TopUpButton";
 import { MAX_MAPS_PER_ACCOUNT, UNLOCK_PRICE_LABEL, formatUsd } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
-import type { ProductAnalysis } from "@/lib/types";
+import { productNameFromUrl } from "@/lib/product-name";
 
 // Account hub: every launch map the user has run, usage, and account management
 // (sign-out lives in the nav; deletion lives here). Server component, RLS-scoped
@@ -26,7 +26,7 @@ export default async function ProfilePage() {
   const [{ data: runs }, { data: profile }] = await Promise.all([
     supabase
       .from("runs")
-      .select("id, product_url, product_data, unlocked, created_at")
+      .select("id, product_url, unlocked, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -89,10 +89,10 @@ export default async function ProfilePage() {
           <section className="mb-10">
             <h2 className="eyebrow mb-3">Balance &amp; usage</h2>
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4">
-                <p className="eyebrow mb-1">Balance</p>
-                <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
-                <div className="mt-3">
+              <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-2.5">
+                <p className="eyebrow mb-0.5">Balance</p>
+                <p className="tnum text-lg text-ink">{formatUsd(balanceCents)}</p>
+                <div className="mt-2">
                   <TopUpButton />
                 </div>
               </div>
@@ -129,11 +129,9 @@ export default async function ProfilePage() {
             ) : (
               <ul className="space-y-3">
                 {runList.map((run) => {
-                  const a = run.product_data as ProductAnalysis | null;
-                  // Short label: the category (a couple of words), falling back
-                  // to the bare hostname — not the full sentence summary.
-                  const host = hostnameOf(run.product_url);
-                  const title = a?.category?.trim() || host;
+                  // Title from the domain (e.g. "Linear"); the real URL the
+                  // user submitted sits underneath.
+                  const title = productNameFromUrl(run.product_url);
                   return (
                     <li
                       key={run.id}
@@ -149,7 +147,7 @@ export default async function ProfilePage() {
                       <div className="pointer-events-none min-w-0">
                         <p className="truncate text-ink">{title}</p>
                         <p className="mt-0.5 truncate text-xs text-ink-subtle">
-                          {host}
+                          {run.product_url}
                         </p>
                       </div>
                       <div className="relative flex shrink-0 items-center gap-3">
@@ -195,20 +193,11 @@ export default async function ProfilePage() {
   );
 }
 
-/** Bare hostname without protocol/www, for compact run labels. */
-function hostnameOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-}
-
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4">
-      <p className="eyebrow mb-1">{label}</p>
-      <p className="tnum text-2xl text-ink">{value}</p>
+    <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-2.5">
+      <p className="eyebrow mb-0.5">{label}</p>
+      <p className="tnum text-lg text-ink">{value}</p>
     </div>
   );
 }

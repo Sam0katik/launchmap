@@ -15,16 +15,18 @@ export function DeleteMapButton({ runId }: { runId: string }) {
     e.preventDefault();
     e.stopPropagation();
     setBusy(true);
-    try {
-      const res = await fetch("/api/runs/delete", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ runId }),
-      });
-      if (res.ok) router.refresh();
-    } finally {
-      setBusy(false);
+    const res = await fetch("/api/runs/delete", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ runId }),
+    });
+    if (res.ok) {
+      // Keep the spinner until the refreshed list drops this row — resetting
+      // busy here would flash the control back to idle for a beat first.
+      router.refresh();
+      return;
     }
+    setBusy(false);
   }
 
   if (!armed) {
