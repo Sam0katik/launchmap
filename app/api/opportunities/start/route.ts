@@ -44,22 +44,28 @@ export async function POST(req: NextRequest) {
   }
 
   const analysis = run.product_data as ProductAnalysis | null;
-  // A single broad keyword finds more live threads than an AND of tags (and is
-  // less likely to come back empty). Hyphens → spaces for a natural search term.
-  const tags = (analysis?.niche_tags ?? []).filter(Boolean);
-  const query = (tags[0] || analysis?.category || "")
-    .replace(/[-_]+/g, " ")
-    .trim();
-  if (!query) {
+  // Build the per-product search terms from its niche tags (each term is a
+  // separate Reddit search; results are combined). Hyphens → spaces so tags
+  // like "product-launch" read as a natural query. Fall back to the category.
+  const clean = (s: string) => s.replace(/[-_]+/g, " ").trim();
+  let terms = (analysis?.niche_tags ?? [])
+    .filter(Boolean)
+    .slice(0, 3)
+    .map(clean)
+    .filter((t) => t.length > 1);
+  if (terms.length === 0 && analysis?.category) {
+    terms = [clean(analysis.category)];
+  }
+  if (terms.length === 0) {
     return NextResponse.json({ error: "no_keywords" }, { status: 422 });
   }
 
-  const started = await startRedditSearch(query);
+  const started = await startRedditSearch(terms);
   if ("error" in started) {
     return NextResponse.json(
       { error: "start_failed", detail: started.error },
       { status: 502 }
     );
   }
-  return NextResponse.json({ ok: true, apifyRunId: started.runId, query });
+  return NextResponse.json({ ok: true, apifyRunId: started.runId, terms });
 }

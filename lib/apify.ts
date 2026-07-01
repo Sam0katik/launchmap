@@ -11,10 +11,11 @@
 // (returns fast) and POLL it, rather than running synchronously.
 
 const API = "https://api.apify.com/v2";
-// Reddit Scraper Lite. The API wants store actors as `username~actor-name`
-// (the raw console id 404s). Override with APIFY_REDDIT_ACTOR if needed.
+// harshmaur/reddit-scraper — searches Reddit reliably (not 403-blocked like the
+// others). Store actors are referenced as `username~actor-name`. Override with
+// APIFY_REDDIT_ACTOR if needed.
 const ACTOR_ID =
-  process.env.APIFY_REDDIT_ACTOR || "trudax~reddit-scraper-lite";
+  process.env.APIFY_REDDIT_ACTOR || "harshmaur~reddit-scraper";
 
 export function apifyConfigured(): boolean {
   return !!process.env.APIFY_TOKEN;
@@ -28,30 +29,27 @@ export interface RedditThread {
   comments: number | null;
 }
 
-/** Start an actor run searching recent posts for `query`. Returns the run id,
- *  or an { error } with a short detail so failures are diagnosable. */
+/** Start an actor run searching recent posts for the given terms. Returns the
+ *  run id, or an { error } with a short detail so failures are diagnosable. */
 export async function startRedditSearch(
-  query: string
+  terms: string[]
 ): Promise<{ runId: string } | { error: string }> {
   const token = process.env.APIFY_TOKEN;
   if (!token) return { error: "no_token" };
-  // Input matched to trudax/reddit-scraper-lite's schema. includeMediaLinks
-  // must be true to get up-votes + comment counts. The actor scrapes through
-  // Apify's own residential proxy (billed per result), which is why it works
-  // where our direct proxy didn't.
+  // Input matched to harshmaur/reddit-scraper's schema (from the working run).
   const input = {
-    searches: [query],
+    searchTerms: terms,
     searchPosts: true,
     searchComments: false,
     searchCommunities: false,
-    searchUsers: false,
-    searchMedia: false,
-    sort: "new",
-    includeMediaLinks: true,
+    searchSort: "new",
+    searchTime: "all",
+    maxPostsCount: 20,
+    maxCommunitiesCount: 0,
+    crawlCommentsPerPost: false,
+    fastMode: true,
     includeNSFW: false,
-    maxItems: 25,
-    maxPostCount: 25,
-    maxComments: 0,
+    onlyWithFlair: false,
     proxy: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
   };
   let res: Response;
@@ -115,7 +113,9 @@ export async function getRedditSearchResult(
   for (const it of Array.isArray(items) ? items : []) {
     const type = (it.dataType ?? it.type) as string | undefined;
     if (type && type !== "post") continue;
-    const url = (it.url ?? it.link ?? it.permalink) as string | undefined;
+    const url = (it.postUrl ?? it.url ?? it.link ?? it.permalink) as
+      | string
+      | undefined;
     const title = (it.title ?? it.postTitle) as string | undefined;
     if (!url || !title) continue;
     threads.push({
@@ -127,7 +127,9 @@ export async function getRedditSearchResult(
         (it.subreddit as string) ??
         null,
       upvotes: numOrNull(it.upVotes ?? it.score ?? it.numberOfUpVotes),
-      comments: numOrNull(it.numberOfComments ?? it.numComments),
+      comments: numOrNull(
+        it.commentsCount ?? it.numberOfComments ?? it.numComments
+      ),
     });
   }
   return { status: "SUCCEEDED", threads: threads.slice(0, 20) };
