@@ -54,7 +54,9 @@ export function MapListRow({
         />
       )}
 
-      <div className="relative min-w-0 flex-1">
+      <div
+        className={`relative min-w-0 flex-1 ${editing ? "" : "pointer-events-none"}`}
+      >
         {editing ? (
           <div className="flex flex-wrap items-center gap-2">
             <input

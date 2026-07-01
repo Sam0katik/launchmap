@@ -19,10 +19,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export function OpportunityFinder({
   runId,
   enabled,
+  unlocked,
   initialThreads,
 }: {
   runId: string;
   enabled: boolean;
+  unlocked: boolean;
   initialThreads: Thread[] | null;
 }) {
   const [threads, setThreads] = useState<Thread[] | null>(initialThreads);
@@ -43,7 +45,9 @@ export function OpportunityFinder({
         setError(
           startRes.status === 422
             ? "Not enough product keywords to search."
-            : "Couldn't start the search — try again."
+            : startData?.detail
+              ? `Couldn't start: ${startData.detail}`
+              : "Couldn't start the search — try again."
         );
         return;
       }
@@ -87,7 +91,7 @@ export function OpportunityFinder({
             Live threads about your space — join with a real comment, not a link.
           </p>
         </div>
-        {enabled && (
+        {enabled && unlocked && (
           <button
             onClick={run}
             disabled={busy}
@@ -108,15 +112,21 @@ export function OpportunityFinder({
         <p className="text-sm text-ink-tertiary">Connecting soon.</p>
       )}
 
+      {enabled && !unlocked && (
+        <p className="text-sm text-ink-tertiary">
+          🔒 Unlock this map to find live threads to join.
+        </p>
+      )}
+
       {error && <p className="text-sm text-red-700">{error}</p>}
 
-      {threads && threads.length === 0 && !busy && (
+      {unlocked && threads && threads.length === 0 && !busy && (
         <p className="text-sm text-ink-tertiary">
           No fresh threads found right now — try again later.
         </p>
       )}
 
-      {threads && threads.length > 0 && (
+      {unlocked && threads && threads.length > 0 && (
         <ul className="mt-1 space-y-2">
           {threads.map((t, i) => (
             <li key={i}>
