@@ -24,13 +24,21 @@ export function AuthButton() {
       return;
     }
     const supabase = createClient();
+    const nameOf = (u: { user_metadata?: Record<string, unknown>; email?: string } | null) =>
+      u ? ((u.user_metadata?.user_name as string) ?? u.email ?? "signed in") : null;
+
     supabase.auth.getUser().then(({ data }) => {
-      const u = data.user;
-      setName(
-        u ? (u.user_metadata?.user_name as string) ?? u.email ?? "signed in" : null
-      );
+      setName(nameOf(data.user));
       setReady(true);
     });
+
+    // React to sign-in / token-refresh / sign-out so a fresh deploy or a
+    // mid-refresh token doesn't leave the button showing "signed out".
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setName(nameOf(session?.user ?? null));
+      setReady(true);
+    });
+    return () => sub.subscription.unsubscribe();
   }, [configured]);
 
   // Outside-click + Esc to dismiss the menu.
