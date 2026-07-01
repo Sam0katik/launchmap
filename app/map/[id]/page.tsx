@@ -44,11 +44,38 @@ export default async function MapPage({
 
   const analysis = run.product_data as ProductAnalysis | null;
   const rankedRaw = (run.result ?? []) as RankedCommunity[];
+
+  // The result is a snapshot from analyze time, so icon/member counts baked in
+  // then can be stale (or empty). Overlay the live values by community id so a
+  // Reddit-data refresh shows up on existing maps too — everything else stays
+  // from the snapshot.
+  const ids = rankedRaw.map((r) => r.community.id);
+  const liveById = new Map<number, { icon: string | null; members: number | null }>();
+  if (ids.length > 0) {
+    const { data: live } = await supabase
+      .from("communities")
+      .select("id, icon, members")
+      .in("id", ids);
+    for (const c of live ?? []) {
+      liveById.set(c.id as number, {
+        icon: (c.icon as string | null) ?? null,
+        members: (c.members as number | null) ?? null,
+      });
+    }
+  }
+
   // run.unlocked is the source of truth: when set (paid / Pro), every entry is
   // unlocked regardless of the locked flags baked into the stored result.
-  const ranked: RankedCommunity[] = run.unlocked
-    ? rankedRaw.map((r) => ({ ...r, locked: false }))
-    : rankedRaw;
+  const ranked: RankedCommunity[] = rankedRaw.map((r) => {
+    const live = liveById.get(r.community.id);
+    return {
+      ...r,
+      locked: run.unlocked ? false : r.locked,
+      community: live
+        ? { ...r.community, icon: live.icon, members: live.members }
+        : r.community,
+    };
+  });
   const lockedCount = ranked.filter((r) => r.locked).length;
   // Short, stable run label for the receipt meta line.
   const runNo = String(run.id).replace(/-/g, "").slice(0, 8).toUpperCase();
