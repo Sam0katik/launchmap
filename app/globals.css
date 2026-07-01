@@ -127,6 +127,26 @@ body {
   .plane-across { animation: none; }
 }
 
+/* Animated loading ellipsis — three dots that pulse in sequence so any async
+   action reads as "alive" rather than frozen. */
+@keyframes dot-blink {
+  0%, 80%, 100% { opacity: 0.2; }
+  40%           { opacity: 1; }
+}
+.loading-dots {
+  display: inline-flex;
+  gap: 0.12em;
+  margin-left: 0.15em;
+}
+.loading-dots > span {
+  animation: dot-blink 1.2s infinite both;
+}
+.loading-dots > span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots > span:nth-child(3) { animation-delay: 0.4s; }
+@media (prefers-reduced-motion: reduce) {
+  .loading-dots > span { animation: none; opacity: 0.6; }
+}
+
 /* Dynamic numbers (% match, counters) must not jitter as digits change. */
 .tnum {
   font-variant-numeric: tabular-nums;

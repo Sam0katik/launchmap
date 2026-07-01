@@ -22,7 +22,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "invalid_username" }, { status: 400 });
   }
 
-  const karma = await fetchUserKarma(name);
+  let karma;
+  try {
+    karma = await fetchUserKarma(name);
+  } catch {
+    // Relay/transport failure — distinct from "no such user".
+    return NextResponse.json({ error: "reddit_unreachable" }, { status: 502 });
+  }
   if (!karma) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

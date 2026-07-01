@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Dots } from "@/components/Dots";
 
 // Admin-only: pull live subscriber counts + icons from Reddit's public
 // about.json into the communities table, server-side. Shows a short result
@@ -41,7 +42,7 @@ export function AdminRefreshReddit() {
         disabled={busy}
         className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-4 py-2.5 text-base font-medium text-ink hover:bg-surface-3 disabled:opacity-60"
       >
-        {busy ? "Refreshing…" : "↻ Refresh Reddit data"}
+        {busy ? <>Refreshing<Dots /></> : "↻ Refresh Reddit data"}
       </button>
       {result && <span className="text-xs text-ink-subtle">{result}</span>}
     </div>
