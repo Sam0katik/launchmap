@@ -67,5 +67,5 @@ export async function POST(req: NextRequest) {
       { status: 502 }
     );
   }
-  return NextResponse.json({ ok: true, apifyRunId: started.runId, query });
+  return NextResponse.json({ ok: true, apifyRunId: started.runId, terms });
 }
