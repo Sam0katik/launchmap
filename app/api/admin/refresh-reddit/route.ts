@@ -2,44 +2,16 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminUser } from "@/lib/admins";
+import { fetchSubAbout } from "@/lib/reddit";
 
 // POST /api/admin/refresh-reddit  (admin-only)
 // Pulls REAL data from Reddit's public about.json for every reddit community and
-// writes it straight to the DB: subscriber count (members) + community icon.
-// No API app / OAuth needed — about.json is anonymous read. This runs on the
-// server (Vercel), so it works even when you can't run the local script.
-//
-// Serverless time budget: fetch in small concurrent chunks, no artificial
-// sleeps, so ~35 subs finish in a few seconds.
+// writes it to the DB: subscriber count (members) + community icon. Routed
+// through a relay (see lib/reddit.ts) because Reddit blocks Vercel's IPs.
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const UA = "launchmap-refresh/1.0 (public read-only)";
-const CHUNK = 5;
-
-function cleanIcon(raw: unknown): string | null {
-  if (!raw || typeof raw !== "string") return null;
-  const url = raw
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .trim();
-  return url.startsWith("http") ? url : null;
-}
-
-async function fetchAbout(sub: string) {
-  const res = await fetch(`https://www.reddit.com/r/${sub}/about.json`, {
-    headers: { "User-Agent": UA, Accept: "application/json" },
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) return { ok: false as const, status: res.status };
-  const d = ((await res.json()) as { data?: Record<string, unknown> })?.data ?? {};
-  return {
-    ok: true as const,
-    subscribers: typeof d.subscribers === "number" ? d.subscribers : null,
-    icon: cleanIcon(d.community_icon) || cleanIcon(d.icon_img),
-  };
-}
+const CHUNK = 4;
 
 export async function POST() {
   const supabase = createClient();
@@ -78,9 +50,9 @@ export async function POST() {
       batch.map(async (row) => {
         const sub = String(row.name).replace(/^r\//i, "").trim();
         try {
-          const info = await fetchAbout(sub);
-          if (!info.ok) {
-            failed.push(`${row.name} (${info.status})`);
+          const info = await fetchSubAbout(sub);
+          if (!info) {
+            failed.push(`${row.name}: no data (blocked/relay)`);
             return;
           }
           const patch: Record<string, unknown> = {};
@@ -89,15 +61,18 @@ export async function POST() {
             patch.icon = info.icon;
             withIcon++;
           }
-          if (Object.keys(patch).length === 0) return;
+          if (Object.keys(patch).length === 0) {
+            failed.push(`${row.name}: empty`);
+            return;
+          }
           const { error: upErr } = await admin
             .from("communities")
             .update(patch)
             .eq("id", row.id);
-          if (upErr) failed.push(`${row.name} (write)`);
+          if (upErr) failed.push(`${row.name}: write`);
           else updated++;
         } catch {
-          failed.push(`${row.name} (timeout)`);
+          failed.push(`${row.name}: error`);
         }
       })
     );
@@ -108,6 +83,8 @@ export async function POST() {
     total: rows.length,
     updated,
     withIcon,
-    failed,
+    // A couple of sample failures so we can diagnose (blocked vs empty vs write).
+    sample: failed.slice(0, 3),
+    failedCount: failed.length,
   });
 }

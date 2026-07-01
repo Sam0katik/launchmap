@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
-import { DeleteMapButton } from "@/components/DeleteMapButton";
+import { MapListRow } from "@/components/MapListRow";
 import { RedditGuide } from "@/components/RedditGuide";
+import { RedditKarmaCheck } from "@/components/RedditKarmaCheck";
 import { TopUpButton } from "@/components/TopUpButton";
 import { MAX_MAPS_PER_ACCOUNT, UNLOCK_PRICE_LABEL, formatUsd } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
@@ -26,7 +27,7 @@ export default async function ProfilePage() {
   const [{ data: runs }, { data: profile }] = await Promise.all([
     supabase
       .from("runs")
-      .select("id, product_url, unlocked, created_at")
+      .select("id, product_url, title, unlocked, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -88,10 +89,13 @@ export default async function ProfilePage() {
           {/* balance + usage */}
           <section className="mb-10">
             <h2 className="eyebrow mb-3">Balance &amp; usage</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-2.5">
-                <p className="eyebrow mb-0.5">Balance</p>
-                <p className="tnum text-lg text-ink">{formatUsd(balanceCents)}</p>
+            {/* items-start so each card hugs its own content — otherwise the
+                grid stretches Maps/Unlocked to match the taller Balance card and
+                leaves a big empty frame under the number. */}
+            <div className="grid items-start gap-4 sm:grid-cols-3">
+              <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-3">
+                <p className="eyebrow mb-1">Balance</p>
+                <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
                 <div className="mt-2">
                   <TopUpButton />
                 </div>
@@ -128,50 +132,25 @@ export default async function ProfilePage() {
               </div>
             ) : (
               <ul className="space-y-3">
-                {runList.map((run) => {
-                  // Title from the domain (e.g. "Linear"); the real URL the
-                  // user submitted sits underneath.
-                  const title = productNameFromUrl(run.product_url);
-                  return (
-                    <li
-                      key={run.id}
-                      className="relative flex items-center justify-between gap-4 rounded-md border-2 border-hairline-strong bg-surface-1 px-5 py-4 shadow-[3px_4px_0_0_var(--color-hairline-strong)] transition-colors hover:bg-surface-2"
-                    >
-                      {/* stretched link makes the whole card clickable while the
-                          Delete button (above it) stays its own control */}
-                      <Link
-                        href={`/map/${run.id}`}
-                        aria-label={`Open ${title}`}
-                        className="focus-ring absolute inset-0 rounded-md"
-                      />
-                      <div className="pointer-events-none min-w-0">
-                        <p className="truncate text-ink">{title}</p>
-                        <p className="mt-0.5 truncate text-xs text-ink-subtle">
-                          {run.product_url}
-                        </p>
-                      </div>
-                      <div className="relative flex shrink-0 items-center gap-3">
-                        <div className="pointer-events-none text-right">
-                          <span
-                            className={`rounded-sm border px-2 py-0.5 text-xs ${
-                              run.unlocked
-                                ? "border-success/50 text-success"
-                                : "border-hairline text-ink-tertiary"
-                            }`}
-                          >
-                            {run.unlocked ? "Unlocked" : "Basic"}
-                          </span>
-                          <p className="mt-1 text-xs text-ink-tertiary">
-                            {new Date(run.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <DeleteMapButton runId={run.id} />
-                      </div>
-                    </li>
-                  );
-                })}
+                {runList.map((run) => (
+                  <MapListRow
+                    key={run.id}
+                    id={run.id}
+                    url={run.product_url}
+                    initialTitle={(run.title as string | null) ?? null}
+                    derivedName={productNameFromUrl(run.product_url)}
+                    unlocked={run.unlocked}
+                    createdAt={run.created_at}
+                  />
+                ))}
               </ul>
             )}
+          </section>
+
+          {/* Reddit readiness check */}
+          <section className="mb-12">
+            <h2 className="eyebrow mb-3">Reddit account check</h2>
+            <RedditKarmaCheck />
           </section>
 
           {/* Reddit account playbook */}
@@ -195,9 +174,9 @@ export default async function ProfilePage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-2.5">
-      <p className="eyebrow mb-0.5">{label}</p>
-      <p className="tnum text-lg text-ink">{value}</p>
+    <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-3">
+      <p className="eyebrow mb-1">{label}</p>
+      <p className="tnum text-2xl text-ink">{value}</p>
     </div>
   );
 }
