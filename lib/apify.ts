@@ -11,8 +11,10 @@
 // (returns fast) and POLL it, rather than running synchronously.
 
 const API = "https://api.apify.com/v2";
-// Reddit Scraper Lite (the actor id from the run you kicked off).
-const ACTOR_ID = process.env.APIFY_REDDIT_ACTOR || "oAuClx3ItNrs2okjQ";
+// Reddit Scraper Lite. The API wants store actors as `username~actor-name`
+// (the raw console id 404s). Override with APIFY_REDDIT_ACTOR if needed.
+const ACTOR_ID =
+  process.env.APIFY_REDDIT_ACTOR || "trudax~reddit-scraper-lite";
 
 export function apifyConfigured(): boolean {
   return !!process.env.APIFY_TOKEN;
