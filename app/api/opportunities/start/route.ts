@@ -44,8 +44,12 @@ export async function POST(req: NextRequest) {
   }
 
   const analysis = run.product_data as ProductAnalysis | null;
-  const tags = (analysis?.niche_tags ?? []).filter(Boolean).slice(0, 2);
-  const query = (tags.length ? tags.join(" ") : analysis?.category || "").trim();
+  // A single broad keyword finds more live threads than an AND of tags (and is
+  // less likely to come back empty). Hyphens → spaces for a natural search term.
+  const tags = (analysis?.niche_tags ?? []).filter(Boolean);
+  const query = (tags[0] || analysis?.category || "")
+    .replace(/[-_]+/g, " ")
+    .trim();
   if (!query) {
     return NextResponse.json({ error: "no_keywords" }, { status: 422 });
   }
