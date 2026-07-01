@@ -62,8 +62,10 @@ export async function startRedditSearch(
     searchPosts: true,
     searchComments: false,
     searchCommunities: false,
-    searchSort: "new",
-    searchTime: "all",
+    // Relevance within the last month beats "new/all": fresh-but-random junk
+    // (game subs, fanfic) drops out, on-topic problem threads float up.
+    searchSort: "relevance",
+    searchTime: "month",
     // Billed per result — keep runs cheap (~$0.02–0.04); quality comes from
     // ranking/filtering after, not from pulling more.
     maxPostsCount: 10,
@@ -195,6 +197,13 @@ export function rankThreads(
     // Multi-pipe headlines are almost always syndicated promo/news spam.
     if ((t.title.match(/\|/g) ?? []).length >= 2) continue;
 
+    // HARD relevance gate: the thread must actually mention the product's
+    // space — in the title or the subreddit name. Without this, Reddit search
+    // noise (game subs, fanfic, stock news) floods the list.
+    const sub = (t.subreddit ?? "").toLowerCase();
+    const onTopic = tokens.some((k) => title.includes(k) || sub.includes(k));
+    if (!onTopic) continue;
+
     let score = 0;
     // A question / ask is the easiest thing to genuinely reply to.
     if (QUESTION_RE.test(t.title)) score += 4;
@@ -202,8 +211,6 @@ export function rankThreads(
     if ((t.comments ?? 0) >= 2) score += 3;
     else if ((t.comments ?? 0) >= 1) score += 1;
     if ((t.upvotes ?? 0) >= 3) score += 1;
-    // On-topic: title mentions the product's keywords.
-    if (tokens.some((k) => title.includes(k))) score += 2;
 
     scored.push({ t, score });
   }
