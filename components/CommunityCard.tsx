@@ -20,12 +20,6 @@ const POLICY_TONE: Record<string, string> = {
   banned: "text-red-700 border-red-700/50",
 };
 
-const KARMA_LABEL: Record<string, string> = {
-  easy: "Easy",
-  medium: "Medium",
-  hard: "Hard",
-};
-
 function displayName(name: string): string {
   return name.replace(/\s*\([^)]*\)\s*$/, "").trim();
 }
@@ -67,29 +61,17 @@ export function CommunityCard({
       <div className="receipt-rule mx-5" />
 
       <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-5 text-sm">
-        <div className="flex flex-wrap gap-2">
-          <span
-            className={`rounded-sm border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
-          >
-            {POLICY_LABEL[community.self_promo_policy]}
-          </span>
-          {community.karma_tier && (
-            <Badge>Karma: {KARMA_LABEL[community.karma_tier]}</Badge>
-          )}
-          {community.activity_level && <Badge>{community.activity_level}</Badge>}
-        </div>
-
-        {(community.self_promo_note || community.rules_summary) && (
-          <p className="text-ink-muted">
-            {community.self_promo_note || community.rules_summary}
-          </p>
-        )}
+        {/* One meaningful signal on the face: can you self-promo here? */}
+        <span
+          className={`self-start rounded-sm border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
+        >
+          {POLICY_LABEL[community.self_promo_policy]}
+        </span>
 
         <div className="mt-auto pt-1">
           {locked ? (
             <div className="rounded-md border border-dashed border-hairline-strong/40 bg-canvas/40 px-3 py-3 text-center text-xs text-ink-subtle">
-              🔒 Unlock to see the brief — rules, links, karma &amp; a tailored
-              angle
+              🔒 Unlock to see the brief — rules, links &amp; a tailored angle
             </div>
           ) : (
             <PostingBrief community={community} analysis={analysis} />
@@ -97,13 +79,5 @@ export function CommunityCard({
         </div>
       </div>
     </div>
-  );
-}
-
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-sm border border-hairline bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
-      {children}
-    </span>
   );
 }

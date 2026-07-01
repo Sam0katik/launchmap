@@ -54,7 +54,7 @@ export function PostingBrief({
 
         {open && (
           <div className="mt-2.5 space-y-2.5">
-            {/* status chips */}
+            {/* status chips — only the two we can actually stand behind */}
             <div className="flex flex-wrap gap-1.5">
               <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.policyTone]}`}>
                 {brief.policyLabel}
@@ -62,11 +62,6 @@ export function PostingBrief({
               <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.linkTone]}`}>
                 {brief.linkChip}
               </span>
-              {brief.karmaTier && (
-                <span className="rounded border border-hairline px-1.5 py-0.5 text-[11px] text-ink-muted">
-                  Karma: {brief.karmaTier}
-                </span>
-              )}
             </div>
 
             {/* angle to lead with — the product-specific advice */}
