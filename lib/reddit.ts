@@ -32,7 +32,13 @@ async function apifyProxyText(target: string): Promise<string | null> {
     // Use undici's own fetch + ProxyAgent together (Node's global fetch may not
     // honour a dispatcher from a separately-installed undici copy).
     const { fetch: undiciFetch, ProxyAgent } = await import("undici");
-    const dispatcher = new ProxyAgent(`http://auto:${pw}@proxy.apify.com:8000`);
+    // Reddit blocks datacenter IPs, so RESIDENTIAL is the group that actually
+    // gets through. Override via APIFY_PROXY_GROUP if needed (e.g. "auto").
+    const group = process.env.APIFY_PROXY_GROUP || "RESIDENTIAL";
+    const user = group === "auto" ? "auto" : `groups-${group}`;
+    const dispatcher = new ProxyAgent(
+      `http://${user}:${pw}@proxy.apify.com:8000`
+    );
     const res = await undiciFetch(target, {
       headers: HEADERS,
       dispatcher,
