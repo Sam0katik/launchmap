@@ -22,7 +22,7 @@ export default function Privacy() {
           <header className="panel mb-10 px-8 pb-7 pt-6">
             <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
               <span>Privacy &amp; data handling</span>
-              <span>Beacon Labs</span>
+              <span>ZeroFans Labs</span>
             </div>
             <div className="receipt-rule mb-5" />
             <h1 className="pixel text-ink" style={{ fontSize: "clamp(26px,3.4vw,38px)" }}>
@@ -37,7 +37,7 @@ export default function Privacy() {
               <ul className="list-disc space-y-1.5 pl-5">
                 <li>
                   Your GitHub account identifier, username, and avatar — for
-                  sign-in and per-day run limits.
+                  sign-in and per-account limits.
                 </li>
                 <li>
                   The product URLs and optional descriptions you submit — to
@@ -77,17 +77,19 @@ export default function Privacy() {
                 </li>
                 <li>
                   <strong className="text-ink">Anthropic</strong> — landing-page
-                  analysis and draft generation. Submitted text is sent to their
-                  API.
+                  analysis. Submitted URL text is sent to their API to extract a
+                  product summary and tags.
                 </li>
                 <li>
                   <strong className="text-ink">GitHub</strong> — OAuth sign-in
                   identity only.
                 </li>
                 <li>
-                  <strong className="text-ink">Our payment provider</strong> —
-                  handles checkout and payment data when you unlock a map; we
-                  never see or store your card/payment details.
+                  <strong className="text-ink">A crypto payment processor</strong>{" "}
+                  — handles the hosted checkout when you top up your balance; the
+                  payment is made on their page and we never see or store your
+                  wallet or card details, only a confirmation that a top-up
+                  succeeded.
                 </li>
               </ul>
               <p className="mt-3">We do not sell your data.</p>
@@ -104,10 +106,16 @@ export default function Privacy() {
 
             <Section title="Payments">
               <p>
-                Unlocking a full map is a one-time purchase processed entirely by
-                Lemon Squeezy. We receive only a confirmation (which map was
-                paid for) via a signature-verified webhook, and we store nothing
-                more than a paid/unpaid flag on that map.
+                We keep a small internal USD balance on your account. You top it
+                up through a third-party crypto payment processor&apos;s hosted
+                checkout — the payment happens entirely on their page, and we
+                receive only a signature-verified confirmation that a top-up
+                succeeded. Unlocking a full map then spends $3 from that balance.
+              </p>
+              <p className="mt-3">
+                We store only your balance and a paid/unpaid flag per map. We
+                never receive or store card numbers, wallet keys, or transaction
+                details beyond the processor&apos;s confirmation.
               </p>
             </Section>
 

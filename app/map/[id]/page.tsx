@@ -115,18 +115,30 @@ export default async function MapPage({
             const other = ranked.filter(
               (entry) => entry.community.platform !== "reddit"
             );
-            const Grid = ({ items }: { items: RankedCommunity[] }) => (
-              <div className="columns-1 gap-4 [column-fill:_balance] sm:columns-2 lg:columns-3">
-                {items.map((entry) => (
-                  <div
-                    key={entry.community.id}
-                    className="mb-4 break-inside-avoid"
-                  >
-                    <CommunityCard entry={entry} analysis={analysis} />
-                  </div>
-                ))}
-              </div>
-            );
+            // Independent columns (round-robin), not CSS multi-column: expanding
+            // a card only pushes cards below it in the SAME column — neighbours
+            // in other columns never shift.
+            const COLS = 3;
+            const Grid = ({ items }: { items: RankedCommunity[] }) => {
+              const columns = Array.from({ length: COLS }, (_, c) =>
+                items.filter((_, i) => i % COLS === c)
+              );
+              return (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {columns.map((col, c) => (
+                    <div key={c} className="flex flex-col gap-4">
+                      {col.map((entry) => (
+                        <CommunityCard
+                          key={entry.community.id}
+                          entry={entry}
+                          analysis={analysis}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
+            };
             const Count = ({ n }: { n: number }) => (
               <span className="tnum inline-flex h-7 min-w-7 items-center justify-center rounded-md border-2 border-hairline-strong px-2 text-sm text-ink">
                 {n}
@@ -160,6 +172,21 @@ export default async function MapPage({
               </>
             );
           })()}
+
+          {/* Full catalog — everything, including communities not surfaced in
+              this map, so nothing is hidden behind the ranking. */}
+          <div className="panel mt-10 flex flex-col items-start justify-between gap-3 px-6 py-5 sm:flex-row sm:items-center">
+            <p className="text-sm text-ink-muted">
+              Want the rest? Browse every community in the database — including
+              ones this map didn&apos;t rank for your product.
+            </p>
+            <a
+              href="/communities"
+              className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-surface-2 px-4 py-2 text-sm font-medium text-ink hover:bg-surface-3"
+            >
+              Browse all communities →
+            </a>
+          </div>
         </main>
       </div>
     </>

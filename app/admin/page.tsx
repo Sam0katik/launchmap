@@ -6,6 +6,7 @@ import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { AdminUnlockToggle } from "@/components/AdminUnlockToggle";
 import { AdminTopUpButton } from "@/components/AdminTopUpButton";
+import { AdminRefreshReddit } from "@/components/AdminRefreshReddit";
 import { formatUsd } from "@/lib/billing";
 
 // Owner dashboard: every user, their plan, and run activity. Gated by the
@@ -86,9 +87,12 @@ export default async function AdminPage() {
               <span>ZeroFans Labs · internal</span>
             </div>
             <div className="receipt-rule mb-5" />
-            <h1 className="pixel text-ink" style={{ fontSize: "clamp(24px,3vw,34px)" }}>
-              Operator dashboard
-            </h1>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h1 className="pixel text-ink" style={{ fontSize: "clamp(24px,3vw,34px)" }}>
+                Operator dashboard
+              </h1>
+              <AdminRefreshReddit />
+            </div>
           </header>
 
           <section className="mb-10 grid gap-4 sm:grid-cols-3">
