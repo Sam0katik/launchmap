@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Dots } from "@/components/Dots";
 
 // Small two-step delete control for a saved map in the profile list. First click
 // arms it, second confirms, then it deletes the run (and its drafts) and
@@ -63,7 +64,7 @@ export function DeleteMapButton({ runId }: { runId: string }) {
         disabled={busy}
         className="focus-ring btn-press rounded-sm border-2 border-red-700/60 px-2.5 py-1 text-xs text-red-700 hover:bg-red-700/10 disabled:opacity-60"
       >
-        {busy ? "…" : "Confirm"}
+        {busy ? <Dots /> : "Confirm"}
       </button>
     </span>
   );

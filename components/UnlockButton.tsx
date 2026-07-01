@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatUsd } from "@/lib/billing";
+import { Dots } from "@/components/Dots";
 
 // Unlock a map by spending internal balance ($3, same for everyone). Two-step:
 // click "Spend $3" → confirm (no refunds) → charge. Refreshes on success.
@@ -92,7 +93,7 @@ export function UnlockButton({
           disabled={busy}
           className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
         >
-          {busy ? "Charging…" : "Confirm — spend $3"}
+          {busy ? <>Charging<Dots /></> : "Confirm — spend $3"}
         </button>
       </div>
     </div>

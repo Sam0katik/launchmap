@@ -17,12 +17,14 @@ function cleanIcon(raw: unknown): string | null {
   return url.startsWith("http") ? url : null;
 }
 
+// Throws on a transport/relay failure (so callers can tell "relay down" apart
+// from "Reddit returned no such thing"); resolves to parsed JSON or null.
 async function relayJson(target: string): Promise<unknown | null> {
   const res = await fetch(RELAY + encodeURIComponent(target), {
     headers: { Accept: "application/json" },
     signal: AbortSignal.timeout(12000),
   });
-  if (!res.ok) return null;
+  if (!res.ok) throw new Error(`relay ${res.status}`);
   return res.json().catch(() => null);
 }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Dots } from "@/components/Dots";
 
 // Rotating example URLs — cycled through the placeholder for a bit of life and
 // to hint at what to paste.
@@ -51,8 +52,10 @@ export function UrlForm() {
       return;
     }
 
-    // Easter egg: scanning ourselves.
-    if (/launchmap|zerofans/i.test(u.hostname)) {
+    // Easter egg: scanning our own marketing domain. Narrow to the brand word
+    // only — "launchmap" would also match the Vercel preview domain, which is a
+    // perfectly valid product URL to scan.
+    if (/(^|\.)zerofans\.(app|com|io)$/i.test(u.hostname)) {
       setError("nice try 😏 — go map a real product.");
       return;
     }
@@ -103,7 +106,7 @@ export function UrlForm() {
         disabled={loading}
         className="focus-ring btn-press mt-7 w-full rounded-md border-2 border-hairline-strong bg-primary px-6 py-5 text-2xl text-white shadow-[5px_5px_0_0_var(--color-hairline-strong)] hover:bg-primary-hover disabled:opacity-60"
       >
-        {loading ? "Scanning…" : "Scan to launch →"}
+        {loading ? <>Scanning<Dots /></> : "Scan to launch →"}
       </button>
       {error && <p className="mt-3 text-base text-red-700">{error}</p>}
     </form>
