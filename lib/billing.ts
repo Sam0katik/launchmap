@@ -61,8 +61,8 @@ export function buildCheckoutUrl(runId: string): string | null {
 }
 
 // Per-map unlock price (one-time) — unlocks all publics + posting briefs.
-export const UNLOCK_PRICE_CENTS = 300;
-export const UNLOCK_PRICE_LABEL = "$3 one-time";
+export const UNLOCK_PRICE_CENTS = 200;
+export const UNLOCK_PRICE_LABEL = "$2 one-time";
 
 /** Format a cents amount as a USD string, e.g. 1050 → "$10.50". */
 export function formatUsd(cents: number): string {

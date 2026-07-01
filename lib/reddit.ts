@@ -1,31 +1,59 @@
-// Reddit public-JSON access, routed through a public CORS/relay proxy.
+// Reddit public-JSON access via a cascade of public relays.
 //
-// Why the proxy: Reddit blocks datacenter IPs (Vercel's), so a direct
-// server-side fetch to reddit.com returns 403/429. Routing through a relay makes
-// the request originate from the relay's IP instead. about.json / user about are
-// anonymous public reads — no API app, no OAuth. Read-only; never posts.
+// Reddit blocks datacenter IPs (Vercel's), so we can't fetch reddit.com
+// directly. We try several public relays in order and use the first that
+// answers, then extract fields with tolerant regexes (some relays return raw
+// JSON, some wrap/markdownify it). about.json / user about are anonymous public
+// reads — no API app, no OAuth. Read-only; never posts.
 
-const RELAY = "https://api.allorigins.win/raw?url=";
+const RELAYS: ((target: string) => string)[] = [
+  (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  (u) => `https://thingproxy.freeboard.io/fetch/${u}`,
+  (u) => `https://r.jina.ai/${u}`,
+];
 
-function cleanIcon(raw: unknown): string | null {
-  if (!raw || typeof raw !== "string") return null;
-  const url = raw
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .trim();
-  return url.startsWith("http") ? url : null;
+// Fetch a URL through whichever relay responds first. Returns the raw body, or
+// null when every relay failed (treat that as "Reddit unreachable").
+async function relayText(target: string): Promise<string | null> {
+  for (const build of RELAYS) {
+    try {
+      const res = await fetch(build(target), {
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "User-Agent": "Mozilla/5.0 (compatible; launchmap/1.0)",
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) continue;
+      const text = await res.text();
+      // Guard against relay error pages / empties.
+      if (text && text.length > 20 && /[:{]/.test(text)) return text;
+    } catch {
+      /* try the next relay */
+    }
+  }
+  return null;
 }
 
-// Throws on a transport/relay failure (so callers can tell "relay down" apart
-// from "Reddit returned no such thing"); resolves to parsed JSON or null.
-async function relayJson(target: string): Promise<unknown | null> {
-  const res = await fetch(RELAY + encodeURIComponent(target), {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(12000),
-  });
-  if (!res.ok) throw new Error(`relay ${res.status}`);
-  return res.json().catch(() => null);
+function pickNumber(text: string, key: string): number | null {
+  const m = text.match(new RegExp(`"${key}"\\s*:\\s*(\\d+(?:\\.\\d+)?)`));
+  return m ? Number(m[1]) : null;
+}
+
+function pickString(text: string, key: string): string | null {
+  const m = text.match(new RegExp(`"${key}"\\s*:\\s*"([^"]*)"`));
+  return m ? m[1] : null;
+}
+
+function cleanIcon(raw: string | null): string | null {
+  if (!raw) return null;
+  const url = raw
+    .replace(/\\u0026/g, "&")
+    .replace(/&amp;/g, "&")
+    .replace(/\\\//g, "/")
+    .trim();
+  return url.startsWith("http") ? url : null;
 }
 
 export interface SubAbout {
@@ -33,17 +61,18 @@ export interface SubAbout {
   icon: string | null;
 }
 
-/** Subscriber count + icon for one subreddit (name without the "r/"). */
+/** Subscriber count + icon for one subreddit (name without the "r/").
+ *  Throws when every relay failed (unreachable), vs returning null for
+ *  "responded but nothing parseable". */
 export async function fetchSubAbout(sub: string): Promise<SubAbout | null> {
-  const json = (await relayJson(
-    `https://www.reddit.com/r/${sub}/about.json`
-  )) as { data?: Record<string, unknown> } | null;
-  const d = json?.data;
-  if (!d) return null;
-  return {
-    subscribers: typeof d.subscribers === "number" ? d.subscribers : null,
-    icon: cleanIcon(d.community_icon) || cleanIcon(d.icon_img),
-  };
+  const text = await relayText(`https://www.reddit.com/r/${sub}/about.json`);
+  if (text === null) throw new Error("relay_unreachable");
+  const subscribers = pickNumber(text, "subscribers");
+  const icon =
+    cleanIcon(pickString(text, "community_icon")) ||
+    cleanIcon(pickString(text, "icon_img"));
+  if (subscribers == null && !icon) return null;
+  return { subscribers, icon };
 }
 
 export interface UserKarma {
@@ -54,20 +83,26 @@ export interface UserKarma {
   createdUtc: number; // seconds
 }
 
-/** Public karma + account age for a Reddit username. */
+/** Public karma + account age for a Reddit username. Throws when every relay
+ *  failed (unreachable); returns null when no such user. */
 export async function fetchUserKarma(name: string): Promise<UserKarma | null> {
   const clean = name.replace(/^u\//i, "").trim();
   if (!clean) return null;
-  const json = (await relayJson(
+  const text = await relayText(
     `https://www.reddit.com/user/${clean}/about.json`
-  )) as { data?: Record<string, unknown> } | null;
-  const d = json?.data;
-  if (!d || typeof d.name !== "string") return null;
+  );
+  if (text === null) throw new Error("relay_unreachable");
+  const total = pickNumber(text, "total_karma");
+  const link = pickNumber(text, "link_karma");
+  const comment = pickNumber(text, "comment_karma");
+  const created = pickNumber(text, "created_utc");
+  // A real user page always has karma fields; their absence = no such user.
+  if (total == null && link == null && comment == null) return null;
   return {
-    name: d.name as string,
-    totalKarma: Number(d.total_karma ?? 0),
-    linkKarma: Number(d.link_karma ?? 0),
-    commentKarma: Number(d.comment_karma ?? 0),
-    createdUtc: Number(d.created_utc ?? 0),
+    name: clean,
+    totalKarma: total ?? (link ?? 0) + (comment ?? 0),
+    linkKarma: link ?? 0,
+    commentKarma: comment ?? 0,
+    createdUtc: created ?? 0,
   };
 }
