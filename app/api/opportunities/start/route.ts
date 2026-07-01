@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { startRedditSearch, apifyConfigured } from "@/lib/apify";
+import {
+  startRedditSearch,
+  apifyConfigured,
+  buildSearchTerms,
+} from "@/lib/apify";
 import type { ProductAnalysis } from "@/lib/types";
 
 // POST /api/opportunities/start  Body: { runId }
@@ -44,18 +48,7 @@ export async function POST(req: NextRequest) {
   }
 
   const analysis = run.product_data as ProductAnalysis | null;
-  // Build the per-product search terms from its niche tags (each term is a
-  // separate Reddit search; results are combined). Hyphens → spaces so tags
-  // like "product-launch" read as a natural query. Fall back to the category.
-  const clean = (s: string) => s.replace(/[-_]+/g, " ").trim();
-  let terms = (analysis?.niche_tags ?? [])
-    .filter(Boolean)
-    .slice(0, 3)
-    .map(clean)
-    .filter((t) => t.length > 1);
-  if (terms.length === 0 && analysis?.category) {
-    terms = [clean(analysis.category)];
-  }
+  const terms = buildSearchTerms(analysis);
   if (terms.length === 0) {
     return NextResponse.json({ error: "no_keywords" }, { status: 422 });
   }

@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getRedditSearchResult, apifyConfigured } from "@/lib/apify";
+import {
+  getRedditSearchResult,
+  apifyConfigured,
+  buildSearchTerms,
+  rankThreads,
+} from "@/lib/apify";
+import type { ProductAnalysis } from "@/lib/types";
 
 // POST /api/opportunities/result  Body: { runId, apifyRunId }
 // Poll an Apify run. While RUNNING, returns status. On SUCCEEDED, caches the
@@ -33,10 +39,10 @@ export async function POST(req: NextRequest) {
   }
   const { runId, apifyRunId } = parsed.data;
 
-  // Ownership check via RLS.
+  // Ownership check via RLS (product_data feeds the quality ranking).
   const { data: run } = await supabase
     .from("runs")
-    .select("id")
+    .select("id, product_data")
     .eq("id", runId)
     .maybeSingle();
   if (!run) {
@@ -48,17 +54,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "poll_failed" }, { status: 502 });
   }
 
+  let threads = result.threads;
   if (result.status === "SUCCEEDED") {
+    // Dedupe bot cross-posts, drop promo spam, keep the ~10 most engageable.
+    const terms = buildSearchTerms(run.product_data as ProductAnalysis | null);
+    threads = rankThreads(threads, terms, 10);
+
     // Cache on the run so we don't re-run the paid actor on every visit.
     const admin = createAdminClient();
     await admin
       .from("runs")
       .update({
-        opportunities: result.threads,
+        opportunities: threads,
         opportunities_at: new Date().toISOString(),
       })
       .eq("id", runId);
   }
 
-  return NextResponse.json({ status: result.status, threads: result.threads });
+  return NextResponse.json({ status: result.status, threads });
 }

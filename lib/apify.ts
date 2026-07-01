@@ -21,6 +21,26 @@ export function apifyConfigured(): boolean {
   return !!process.env.APIFY_TOKEN;
 }
 
+/** Per-product search terms from the analysis: up to 2 niche tags (hyphens →
+ *  spaces), falling back to the category. Shared by the start route (to run
+ *  the search) and the result route (to rank what came back). */
+export function buildSearchTerms(analysis: {
+  niche_tags?: string[];
+  category?: string;
+} | null): string[] {
+  const clean = (s: string) => s.replace(/[-_]+/g, " ").trim();
+  const terms = (analysis?.niche_tags ?? [])
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(clean)
+    .filter((t) => t.length > 1);
+  if (terms.length === 0 && analysis?.category) {
+    const c = clean(analysis.category);
+    if (c.length > 1) return [c];
+  }
+  return terms;
+}
+
 export interface RedditThread {
   title: string;
   url: string;
@@ -44,7 +64,9 @@ export async function startRedditSearch(
     searchCommunities: false,
     searchSort: "new",
     searchTime: "all",
-    maxPostsCount: 20,
+    // Billed per result — keep runs cheap (~$0.02–0.04); quality comes from
+    // ranking/filtering after, not from pulling more.
+    maxPostsCount: 10,
     maxCommunitiesCount: 0,
     crawlCommentsPerPost: false,
     fastMode: true,
@@ -137,4 +159,57 @@ export async function getRedditSearchResult(
 
 function numOrNull(v: unknown): number | null {
   return typeof v === "number" ? v : null;
+}
+
+// ── Quality ranking ─────────────────────────────────────────────
+// Raw search results are noisy: bot cross-posts (same headline in 6 subs),
+// promo spam, off-topic hits. Dedupe + score + keep only what a maker can
+// actually jump into with a comment.
+
+const QUESTION_RE =
+  /\?|^(how|what|which|why|anyone|any |best |recommend|looking for|need |advice|thoughts|feedback|help)/i;
+const SPAM_RE =
+  /expert \||management \||specialist \||roi-focused|dm me|check out my|use code|discount|% off/i;
+
+/** Dedupe, drop spam, score for engageability, return the best `limit`. */
+export function rankThreads(
+  threads: RedditThread[],
+  terms: string[],
+  limit = 10
+): RedditThread[] {
+  const tokens = terms
+    .flatMap((t) => t.toLowerCase().split(/\s+/))
+    .filter((t) => t.length > 2);
+
+  const seen = new Set<string>();
+  const scored: { t: RedditThread; score: number }[] = [];
+
+  for (const t of threads) {
+    // Dedupe bot cross-posts by normalized title.
+    const key = t.title.toLowerCase().replace(/\W+/g, " ").trim().slice(0, 80);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const title = t.title.toLowerCase();
+    if (SPAM_RE.test(title)) continue;
+    // Multi-pipe headlines are almost always syndicated promo/news spam.
+    if ((t.title.match(/\|/g) ?? []).length >= 2) continue;
+
+    let score = 0;
+    // A question / ask is the easiest thing to genuinely reply to.
+    if (QUESTION_RE.test(t.title)) score += 4;
+    // Actual discussion happening.
+    if ((t.comments ?? 0) >= 2) score += 3;
+    else if ((t.comments ?? 0) >= 1) score += 1;
+    if ((t.upvotes ?? 0) >= 3) score += 1;
+    // On-topic: title mentions the product's keywords.
+    if (tokens.some((k) => title.includes(k))) score += 2;
+
+    scored.push({ t, score });
+  }
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((s) => s.t);
 }
