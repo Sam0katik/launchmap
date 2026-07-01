@@ -30,17 +30,24 @@ export interface RedditThread {
 export async function startRedditSearch(query: string): Promise<string | null> {
   const token = process.env.APIFY_TOKEN;
   if (!token) return null;
+  // Input matched to trudax/reddit-scraper-lite's schema. includeMediaLinks
+  // must be true to get up-votes + comment counts. The actor scrapes through
+  // Apify's own residential proxy (billed per result), which is why it works
+  // where our direct proxy didn't.
   const input = {
     searches: [query],
     searchPosts: true,
     searchComments: false,
     searchCommunities: false,
     searchUsers: false,
+    searchMedia: false,
     sort: "new",
-    time: "month",
+    includeMediaLinks: true,
+    includeNSFW: false,
     maxItems: 25,
     maxPostCount: 25,
-    proxy: { useApifyProxy: true },
+    maxComments: 0,
+    proxy: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
   };
   const res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
     method: "POST",
