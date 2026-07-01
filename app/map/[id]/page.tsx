@@ -8,7 +8,7 @@ import { FlyingPlane } from "@/components/FlyingPlane";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { UNLOCK_PRICE_LABEL } from "@/lib/billing";
-import { isAdminUser } from "@/lib/admins";
+import { productNameFromUrl } from "@/lib/product-name";
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 
 // The map result screen. Reads a persisted run, renders ranked community cards.
@@ -28,14 +28,10 @@ export default async function MapPage({
 
   if (!run) notFound();
 
-  // Viewer (for balance + admin unlock). The map is RLS-scoped to the owner.
+  // Viewer (for balance). The map is RLS-scoped to the owner.
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const isAdmin = isAdminUser({
-    email: user?.email,
-    username: user?.user_metadata?.user_name as string,
-  });
   let balanceCents = 0;
   if (user) {
     const { data: profile } = await supabase
@@ -67,8 +63,8 @@ export default async function MapPage({
 
         <main className="mx-auto w-full max-w-content px-6 pb-20 pt-4">
           <CollapsibleHeadline
+            productName={productNameFromUrl(run.product_url)}
             summary={analysis?.product_summary ?? ""}
-            fallback={run.product_url}
             runNo={runNo}
           />
 
@@ -85,7 +81,6 @@ export default async function MapPage({
               <UnlockButton
                 runId={run.id}
                 balanceCents={balanceCents}
-                isAdmin={isAdmin}
                 priceLabel={UNLOCK_PRICE_LABEL}
               />
             </div>

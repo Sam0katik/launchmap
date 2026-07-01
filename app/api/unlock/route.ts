@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAdminUser } from "@/lib/admins";
 import { UNLOCK_PRICE_CENTS } from "@/lib/billing";
 
 // POST /api/unlock  Body: { runId }
 // Unlock one of the user's maps (all publics + briefs) by spending the internal
-// USD balance. Admins unlock free (for testing). All balance/unlock writes go
-// through the service role — clients can't edit their own balance.
+// USD balance — $3 is deducted, same for everyone (admins top up via the admin
+// panel and spend like anyone else). All balance/unlock writes go through the
+// service role — clients can't edit their own balance.
 const bodySchema = z.object({ runId: z.string().uuid() });
 
 export async function POST(req: NextRequest) {
@@ -42,23 +42,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, already: true });
   }
 
-  // Admins unlock free.
-  if (
-    isAdminUser({
-      email: user.email,
-      username: user.user_metadata?.user_name as string,
-    })
-  ) {
-    const { error } = await admin
-      .from("runs")
-      .update({ unlocked: true })
-      .eq("id", runId);
-    if (error) {
-      return NextResponse.json({ error: "unlock_failed" }, { status: 500 });
-    }
-    return NextResponse.json({ ok: true, admin: true });
-  }
-
   // Balance flow: charge UNLOCK_PRICE_CENTS, then unlock (refund on failure).
   const { data: profile } = await admin
     .from("profiles")
@@ -74,13 +57,23 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Compare-and-swap: only deduct if the balance is still exactly what we read.
+  // This closes a concurrency hole where two simultaneous unlocks could both
+  // read $3 and each unlock a different map for a single charge. If another
+  // request won the race, `data` comes back empty and we bail (client retries).
   const next = balance - UNLOCK_PRICE_CENTS;
-  const { error: chargeErr } = await admin
+  const { data: charged, error: chargeErr } = await admin
     .from("profiles")
     .update({ balance_cents: next })
-    .eq("id", user.id);
+    .eq("id", user.id)
+    .eq("balance_cents", balance)
+    .select("id");
   if (chargeErr) {
     return NextResponse.json({ error: "charge_failed" }, { status: 500 });
+  }
+  if (!charged || charged.length === 0) {
+    // Lost the race — balance changed under us. Safe to retry.
+    return NextResponse.json({ error: "conflict" }, { status: 409 });
   }
 
   const { error: unlockErr } = await admin

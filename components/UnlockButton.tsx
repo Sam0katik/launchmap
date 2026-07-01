@@ -5,17 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatUsd } from "@/lib/billing";
 
-// Unlock a map by spending internal balance (admins unlock free). Two-step:
+// Unlock a map by spending internal balance ($3, same for everyone). Two-step:
 // click "Spend $3" → confirm (no refunds) → charge. Refreshes on success.
 export function UnlockButton({
   runId,
   balanceCents,
-  isAdmin,
   priceLabel,
 }: {
   runId: string;
   balanceCents: number;
-  isAdmin: boolean;
   priceLabel: string;
 }) {
   const [armed, setArmed] = useState(false);
@@ -27,32 +25,25 @@ export function UnlockButton({
     setBusy(true);
     setShort(false);
     try {
-      const res = await fetch("/api/unlock", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ runId }),
-      });
-      if (res.status === 402) {
-        setShort(true);
-        setArmed(false);
+      // One retry on a concurrency conflict (409); otherwise proceed.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const res = await fetch("/api/unlock", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ runId }),
+        });
+        if (res.status === 402) {
+          setShort(true);
+          setArmed(false);
+          return;
+        }
+        if (res.status === 409) continue; // lost the race — try once more
+        if (res.ok) router.refresh();
         return;
       }
-      if (res.ok) router.refresh();
     } finally {
       setBusy(false);
     }
-  }
-
-  if (isAdmin) {
-    return (
-      <button
-        onClick={unlock}
-        disabled={busy}
-        className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
-      >
-        {busy ? "Unlocking…" : "Unlock (admin)"}
-      </button>
-    );
   }
 
   if (!armed) {
