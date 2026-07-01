@@ -94,12 +94,12 @@ export default async function ProfilePage() {
                 grid stretches Maps/Unlocked to match the taller Balance card and
                 leaves a big empty frame under the number. */}
             <div className="grid items-start gap-4 sm:grid-cols-3">
-              <div className="rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-3">
-                <p className="eyebrow mb-1">Balance</p>
-                <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
-                <div className="mt-2">
-                  <TopUpButton enabled={cryptomusConfigured()} />
+              <div className="flex items-center justify-between gap-3 rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-3">
+                <div>
+                  <p className="eyebrow mb-1">Balance</p>
+                  <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
                 </div>
+                <TopUpButton enabled={cryptomusConfigured()} />
               </div>
               <Stat
                 label="Maps"

@@ -43,11 +43,13 @@ export function OpportunityFinder({
       const startData = await startRes.json().catch(() => null);
       if (!startRes.ok || !startData?.apifyRunId) {
         setError(
-          startRes.status === 422
-            ? "Not enough product keywords to search."
-            : startData?.detail
-              ? `Couldn't start: ${startData.detail}`
-              : "Couldn't start the search — try again."
+          startRes.status === 402
+            ? "Not enough balance — each search costs $0.20. Top up in your profile."
+            : startRes.status === 422
+              ? "Not enough product keywords to search."
+              : startData?.detail
+                ? `Couldn't start: ${startData.detail}`
+                : "Couldn't start the search — try again."
         );
         return;
       }
@@ -100,9 +102,9 @@ export function OpportunityFinder({
             {busy ? (
               <>Searching<Dots /></>
             ) : threads ? (
-              "Refresh"
+              "Refresh · $0.20"
             ) : (
-              "Find live threads"
+              "Find live threads · $0.20"
             )}
           </button>
         )}

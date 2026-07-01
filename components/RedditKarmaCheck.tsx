@@ -83,16 +83,44 @@ export function RedditKarmaCheck() {
     setError(null);
     setKarma(null);
     try {
-      const res = await fetch(
-        `/api/reddit/karma?u=${encodeURIComponent(name.trim())}`
-      );
-      const data = await res.json().catch(() => null);
-      if (res.ok && data?.karma) setKarma(data.karma);
-      else if (res.status === 404) setError("No such Reddit user.");
-      else if (res.status === 400) setError("Enter a valid username.");
-      else if (res.status === 502)
-        setError("Reddit is unreachable right now (relay). Try again shortly.");
-      else setError("Couldn't check that — try again.");
+      // Start the profile scrape, then poll — takes ~10–30s.
+      const startRes = await fetch("/api/reddit/karma/start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: name.trim() }),
+      });
+      const startData = await startRes.json().catch(() => null);
+      if (!startRes.ok || !startData?.apifyRunId) {
+        setError(
+          startRes.status === 400
+            ? "Enter a valid username."
+            : startData?.detail
+              ? `Couldn't start: ${startData.detail}`
+              : "Couldn't check that — try again."
+        );
+        return;
+      }
+
+      for (let i = 0; i < 15; i++) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const res = await fetch("/api/reddit/karma/result", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ apifyRunId: startData.apifyRunId }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data) continue;
+        if (data.status === "SUCCEEDED") {
+          if (data.karma) setKarma(data.karma);
+          else setError("No such Reddit user (or the profile is private).");
+          return;
+        }
+        if (data.status === "FAILED") {
+          setError("Check failed on Reddit — try again later.");
+          return;
+        }
+      }
+      setError("Taking too long — try again.");
     } catch {
       setError("Network error.");
     } finally {
