@@ -163,6 +163,135 @@ function numOrNull(v: unknown): number | null {
   return typeof v === "number" ? v : null;
 }
 
+// ── User karma via the same actor ───────────────────────────────
+// The public relays never get through from Vercel, so the karma check runs the
+// actor against the user's profile URL (Direct URLs input) and parses the
+// "user" item from the dataset. Same async start + poll pattern.
+
+export interface ScrapedUser {
+  name: string;
+  totalKarma: number;
+  linkKarma: number;
+  commentKarma: number;
+  createdUtc: number; // seconds
+}
+
+/** Start an actor run scraping one user profile. */
+export async function startUserScrape(
+  username: string
+): Promise<{ runId: string } | { error: string }> {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) return { error: "no_token" };
+  const input = {
+    startUrls: [{ url: `https://www.reddit.com/user/${username}/` }],
+    searchPosts: false,
+    searchComments: false,
+    searchCommunities: false,
+    // Keep the billed result count minimal — we only need the profile item.
+    maxPostsCount: 1,
+    maxCommentsCount: 1,
+    crawlCommentsPerPost: false,
+    fastMode: true,
+    includeNSFW: true,
+    onlyWithFlair: false,
+    proxy: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
+  };
+  let res: Response;
+  try {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      signal: AbortSignal.timeout(9000),
+    });
+  } catch {
+    return { error: "network" };
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { error: `apify_${res.status}: ${body.slice(0, 160)}` };
+  }
+  const data = await res.json().catch(() => null);
+  const id = data?.data?.id;
+  return typeof id === "string" ? { runId: id } : { error: "no_run_id" };
+}
+
+/** Poll a user-scrape run; on success, parse karma from the dataset. */
+export async function getUserScrapeResult(
+  runId: string
+): Promise<
+  | { status: "RUNNING" }
+  | { status: "FAILED" }
+  | { status: "SUCCEEDED"; user: ScrapedUser | null }
+  | null
+> {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) return null;
+
+  const runRes = await fetch(`${API}/actor-runs/${runId}?token=${token}`, {
+    signal: AbortSignal.timeout(9000),
+  });
+  if (!runRes.ok) return null;
+  const runData = await runRes.json().catch(() => null);
+  const status = runData?.data?.status as string | undefined;
+  const datasetId = runData?.data?.defaultDatasetId as string | undefined;
+
+  if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") {
+    return { status: "FAILED" };
+  }
+  if (status !== "SUCCEEDED" || !datasetId) {
+    return { status: "RUNNING" };
+  }
+
+  const itemsRes = await fetch(
+    `${API}/datasets/${datasetId}/items?clean=true&limit=20&token=${token}`,
+    { signal: AbortSignal.timeout(9000) }
+  );
+  if (!itemsRes.ok) return { status: "SUCCEEDED", user: null };
+  const items = (await itemsRes.json().catch(() => [])) as Record<
+    string,
+    unknown
+  >[];
+
+  // The profile row: dataType "user", or any item carrying karma fields.
+  const u =
+    (Array.isArray(items) ? items : []).find(
+      (it) => (it.dataType ?? it.type) === "user"
+    ) ??
+    (Array.isArray(items) ? items : []).find(
+      (it) =>
+        "commentKarma" in it || "postKarma" in it || "karma" in it
+    );
+  if (!u) return { status: "SUCCEEDED", user: null };
+
+  const link = numOrNull(u.postKarma ?? u.linkKarma) ?? 0;
+  const comment = numOrNull(u.commentKarma) ?? 0;
+  const total = numOrNull(u.karma ?? u.totalKarma) ?? link + comment;
+  // createdAt may be an ISO string or epoch seconds.
+  let createdUtc = 0;
+  const rawCreated = u.createdAt ?? u.created ?? u.createdUtc;
+  if (typeof rawCreated === "number") {
+    createdUtc = rawCreated > 1e12 ? rawCreated / 1000 : rawCreated;
+  } else if (typeof rawCreated === "string") {
+    const ms = Date.parse(rawCreated);
+    if (!Number.isNaN(ms)) createdUtc = ms / 1000;
+  }
+  const name =
+    (typeof u.username === "string" && u.username) ||
+    (typeof u.name === "string" && u.name) ||
+    "";
+  return {
+    status: "SUCCEEDED",
+    user: {
+      name: name.replace(/^u\//i, ""),
+      totalKarma: total,
+      linkKarma: link,
+      commentKarma: comment,
+      createdUtc,
+    },
+  };
+}
+
 // ── Quality ranking ─────────────────────────────────────────────
 // Raw search results are noisy: bot cross-posts (same headline in 6 subs),
 // promo spam, off-topic hits. Dedupe + score + keep only what a maker can

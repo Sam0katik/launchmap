@@ -64,6 +64,10 @@ export function buildCheckoutUrl(runId: string): string | null {
 export const UNLOCK_PRICE_CENTS = 200;
 export const UNLOCK_PRICE_LABEL = "$2 one-time";
 
+// Per-search price for "Where to jump in" (live Reddit threads via Apify).
+export const THREAD_SEARCH_PRICE_CENTS = 20;
+export const THREAD_SEARCH_PRICE_LABEL = "$0.20";
+
 /** Format a cents amount as a USD string, e.g. 1050 → "$10.50". */
 export function formatUsd(cents: number): string {
   return `$${(Math.max(0, cents) / 100).toFixed(2)}`;

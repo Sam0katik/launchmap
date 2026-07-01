@@ -125,34 +125,5 @@ export async function fetchSubAbout(
   return { subscribers, icon };
 }
 
-export interface UserKarma {
-  name: string;
-  totalKarma: number;
-  linkKarma: number;
-  commentKarma: number;
-  createdUtc: number; // seconds
-}
-
-/** Public karma + account age for a Reddit username. Throws when every relay
- *  failed (unreachable); returns null when no such user. */
-export async function fetchUserKarma(name: string): Promise<UserKarma | null> {
-  const clean = name.replace(/^u\//i, "").trim();
-  if (!clean) return null;
-  const text = await relayText(
-    `https://www.reddit.com/user/${clean}/about.json`
-  );
-  if (text === null) throw new Error("relay_unreachable");
-  const total = pickNumber(text, "total_karma");
-  const link = pickNumber(text, "link_karma");
-  const comment = pickNumber(text, "comment_karma");
-  const created = pickNumber(text, "created_utc");
-  // A real user page always has karma fields; their absence = no such user.
-  if (total == null && link == null && comment == null) return null;
-  return {
-    name: clean,
-    totalKarma: total ?? (link ?? 0) + (comment ?? 0),
-    linkKarma: link ?? 0,
-    commentKarma: comment ?? 0,
-    createdUtc: created ?? 0,
-  };
-}
+// (The relay-based user-karma fetch moved to lib/apify.ts — relays never get
+// through from Vercel; the karma check now runs the Apify actor instead.)
