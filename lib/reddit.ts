@@ -1,10 +1,11 @@
-// Reddit public-JSON access via a cascade of public relays.
+// Reddit public-JSON access.
 //
 // Reddit blocks datacenter IPs (Vercel's), so we can't fetch reddit.com
-// directly. We try several public relays in order and use the first that
-// answers, then extract fields with tolerant regexes (some relays return raw
-// JSON, some wrap/markdownify it). about.json / user about are anonymous public
-// reads — no API app, no OAuth. Read-only; never posts.
+// directly. Preferred path: route the request through Apify's residential proxy
+// (reliable, uses your Apify account) when APIFY_PROXY_PASSWORD is set. Fallback:
+// a cascade of free public relays. Fields are extracted with tolerant regexes
+// (some sources return raw JSON, some wrap it). about.json / user about are
+// anonymous public reads — no API app, no OAuth. Read-only; never posts.
 
 const RELAYS: ((target: string) => string)[] = [
   (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
@@ -13,22 +14,53 @@ const RELAYS: ((target: string) => string)[] = [
   (u) => `https://r.jina.ai/${u}`,
 ];
 
-// Fetch a URL through whichever relay responds first. Returns the raw body, or
-// null when every relay failed (treat that as "Reddit unreachable").
+const HEADERS = {
+  Accept: "application/json, text/plain, */*",
+  "User-Agent": "Mozilla/5.0 (compatible; launchmap/1.0)",
+};
+
+function looksLikeData(text: string): boolean {
+  return !!text && text.length > 20 && /[:{]/.test(text);
+}
+
+// Fetch reddit.com directly through Apify's residential proxy. Returns null when
+// no proxy password is configured or the request failed.
+async function apifyProxyText(target: string): Promise<string | null> {
+  const pw = process.env.APIFY_PROXY_PASSWORD;
+  if (!pw) return null;
+  try {
+    // Use undici's own fetch + ProxyAgent together (Node's global fetch may not
+    // honour a dispatcher from a separately-installed undici copy).
+    const { fetch: undiciFetch, ProxyAgent } = await import("undici");
+    const dispatcher = new ProxyAgent(`http://auto:${pw}@proxy.apify.com:8000`);
+    const res = await undiciFetch(target, {
+      headers: HEADERS,
+      dispatcher,
+      signal: AbortSignal.timeout(9000),
+    });
+    if (!res.ok) return null;
+    const text = await res.text();
+    return looksLikeData(text) ? text : null;
+  } catch {
+    return null;
+  }
+}
+
+// Fetch a URL via Apify proxy first, then whichever public relay responds. Null
+// when everything failed (treat that as "Reddit unreachable").
 async function relayText(target: string): Promise<string | null> {
+  const viaApify = await apifyProxyText(target);
+  if (viaApify) return viaApify;
+
   for (const build of RELAYS) {
     try {
       const res = await fetch(build(target), {
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "User-Agent": "Mozilla/5.0 (compatible; launchmap/1.0)",
-        },
+        headers: HEADERS,
         signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) continue;
       const text = await res.text();
-      // Guard against relay error pages / empties.
-      if (text && text.length > 20 && /[:{]/.test(text)) return text;
+      if (looksLikeData(text)) return text;
     } catch {
       /* try the next relay */
     }

@@ -10,6 +10,7 @@ import { RedditKarmaCheck } from "@/components/RedditKarmaCheck";
 import { TopUpButton } from "@/components/TopUpButton";
 import { MAX_MAPS_PER_ACCOUNT, UNLOCK_PRICE_LABEL, formatUsd } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
+import { cryptomusConfigured } from "@/lib/cryptomus";
 import { productNameFromUrl } from "@/lib/product-name";
 
 // Account hub: every launch map the user has run, usage, and account management
@@ -97,7 +98,7 @@ export default async function ProfilePage() {
                 <p className="eyebrow mb-1">Balance</p>
                 <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
                 <div className="mt-2">
-                  <TopUpButton />
+                  <TopUpButton enabled={cryptomusConfigured()} />
                 </div>
               </div>
               <Stat
