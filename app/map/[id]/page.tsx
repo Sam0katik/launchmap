@@ -7,9 +7,19 @@ import { UnlockButton } from "@/components/UnlockButton";
 import { FlyingPlane } from "@/components/FlyingPlane";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
+import { OpportunityFinder } from "@/components/OpportunityFinder";
 import { UNLOCK_PRICE_LABEL } from "@/lib/billing";
+import { apifyConfigured } from "@/lib/apify";
 import { productNameFromUrl } from "@/lib/product-name";
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
+
+type OppThread = {
+  title: string;
+  url: string;
+  subreddit: string | null;
+  upvotes: number | null;
+  comments: number | null;
+};
 
 // The map result screen. Reads a persisted run, renders ranked community cards.
 // Basic (free) analysis shows the top publics; the rest unlock per-map for $3.
@@ -22,7 +32,7 @@ export default async function MapPage({
 
   const { data: run } = await supabase
     .from("runs")
-    .select("id, product_url, product_data, result, unlocked")
+    .select("id, product_url, product_data, result, unlocked, opportunities")
     .eq("id", params.id)
     .maybeSingle();
 
@@ -96,6 +106,14 @@ export default async function MapPage({
           />
 
           {run.unlocked && <AccountGuidePanel />}
+
+          <OpportunityFinder
+            runId={run.id}
+            enabled={apifyConfigured()}
+            initialThreads={
+              (run.opportunities as OppThread[] | null) ?? null
+            }
+          />
 
           {!run.unlocked && lockedCount > 0 && (
             <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
