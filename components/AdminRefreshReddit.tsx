@@ -20,7 +20,8 @@ export function AdminRefreshReddit() {
       if (res.ok && data) {
         setResult(
           `Updated ${data.updated}/${data.total} · icons ${data.withIcon}` +
-            (data.failed?.length ? ` · ${data.failed.length} failed` : "")
+            (data.failedCount ? ` · ${data.failedCount} failed` : "") +
+            (data.sample?.length ? ` — ${data.sample[0]}` : "")
         );
         router.refresh();
       } else {

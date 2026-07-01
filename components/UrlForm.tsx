@@ -1,7 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+// Rotating example URLs — cycled through the placeholder for a bit of life and
+// to hint at what to paste.
+const EXAMPLES = [
+  "https://your-product.com",
+  "https://linear.app",
+  "https://cal.com",
+  "https://tldraw.com",
+  "https://your-saas.io",
+];
 
 // Landing-page input: product URL (required) + optional one-line description.
 // When the backend (Supabase) is configured it POSTs /api/analyze and routes to
@@ -14,17 +24,36 @@ export function UrlForm() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [placeholder, setPlaceholder] = useState(EXAMPLES[0]);
+
+  // Cycle the placeholder while the field is empty.
+  useEffect(() => {
+    if (url) return;
+    let i = 0;
+    const t = setInterval(() => {
+      i = (i + 1) % EXAMPLES.length;
+      setPlaceholder(EXAMPLES[i]);
+    }, 2200);
+    return () => clearInterval(t);
+  }, [url]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     // Basic client-side validation (defense in depth; server validates too).
+    let u: URL;
     try {
-      const u = new URL(url);
+      u = new URL(url);
       if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error();
     } catch {
       setError("Enter a valid http(s) URL.");
+      return;
+    }
+
+    // Easter egg: scanning ourselves.
+    if (/launchmap|zerofans/i.test(u.hostname)) {
+      setError("nice try 😏 — go map a real product.");
       return;
     }
 
@@ -64,7 +93,7 @@ export function UrlForm() {
         required
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        placeholder="https://your-product.com"
+        placeholder={placeholder}
         className={inputCls}
       />
 
@@ -74,7 +103,7 @@ export function UrlForm() {
         disabled={loading}
         className="focus-ring btn-press mt-7 w-full rounded-md border-2 border-hairline-strong bg-primary px-6 py-5 text-2xl text-white shadow-[5px_5px_0_0_var(--color-hairline-strong)] hover:bg-primary-hover disabled:opacity-60"
       >
-        {loading ? "Lighting the way…" : "Light my way →"}
+        {loading ? "Scanning…" : "Scan to launch →"}
       </button>
       {error && <p className="mt-3 text-base text-red-700">{error}</p>}
     </form>
