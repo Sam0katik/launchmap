@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
+import { startRedditSearch, apifyConfigured } from "@/lib/apify";
+import type { ProductAnalysis } from "@/lib/types";
+
+// POST /api/opportunities/start  Body: { runId }
+// Kick off an Apify search for recent Reddit threads matching the product's
+// keywords. Returns the Apify run id to poll. Owner-scoped.
+export const dynamic = "force-dynamic";
+
+const bodySchema = z.object({ runId: z.string().uuid() });
+
+export async function POST(req: NextRequest) {
+  if (!apifyConfigured()) {
+    return NextResponse.json({ error: "apify_off" }, { status: 503 });
+  }
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "auth_required" }, { status: 401 });
+  }
+
+  const parsed = bodySchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "invalid_input" }, { status: 400 });
+  }
+
+  // Ownership + keywords via RLS read.
+  const { data: run } = await supabase
+    .from("runs")
+    .select("id, product_data")
+    .eq("id", parsed.data.runId)
+    .maybeSingle();
+  if (!run) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  const analysis = run.product_data as ProductAnalysis | null;
+  const tags = (analysis?.niche_tags ?? []).filter(Boolean).slice(0, 2);
+  const query = (tags.length ? tags.join(" ") : analysis?.category || "").trim();
+  if (!query) {
+    return NextResponse.json({ error: "no_keywords" }, { status: 422 });
+  }
+
+  const apifyRunId = await startRedditSearch(query);
+  if (!apifyRunId) {
+    return NextResponse.json({ error: "start_failed" }, { status: 502 });
+  }
+  return NextResponse.json({ ok: true, apifyRunId, query });
+}
