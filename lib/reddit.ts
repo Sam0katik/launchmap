@@ -42,7 +42,7 @@ async function apifyProxyText(target: string): Promise<string | null> {
     const res = await undiciFetch(target, {
       headers: HEADERS,
       dispatcher,
-      signal: AbortSignal.timeout(9000),
+      signal: AbortSignal.timeout(7000),
     });
     if (!res.ok) return null;
     const text = await res.text();
@@ -53,10 +53,16 @@ async function apifyProxyText(target: string): Promise<string | null> {
 }
 
 // Fetch a URL via Apify proxy first, then whichever public relay responds. Null
-// when everything failed (treat that as "Reddit unreachable").
-async function relayText(target: string): Promise<string | null> {
+// when everything failed (treat that as "Reddit unreachable"). Pass apifyOnly
+// to skip the slow public relays (used by the batched admin refresh so each
+// request stays within the serverless time limit).
+async function relayText(
+  target: string,
+  apifyOnly = false
+): Promise<string | null> {
   const viaApify = await apifyProxyText(target);
   if (viaApify) return viaApify;
+  if (apifyOnly) return null;
 
   for (const build of RELAYS) {
     try {
@@ -102,8 +108,14 @@ export interface SubAbout {
 /** Subscriber count + icon for one subreddit (name without the "r/").
  *  Throws when every relay failed (unreachable), vs returning null for
  *  "responded but nothing parseable". */
-export async function fetchSubAbout(sub: string): Promise<SubAbout | null> {
-  const text = await relayText(`https://www.reddit.com/r/${sub}/about.json`);
+export async function fetchSubAbout(
+  sub: string,
+  apifyOnly = false
+): Promise<SubAbout | null> {
+  const text = await relayText(
+    `https://www.reddit.com/r/${sub}/about.json`,
+    apifyOnly
+  );
   if (text === null) throw new Error("relay_unreachable");
   const subscribers = pickNumber(text, "subscribers");
   const icon =
