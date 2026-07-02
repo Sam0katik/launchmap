@@ -60,16 +60,20 @@ export default async function MapPage({
   // Reddit-data refresh shows up on existing maps too — everything else stays
   // from the snapshot.
   const ids = rankedRaw.map((r) => r.community.id);
-  const liveById = new Map<number, { icon: string | null; members: number | null }>();
+  const liveById = new Map<
+    number,
+    { icon: string | null; members: number | null; scraped_rules: string[] | null }
+  >();
   if (ids.length > 0) {
     const { data: live } = await supabase
       .from("communities")
-      .select("id, icon, members")
+      .select("id, icon, members, scraped_rules")
       .in("id", ids);
     for (const c of live ?? []) {
       liveById.set(c.id as number, {
         icon: (c.icon as string | null) ?? null,
         members: (c.members as number | null) ?? null,
+        scraped_rules: (c.scraped_rules as string[] | null) ?? null,
       });
     }
   }
@@ -82,7 +86,12 @@ export default async function MapPage({
       ...r,
       locked: run.unlocked ? false : r.locked,
       community: live
-        ? { ...r.community, icon: live.icon, members: live.members }
+        ? {
+            ...r.community,
+            icon: live.icon,
+            members: live.members,
+            scraped_rules: live.scraped_rules,
+          }
         : r.community,
     };
   });

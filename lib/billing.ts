@@ -68,6 +68,12 @@ export const UNLOCK_PRICE_LABEL = "$2 one-time";
 export const THREAD_SEARCH_PRICE_CENTS = 20;
 export const THREAD_SEARCH_PRICE_LABEL = "$0.20";
 
+// Per-check price for verifying a Reddit account's karma/readiness.
+export const KARMA_CHECK_PRICE_CENTS = 50;
+export const KARMA_CHECK_PRICE_LABEL = "$0.50";
+// Max Reddit accounts a user can keep attached to their profile.
+export const MAX_REDDIT_ACCOUNTS = 3;
+
 /** Format a cents amount as a USD string, e.g. 1050 → "$10.50". */
 export function formatUsd(cents: number): string {
   return `$${(Math.max(0, cents) / 100).toFixed(2)}`;

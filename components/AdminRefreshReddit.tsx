@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dots } from "@/components/Dots";
 
-// Admin-only: pull live subscriber counts + icons from Reddit into the
-// communities table. The server processes small batches (to fit the serverless
-// time limit); this loops through the offsets and shows running progress.
+// Admin-only: one Apify actor run over every reddit community — pulls real
+// member counts, icons and community rules into the DB. Start + poll (the run
+// takes ~30–90s for ~35 subs).
 export function AdminRefreshReddit() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -14,39 +14,42 @@ export function AdminRefreshReddit() {
 
   async function refresh() {
     setBusy(true);
-    setResult(null);
-    let offset = 0;
-    let updated = 0;
-    let withIcon = 0;
-    let failed = 0;
-    let total = 0;
-    let sample = "";
+    setResult("Starting scan…");
     try {
-      // Safety cap on iterations in case `done` never arrives.
-      for (let i = 0; i < 50; i++) {
-        const res = await fetch(`/api/admin/refresh-reddit?offset=${offset}`, {
+      const startRes = await fetch("/api/admin/refresh-reddit/start", {
+        method: "POST",
+      });
+      const startData = await startRes.json().catch(() => null);
+      if (!startRes.ok || !startData?.apifyRunId) {
+        setResult(
+          startData?.detail ? `Failed: ${startData.detail}` : "Failed to start."
+        );
+        return;
+      }
+
+      for (let i = 0; i < 30; i++) {
+        await new Promise((r) => setTimeout(r, 5000));
+        setResult(`Scanning ${startData.total} subs… (${(i + 1) * 5}s)`);
+        const res = await fetch("/api/admin/refresh-reddit/result", {
           method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ apifyRunId: startData.apifyRunId }),
         });
         const data = await res.json().catch(() => null);
-        if (!res.ok || !data) {
-          setResult("Failed — check logs.");
-          setBusy(false);
+        if (!res.ok || !data) continue;
+        if (data.status === "SUCCEEDED") {
+          setResult(
+            `Updated ${data.updated}/${startData.total} · icons ${data.withIcon} · rules ${data.withRules}`
+          );
+          router.refresh();
           return;
         }
-        updated += data.updated;
-        withIcon += data.withIcon;
-        failed += data.failedCount;
-        total = data.total;
-        if (!sample && data.sample?.length) sample = data.sample[0];
-        offset = data.nextOffset;
-        setResult(`Working ${Math.min(offset, total)}/${total}`);
-        if (data.done) break;
+        if (data.status === "FAILED") {
+          setResult("Scan failed on Apify — check the run log.");
+          return;
+        }
       }
-      setResult(
-        `Updated ${updated}/${total} · icons ${withIcon}` +
-          (failed ? ` · ${failed} failed — ${sample}` : "")
-      );
-      router.refresh();
+      setResult("Timed out — check the Apify run.");
     } catch {
       setResult("Network error.");
     } finally {
@@ -61,7 +64,7 @@ export function AdminRefreshReddit() {
         disabled={busy}
         className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-4 py-2.5 text-base font-medium text-ink hover:bg-surface-3 disabled:opacity-60"
       >
-        {busy ? <>Refreshing<Dots /></> : "↻ Refresh Reddit data"}
+        {busy ? <>Scanning<Dots /></> : "↻ Scan Reddit data"}
       </button>
       {result && <span className="text-xs text-ink-subtle">{result}</span>}
     </div>

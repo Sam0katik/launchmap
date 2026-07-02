@@ -25,7 +25,10 @@ export async function analyzeProduct(
     max_tokens: 512,
     system:
       "You analyze a product's landing page and extract structured facts for " +
-      "matching it to relevant launch communities. Respond ONLY with JSON.",
+      "matching it to relevant launch communities and searching Reddit for " +
+      "threads its maker should join. Precision over breadth: a wrong or " +
+      "generic tag surfaces irrelevant communities and wastes the user's " +
+      "money. Respond ONLY with JSON.",
     messages: [
       {
         role: "user",
@@ -40,12 +43,21 @@ export async function analyzeProduct(
           `  "niche_tags": ["5-8", "lowercase", "tags"],\n` +
           `  "strengths": ["2-3 short, concrete angles a maker could lead a post with"]\n` +
           `}\n\n` +
-          `Tag rules: order from MOST specific to most general. Prefer precise ` +
-          `tags that describe THIS product (e.g. "nocode", "devtool", ` +
-          `"opensource", "marketplace", "chrome-extension", "fintech") over ` +
-          `generic ones like "saas" or "startup". Single words or hyphenated, ` +
-          `no spaces. These tags decide which communities match, so be accurate, ` +
-          `not broad.\n\n` +
+          `product_summary: state what the product DOES for whom — the concrete ` +
+          `mechanism, not marketing copy. If the content is too thin to tell ` +
+          `(JS error page, empty site), describe only what IS knowable; never ` +
+          `invent features.\n\n` +
+          `Tag rules — tags drive community matching AND Reddit search queries, ` +
+          `so each must be a term a real user of this product would type or ` +
+          `subscribe to:\n` +
+          `- Order from MOST specific to most general.\n` +
+          `- The first 2 tags must name the exact niche (e.g. ` +
+          `"screen-recording", "invoice-automation", "habit-tracker", ` +
+          `"chrome-extension"), not the industry.\n` +
+          `- NEVER emit standalone filler tags: "ai", "app", "tool", ` +
+          `"software", "platform", "website", "saas", "startup", "tech". If AI ` +
+          `matters, bind it to the use case: "ai-copywriting", not "ai".\n` +
+          `- Single words or hyphenated, no spaces.\n\n` +
           `strengths: each is a SPECIFIC, honest selling angle grounded in the ` +
           `content (e.g. "saves X hours of manual work", "the only tool that ` +
           `does Y", "built for Z audience specifically"). 4-9 words each, no ` +

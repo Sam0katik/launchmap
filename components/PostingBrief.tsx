@@ -89,6 +89,22 @@ export function PostingBrief({
                 <p className="mt-0.5 text-ink-muted">{brief.rules}</p>
               </div>
             )}
+
+            {/* live rules scraped from the sub itself */}
+            {community.scraped_rules && community.scraped_rules.length > 0 && (
+              <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
+                <span className="eyebrow text-[9px] text-ink-subtle">
+                  Live sub rules
+                </span>
+                <ul className="mt-0.5 space-y-0.5">
+                  {community.scraped_rules.slice(0, 5).map((r, i) => (
+                    <li key={i} className="text-ink-muted">
+                      {i + 1}. {r}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {brief.karmaNote && (
               <p className="text-[11px] text-ink-tertiary">⚑ {brief.karmaNote}</p>
             )}

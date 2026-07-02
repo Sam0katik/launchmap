@@ -41,6 +41,16 @@ const SECTIONS: { title: string; points: string[] }[] = [
     ],
   },
   {
+    title: "Launch day: order of operations",
+    points: [
+      "Post to ONE sub per session, not all at once — identical posts across many subs within hours is a classic spam signature.",
+      "Start with the friendliest sub on your map (Welcome policy), read the reaction, refine the post, then work up to stricter subs over days.",
+      "Stay in the thread for the first 2 hours and answer every comment — reply speed is the biggest lever on how far a post travels.",
+      "If a post gets removed, don't repost it elsewhere immediately. Fix what broke the rule first, or the next sub's mods see the pattern.",
+      "Use the 'Where to jump in' threads as warm-up: a helpful comment in a live discussion often outperforms a cold post.",
+    ],
+  },
+  {
     title: "Spot a shadowban / recover from a ban",
     points: [
       "Open your post in an incognito window (logged out). If it's not visible, you're shadowbanned in that sub or globally.",

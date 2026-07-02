@@ -34,6 +34,7 @@ export interface Community {
   verified_at: string; // ISO date
   members?: number | null; // real subscriber/member count (reach)
   icon?: string | null; // avatar URL (Reddit community_icon / directory favicon)
+  scraped_rules?: string[] | null; // live rules from the Apify community scan
   created_at?: string;
 }
 
