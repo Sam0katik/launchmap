@@ -5,7 +5,7 @@
 -- verified_at per row; re-verify against live sidebars before production and
 -- monthly thereafter. The generator warns on rows older than 45 days.
 --
--- Rows: 58 | Generated: 2026-06-30
+-- Rows: 58 | Generated: 2026-07-02
 
 truncate table communities restart identity cascade;
 
@@ -47,9 +47,9 @@ values
    'Required: share the process and lessons. Removed: standalone ad-style launch posts.', 'medium', 'Some history expected.',
    'moderate', 'Mon-Wed ET', null, '2026-06-17', null, null),
   ('reddit', 'r/SaaS', 'https://www.reddit.com/r/SaaS/', '{"saas","b2b","indie","startup","launch","pricing"}',
-   'megathread_only', 'Direct promo limited; use the weekly "Share Your SaaS" / feedback threads.',
-   'Removed: standalone launch posts outside allowed threads; name+link+one-liner = spam.', 'medium', 'Brand-new accounts often filtered; build some history.',
-   'active', 'Mon-Wed 8-11 ET', null, '2026-06-17', null, null),
+   'megathread_only', 'June 2026 mod rule: promo of promotional/advertising SaaS (incl. Reddit-marketing tools) is banned outright; other SaaS promo only via the weekly threads.',
+   'Removed: standalone launch posts; promo/advertising SaaS category banned entirely (mod post, June 2026) - permanent ban risk. Use weekly threads only, and skip this sub if your product markets on Reddit.', 'medium', 'Brand-new accounts often filtered; build some history.',
+   'active', 'Mon-Wed 8-11 ET', null, '2026-07-02', null, null),
   ('reddit', 'r/startups', 'https://www.reddit.com/r/startups/', '{"startup","saas","founder","launch","feedback","b2b"}',
    'megathread_only', 'Use "Share Your Startup" / Feedback Friday threads; main feed is strict.',
    'Removed: self-promo in the main feed. Required: substantive discussion contributions.', 'medium', 'Account age + comment karma expected.',

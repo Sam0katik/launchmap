@@ -61,16 +61,15 @@ export async function POST(req: NextRequest) {
   );
 
   let updated = 0;
-  let withIcon = 0;
+  let withMembers = 0;
   let withRules = 0;
   for (const c of result.communities) {
     const id = byName.get(c.name.toLowerCase());
     if (!id) continue;
     const patch: Record<string, unknown> = {};
-    if (c.members != null) patch.members = c.members;
-    if (c.icon) {
-      patch.icon = c.icon;
-      withIcon++;
+    if (c.members != null) {
+      patch.members = c.members;
+      withMembers++;
     }
     if (c.rules.length > 0) {
       patch.scraped_rules = c.rules;
@@ -85,7 +84,7 @@ export async function POST(req: NextRequest) {
     status: "SUCCEEDED",
     found: result.communities.length,
     updated,
-    withIcon,
+    withMembers,
     withRules,
   });
 }

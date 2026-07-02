@@ -151,8 +151,15 @@ export function OpportunityFinder({
 
       {unlocked && threads && threads.length === 0 && !busy && (
         <p className="text-sm text-ink-tertiary">
-          No threads came back — Reddit sometimes rate-limits the search. Give it
-          a moment and hit Refresh.
+          No live threads passed the quality bar right now — we only show
+          conversations you can actually join. Try again in a few hours.
+        </p>
+      )}
+
+      {unlocked && threads && threads.length > 0 && threads.length < 5 && !busy && (
+        <p className="mt-2 text-xs text-ink-tertiary">
+          Only {threads.length} thread{threads.length > 1 ? "s" : ""} passed the
+          live-conversation bar right now — check back later for fresh ones.
         </p>
       )}
 

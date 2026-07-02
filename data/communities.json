@@ -202,14 +202,14 @@
       "pricing"
     ],
     "self_promo_policy": "megathread_only",
-    "self_promo_note": "Direct promo limited; use the weekly \"Share Your SaaS\" / feedback threads.",
-    "rules_summary": "Removed: standalone launch posts outside allowed threads; name+link+one-liner = spam.",
+    "self_promo_note": "June 2026 mod rule: promo of promotional/advertising SaaS (incl. Reddit-marketing tools) is banned outright; other SaaS promo only via the weekly threads.",
+    "rules_summary": "Removed: standalone launch posts; promo/advertising SaaS category banned entirely (mod post, June 2026) - permanent ban risk. Use weekly threads only, and skip this sub if your product markets on Reddit.",
     "karma_tier": "medium",
     "karma_note": "Brand-new accounts often filtered; build some history.",
     "activity_level": "active",
     "best_time": "Mon-Wed 8-11 ET",
     "submit_template": null,
-    "verified_at": "2026-06-17"
+    "verified_at": "2026-07-02"
   },
   {
     "id": 10,
