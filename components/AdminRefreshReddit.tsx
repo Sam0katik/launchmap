@@ -39,7 +39,7 @@ export function AdminRefreshReddit() {
         if (!res.ok || !data) continue;
         if (data.status === "SUCCEEDED") {
           setResult(
-            `Updated ${data.updated}/${startData.total} · icons ${data.withIcon} · rules ${data.withRules}`
+            `Updated ${data.updated}/${startData.total} · members ${data.withMembers} · mod-rules ${data.withRules}`
           );
           router.refresh();
           return;

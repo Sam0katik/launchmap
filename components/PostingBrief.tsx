@@ -90,16 +90,16 @@ export function PostingBrief({
               </div>
             )}
 
-            {/* live rules scraped from the sub itself */}
+            {/* live policy signals: what the mods have pinned right now */}
             {community.scraped_rules && community.scraped_rules.length > 0 && (
               <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
                 <span className="eyebrow text-[9px] text-ink-subtle">
-                  Live sub rules
+                  Pinned by mods now
                 </span>
                 <ul className="mt-0.5 space-y-0.5">
-                  {community.scraped_rules.slice(0, 5).map((r, i) => (
+                  {community.scraped_rules.slice(0, 3).map((r, i) => (
                     <li key={i} className="text-ink-muted">
-                      {i + 1}. {r}
+                      📌 {r}
                     </li>
                   ))}
                 </ul>

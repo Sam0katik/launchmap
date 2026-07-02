@@ -138,6 +138,10 @@ export async function getRedditSearchResult(
   for (const it of Array.isArray(items) ? items : []) {
     const type = (it.dataType ?? it.type) as string | undefined;
     if (type && type !== "post") continue;
+    // Not joinable: pinned mod posts (years-old megathreads dominate a sub's
+    // hot page), archived/locked threads can't be commented on at all.
+    if (it.stickied === true || it.pinned === true) continue;
+    if (it.archived === true || it.locked === true) continue;
     const url = (it.postUrl ?? it.url ?? it.link ?? it.permalink) as
       | string
       | undefined;
@@ -366,14 +370,16 @@ export async function getUserScrapeResult(
 }
 
 // ── Community scan (admin) ──────────────────────────────────────
-// One actor run over every subreddit URL: pulls real member counts, icons and
-// community rules/description into the DB. Same start + poll pattern.
+// One actor run over every subreddit URL. The actor returns POSTS (not
+// community cards), but every post carries `subredditSubscribers` — the real
+// member count — and pinned moderator posts ARE the sub's live posting policy
+// ("Addressing Self-Promotion…", "New rule banning…"). Icons are not present
+// in the output at all, so avatars stay as monograms.
 
 export interface ScannedCommunity {
   name: string; // subreddit name without "r/"
   members: number | null;
-  icon: string | null;
-  rules: string[]; // scraped rule titles/lines (may be empty)
+  rules: string[]; // titles of pinned mod posts (live policy signals)
 }
 
 /** Start an actor run scraping community info for the given subreddit names. */
@@ -387,8 +393,9 @@ export async function startCommunityScan(
     searchPosts: false,
     searchComments: false,
     searchCommunities: false,
-    // One post per sub keeps billing minimal; the community item rides along.
-    maxPostsCount: 1,
+    // 3 posts per sub: enough to catch the pinned mod-policy posts that sit at
+    // the top of hot, while keeping a 35-sub scan around ~100 results (~$0.2).
+    maxPostsCount: 3,
     maxCommentsCount: 1,
     crawlCommentsPerPost: false,
     fastMode: true,
@@ -416,29 +423,7 @@ export async function startCommunityScan(
   return typeof id === "string" ? { runId: id } : { error: "no_run_id" };
 }
 
-function asRuleList(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((r) => {
-      if (typeof r === "string") return r;
-      if (r && typeof r === "object") {
-        const o = r as Record<string, unknown>;
-        const title = typeof o.title === "string" ? o.title : "";
-        const desc =
-          typeof o.description === "string"
-            ? o.description
-            : typeof o.shortName === "string"
-              ? o.shortName
-              : "";
-        return [title, desc].filter(Boolean).join(" — ");
-      }
-      return "";
-    })
-    .filter((s) => s.length > 2)
-    .slice(0, 8);
-}
-
-/** Poll a community-scan run; on success, parse community items. */
+/** Poll a community-scan run; on success, aggregate post items per sub. */
 export async function getCommunityScanResult(
   runId: string
 ): Promise<
@@ -475,41 +460,36 @@ export async function getCommunityScanResult(
     unknown
   >[];
 
-  const out: ScannedCommunity[] = [];
+  // The actor returns posts. Aggregate per sub: `subredditSubscribers` (on
+  // every post) = real member count; pinned moderator posts = the sub's live
+  // posting policy, worth surfacing in the brief.
+  const bySub = new Map<string, ScannedCommunity>();
   for (const it of Array.isArray(items) ? items : []) {
     const type = (it.dataType ?? it.type) as string | undefined;
-    if (type && type !== "community" && type !== "subreddit") continue;
-    // Community name may come as "r/SaaS", "SaaS", or a URL.
+    if (type && type !== "post") continue;
     const rawName =
-      (it.communityName as string) ??
       (it.parsedCommunityName as string) ??
-      (it.displayName as string) ??
-      (it.name as string) ??
+      (it.communityName as string) ??
       "";
     const name = String(rawName).replace(/^r\//i, "").trim();
     if (!name) continue;
-    out.push({
-      name,
-      members: numOrNull(
-        it.numberOfMembers ?? it.members ?? it.subscribers ?? it.memberCount
-      ),
-      icon:
-        cleanIcon(
-          (it.communityIcon as string) ??
-            (it.icon as string) ??
-            (it.iconUrl as string) ??
-            null
-        ) ?? null,
-      rules: asRuleList(it.rules ?? it.communityRules),
-    });
-  }
-  return { status: "SUCCEEDED", communities: out };
-}
+    const key = name.toLowerCase();
+    const entry = bySub.get(key) ?? { name, members: null, rules: [] };
 
-function cleanIcon(raw: string | null): string | null {
-  if (!raw || typeof raw !== "string") return null;
-  const url = raw.replace(/&amp;/g, "&").replace(/\\u0026/g, "&").trim();
-  return url.startsWith("http") ? url : null;
+    const members = numOrNull(it.subredditSubscribers);
+    if (members != null) entry.members = members;
+
+    // Pinned mod posts announcing policy ("self-promotion", "rules", weekly
+    // promo threads) are the live rules signal.
+    const isModPin =
+      it.stickied === true || it.distinguished === "moderator";
+    const title = typeof it.title === "string" ? it.title.trim() : "";
+    if (isModPin && title && entry.rules.length < 3) {
+      entry.rules.push(title.slice(0, 140));
+    }
+    bySub.set(key, entry);
+  }
+  return { status: "SUCCEEDED", communities: Array.from(bySub.values()) };
 }
 
 // ── Quality ranking ─────────────────────────────────────────────
@@ -556,6 +536,17 @@ export function rankThreads(
     if (SPAM_RE.test(title)) continue;
     // Multi-pipe headlines are almost always syndicated promo/news spam.
     if ((t.title.match(/\|/g) ?? []).length >= 2) continue;
+
+    // ALIVE gate — every suggestion must be a joinable conversation. Dead
+    // (0 comments + ≤1 upvote) or stale (>45 days) threads are worthless to
+    // jump into, so they're dropped even if the list ends up short.
+    const ageDays = t.createdUtc
+      ? (Date.now() / 1000 - t.createdUtc) / 86400
+      : null;
+    if (ageDays !== null && ageDays > 45) continue;
+    const cc = t.comments ?? 0;
+    const uv = t.upvotes ?? 0;
+    if (cc === 0 && uv <= 1) continue;
 
     // Relevance gate. Global search: must mention the product's space —
     // whole-word in the title or word-start in the subreddit name. Map-subs
