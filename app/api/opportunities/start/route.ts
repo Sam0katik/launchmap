@@ -4,8 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   startRedditSearch,
+  startSubredditsScrape,
   apifyConfigured,
   buildSearchTerms,
+  mapRedditSubs,
 } from "@/lib/apify";
 import { THREAD_SEARCH_PRICE_CENTS } from "@/lib/billing";
 import type { ProductAnalysis } from "@/lib/types";
@@ -36,10 +38,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
 
-  // Ownership + keywords via RLS read.
+  // Ownership + keywords + matched communities via RLS read.
   const { data: run } = await supabase
     .from("runs")
-    .select("id, product_data, unlocked")
+    .select("id, product_data, result, unlocked")
     .eq("id", parsed.data.runId)
     .maybeSingle();
   if (!run) {
@@ -86,7 +88,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "conflict" }, { status: 409 });
   }
 
-  const started = await startRedditSearch(terms);
+  // Prefer scraping the map's own matched subreddits (guaranteed on-topic);
+  // fall back to global keyword search only when the map has no reddit subs.
+  const subs = mapRedditSubs(run.result);
+  const started =
+    subs.length > 0
+      ? await startSubredditsScrape(subs)
+      : await startRedditSearch(terms);
   if ("error" in started) {
     // Refund — the search never started.
     await admin

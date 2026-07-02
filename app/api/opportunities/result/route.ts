@@ -6,6 +6,7 @@ import {
   getRedditSearchResult,
   apifyConfigured,
   buildSearchTerms,
+  mapRedditSubs,
   rankThreads,
 } from "@/lib/apify";
 import type { ProductAnalysis } from "@/lib/types";
@@ -39,10 +40,10 @@ export async function POST(req: NextRequest) {
   }
   const { runId, apifyRunId } = parsed.data;
 
-  // Ownership check via RLS (product_data feeds the quality ranking).
+  // Ownership check via RLS (product_data + result feed the quality ranking).
   const { data: run } = await supabase
     .from("runs")
-    .select("id, product_data")
+    .select("id, product_data, result")
     .eq("id", runId)
     .maybeSingle();
   if (!run) {
@@ -56,9 +57,12 @@ export async function POST(req: NextRequest) {
 
   let threads = result.threads;
   if (result.status === "SUCCEEDED") {
-    // Dedupe bot cross-posts, drop promo spam, keep the ~10 most engageable.
+    // Dedupe bot cross-posts, drop spam, keep the most engageable. When the
+    // scrape came from the map's own subs, an answerable ask counts as
+    // on-topic even without a keyword hit.
     const terms = buildSearchTerms(run.product_data as ProductAnalysis | null);
-    threads = rankThreads(threads, terms, 10);
+    const fromMapSubs = mapRedditSubs(run.result).length > 0;
+    threads = rankThreads(threads, terms, 12, fromMapSubs);
 
     // Cache on the run so we don't re-run the paid actor on every visit.
     const admin = createAdminClient();
