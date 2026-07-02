@@ -64,9 +64,10 @@ export function buildCheckoutUrl(runId: string): string | null {
 export const UNLOCK_PRICE_CENTS = 200;
 export const UNLOCK_PRICE_LABEL = "$2 one-time";
 
-// Per-search price for "Where to jump in" (live Reddit threads via Apify).
-export const THREAD_SEARCH_PRICE_CENTS = 20;
-export const THREAD_SEARCH_PRICE_LABEL = "$0.20";
+// "Where to jump in" (live Reddit threads via Apify): the first search on a
+// map is free (included in the unlock); refreshes are paid.
+export const THREAD_SEARCH_PRICE_CENTS = 50;
+export const THREAD_SEARCH_PRICE_LABEL = "$0.50";
 
 // Per-check price for verifying a Reddit account's karma/readiness.
 export const KARMA_CHECK_PRICE_CENTS = 50;
