@@ -292,6 +292,153 @@ export async function getUserScrapeResult(
   };
 }
 
+// ── Community scan (admin) ──────────────────────────────────────
+// One actor run over every subreddit URL: pulls real member counts, icons and
+// community rules/description into the DB. Same start + poll pattern.
+
+export interface ScannedCommunity {
+  name: string; // subreddit name without "r/"
+  members: number | null;
+  icon: string | null;
+  rules: string[]; // scraped rule titles/lines (may be empty)
+}
+
+/** Start an actor run scraping community info for the given subreddit names. */
+export async function startCommunityScan(
+  subs: string[]
+): Promise<{ runId: string } | { error: string }> {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) return { error: "no_token" };
+  const input = {
+    startUrls: subs.map((s) => ({ url: `https://www.reddit.com/r/${s}/` })),
+    searchPosts: false,
+    searchComments: false,
+    searchCommunities: false,
+    // One post per sub keeps billing minimal; the community item rides along.
+    maxPostsCount: 1,
+    maxCommentsCount: 1,
+    crawlCommentsPerPost: false,
+    fastMode: true,
+    includeNSFW: true,
+    onlyWithFlair: false,
+    proxy: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
+  };
+  let res: Response;
+  try {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      signal: AbortSignal.timeout(9000),
+    });
+  } catch {
+    return { error: "network" };
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { error: `apify_${res.status}: ${body.slice(0, 160)}` };
+  }
+  const data = await res.json().catch(() => null);
+  const id = data?.data?.id;
+  return typeof id === "string" ? { runId: id } : { error: "no_run_id" };
+}
+
+function asRuleList(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((r) => {
+      if (typeof r === "string") return r;
+      if (r && typeof r === "object") {
+        const o = r as Record<string, unknown>;
+        const title = typeof o.title === "string" ? o.title : "";
+        const desc =
+          typeof o.description === "string"
+            ? o.description
+            : typeof o.shortName === "string"
+              ? o.shortName
+              : "";
+        return [title, desc].filter(Boolean).join(" — ");
+      }
+      return "";
+    })
+    .filter((s) => s.length > 2)
+    .slice(0, 8);
+}
+
+/** Poll a community-scan run; on success, parse community items. */
+export async function getCommunityScanResult(
+  runId: string
+): Promise<
+  | { status: "RUNNING" }
+  | { status: "FAILED" }
+  | { status: "SUCCEEDED"; communities: ScannedCommunity[] }
+  | null
+> {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) return null;
+
+  const runRes = await fetch(`${API}/actor-runs/${runId}?token=${token}`, {
+    signal: AbortSignal.timeout(9000),
+  });
+  if (!runRes.ok) return null;
+  const runData = await runRes.json().catch(() => null);
+  const status = runData?.data?.status as string | undefined;
+  const datasetId = runData?.data?.defaultDatasetId as string | undefined;
+
+  if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") {
+    return { status: "FAILED" };
+  }
+  if (status !== "SUCCEEDED" || !datasetId) {
+    return { status: "RUNNING" };
+  }
+
+  const itemsRes = await fetch(
+    `${API}/datasets/${datasetId}/items?clean=true&limit=200&token=${token}`,
+    { signal: AbortSignal.timeout(12000) }
+  );
+  if (!itemsRes.ok) return { status: "SUCCEEDED", communities: [] };
+  const items = (await itemsRes.json().catch(() => [])) as Record<
+    string,
+    unknown
+  >[];
+
+  const out: ScannedCommunity[] = [];
+  for (const it of Array.isArray(items) ? items : []) {
+    const type = (it.dataType ?? it.type) as string | undefined;
+    if (type && type !== "community" && type !== "subreddit") continue;
+    // Community name may come as "r/SaaS", "SaaS", or a URL.
+    const rawName =
+      (it.communityName as string) ??
+      (it.parsedCommunityName as string) ??
+      (it.displayName as string) ??
+      (it.name as string) ??
+      "";
+    const name = String(rawName).replace(/^r\//i, "").trim();
+    if (!name) continue;
+    out.push({
+      name,
+      members: numOrNull(
+        it.numberOfMembers ?? it.members ?? it.subscribers ?? it.memberCount
+      ),
+      icon:
+        cleanIcon(
+          (it.communityIcon as string) ??
+            (it.icon as string) ??
+            (it.iconUrl as string) ??
+            null
+        ) ?? null,
+      rules: asRuleList(it.rules ?? it.communityRules),
+    });
+  }
+  return { status: "SUCCEEDED", communities: out };
+}
+
+function cleanIcon(raw: string | null): string | null {
+  if (!raw || typeof raw !== "string") return null;
+  const url = raw.replace(/&amp;/g, "&").replace(/\\u0026/g, "&").trim();
+  return url.startsWith("http") ? url : null;
+}
+
 // ── Quality ranking ─────────────────────────────────────────────
 // Raw search results are noisy: bot cross-posts (same headline in 6 subs),
 // promo spam, off-topic hits. Dedupe + score + keep only what a maker can
@@ -311,6 +458,12 @@ export function rankThreads(
   const tokens = terms
     .flatMap((t) => t.toLowerCase().split(/\s+/))
     .filter((t) => t.length > 2);
+  // Whole-word matching, not substring: "ai" must NOT match "antiai"/"maid" —
+  // substring matching is exactly how an anti-AI sub slipped into an AI
+  // product's list. Subreddit names have no spaces, so allow word-start there.
+  const wordRe = (k: string) =>
+    new RegExp(`(^|[^a-z0-9])${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^a-z0-9])`);
+  const tokenRes = tokens.map((k) => ({ k, re: wordRe(k) }));
 
   const seen = new Set<string>();
   const scored: { t: RedditThread; score: number }[] = [];
@@ -327,10 +480,12 @@ export function rankThreads(
     if ((t.title.match(/\|/g) ?? []).length >= 2) continue;
 
     // HARD relevance gate: the thread must actually mention the product's
-    // space — in the title or the subreddit name. Without this, Reddit search
-    // noise (game subs, fanfic, stock news) floods the list.
-    const sub = (t.subreddit ?? "").toLowerCase();
-    const onTopic = tokens.some((k) => title.includes(k) || sub.includes(k));
+    // space — whole-word in the title, or word-start in the subreddit name.
+    // Without this, Reddit search noise (game subs, fanfic) floods the list.
+    const sub = (t.subreddit ?? "").toLowerCase().replace(/^r\//, "");
+    const onTopic = tokenRes.some(
+      ({ k, re }) => re.test(title) || sub.startsWith(k) || sub.endsWith(k)
+    );
     if (!onTopic) continue;
 
     let score = 0;

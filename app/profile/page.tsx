@@ -8,10 +8,18 @@ import { MapListRow } from "@/components/MapListRow";
 import { RedditGuide } from "@/components/RedditGuide";
 import { RedditKarmaCheck } from "@/components/RedditKarmaCheck";
 import { TopUpButton } from "@/components/TopUpButton";
-import { MAX_MAPS_PER_ACCOUNT, UNLOCK_PRICE_LABEL, formatUsd } from "@/lib/billing";
+import { SignOutButton } from "@/components/SignOutButton";
+import {
+  MAX_MAPS_PER_ACCOUNT,
+  MAX_REDDIT_ACCOUNTS,
+  UNLOCK_PRICE_LABEL,
+  formatUsd,
+} from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
+import { apifyConfigured } from "@/lib/apify";
 import { cryptomusConfigured } from "@/lib/cryptomus";
 import { productNameFromUrl } from "@/lib/product-name";
+import type { SavedRedditAccount } from "@/components/RedditKarmaCheck";
 
 // Account hub: every launch map the user has run, usage, and account management
 // (sign-out lives in the nav; deletion lives here). Server component, RLS-scoped
@@ -33,13 +41,16 @@ export default async function ProfilePage() {
       .order("created_at", { ascending: false }),
     supabase
       .from("profiles")
-      .select("balance_cents")
+      .select("balance_cents, reddit_accounts")
       .eq("id", user.id)
       .maybeSingle(),
   ]);
 
   const runList = runs ?? [];
   const balanceCents = (profile?.balance_cents as number) ?? 0;
+  const redditAccounts = (
+    Array.isArray(profile?.reddit_accounts) ? profile!.reddit_accounts : []
+  ) as SavedRedditAccount[];
   const isAdmin = isAdminUser({
     email: user.email,
     username: user.user_metadata?.user_name as string,
@@ -83,6 +94,7 @@ export default async function ProfilePage() {
                     ⚙ Admin panel
                   </Link>
                 )}
+                <SignOutButton />
               </div>
             </div>
           </header>
@@ -151,7 +163,11 @@ export default async function ProfilePage() {
           {/* Reddit readiness check */}
           <section className="mb-12">
             <h2 className="eyebrow mb-3">Reddit account check</h2>
-            <RedditKarmaCheck />
+            <RedditKarmaCheck
+              enabled={apifyConfigured()}
+              initialAccounts={redditAccounts}
+              maxAccounts={MAX_REDDIT_ACCOUNTS}
+            />
           </section>
 
           {/* Reddit account playbook */}

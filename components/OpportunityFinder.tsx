@@ -29,6 +29,7 @@ export function OpportunityFinder({
 }) {
   const [threads, setThreads] = useState<Thread[] | null>(initialThreads);
   const [busy, setBusy] = useState(false);
+  const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function run() {
@@ -93,9 +94,9 @@ export function OpportunityFinder({
             Live threads about your space — join with a real comment, not a link.
           </p>
         </div>
-        {enabled && unlocked && (
+        {enabled && unlocked && !armed && (
           <button
-            onClick={run}
+            onClick={() => setArmed(true)}
             disabled={busy}
             className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
           >
@@ -107,6 +108,26 @@ export function OpportunityFinder({
               "Find live threads · $0.20"
             )}
           </button>
+        )}
+        {enabled && unlocked && armed && !busy && (
+          <span className="flex shrink-0 items-center gap-2">
+            <span className="text-xs text-ink-muted">Charge $0.20?</span>
+            <button
+              onClick={() => {
+                setArmed(false);
+                run();
+              }}
+              className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => setArmed(false)}
+              className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-sm text-ink"
+            >
+              Cancel
+            </button>
+          </span>
         )}
       </div>
 
