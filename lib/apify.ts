@@ -163,6 +163,64 @@ function numOrNull(v: unknown): number | null {
   return typeof v === "number" ? v : null;
 }
 
+/** The map's top reddit communities (from the stored ranked result) — used to
+ *  scope the thread search to subs that are already on-topic. */
+export function mapRedditSubs(result: unknown, max = 6): string[] {
+  if (!Array.isArray(result)) return [];
+  const subs: string[] = [];
+  for (const r of result) {
+    const c = (r as { community?: { platform?: string; name?: string } })
+      ?.community;
+    if (c?.platform === "reddit" && typeof c.name === "string") {
+      const s = c.name.replace(/^r\//i, "").trim();
+      if (s && !subs.includes(s)) subs.push(s);
+    }
+    if (subs.length >= max) break;
+  }
+  return subs;
+}
+
+/** Start an actor run pulling the current hot posts of specific subreddits
+ *  (the map's own matched communities — guaranteed on-topic, unlike global
+ *  search). Uses Direct URLs, the actor's most reliable mode. */
+export async function startSubredditsScrape(
+  subs: string[]
+): Promise<{ runId: string } | { error: string }> {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) return { error: "no_token" };
+  const input = {
+    startUrls: subs.map((s) => ({ url: `https://www.reddit.com/r/${s}/` })),
+    searchPosts: false,
+    searchComments: false,
+    searchCommunities: false,
+    maxPostsCount: 50,
+    maxCommentsCount: 1,
+    crawlCommentsPerPost: false,
+    fastMode: true,
+    includeNSFW: false,
+    onlyWithFlair: false,
+    proxy: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
+  };
+  let res: Response;
+  try {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      signal: AbortSignal.timeout(9000),
+    });
+  } catch {
+    return { error: "network" };
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { error: `apify_${res.status}: ${body.slice(0, 160)}` };
+  }
+  const data = await res.json().catch(() => null);
+  const id = data?.data?.id;
+  return typeof id === "string" ? { runId: id } : { error: "no_run_id" };
+}
+
 // ── User karma via the same actor ───────────────────────────────
 // The public relays never get through from Vercel, so the karma check runs the
 // actor against the user's profile URL (Direct URLs input) and parses the
@@ -449,11 +507,16 @@ const QUESTION_RE =
 const SPAM_RE =
   /expert \||management \||specialist \||roi-focused|dm me|check out my|use code|discount|% off/i;
 
-/** Dedupe, drop spam, score for engageability, return the best `limit`. */
+/** Dedupe, drop spam, score for engageability, return the best `limit`.
+ *  `fromMapSubs`: threads already come from the map's own communities, so the
+ *  gate relaxes to "mentions the product's keywords OR is an answerable
+ *  question/ask" — a question inside the product's own community is exactly
+ *  the kind of thread to jump into. */
 export function rankThreads(
   threads: RedditThread[],
   terms: string[],
-  limit = 10
+  limit = 12,
+  fromMapSubs = false
 ): RedditThread[] {
   const tokens = terms
     .flatMap((t) => t.toLowerCase().split(/\s+/))
@@ -479,18 +542,22 @@ export function rankThreads(
     // Multi-pipe headlines are almost always syndicated promo/news spam.
     if ((t.title.match(/\|/g) ?? []).length >= 2) continue;
 
-    // HARD relevance gate: the thread must actually mention the product's
-    // space — whole-word in the title, or word-start in the subreddit name.
-    // Without this, Reddit search noise (game subs, fanfic) floods the list.
+    // Relevance gate. Global search: must mention the product's space —
+    // whole-word in the title or word-start in the subreddit name. Map-subs
+    // mode: keyword match OR an answerable ask (the sub itself is on-topic).
     const sub = (t.subreddit ?? "").toLowerCase().replace(/^r\//, "");
-    const onTopic = tokenRes.some(
+    const keywordHit = tokenRes.some(
       ({ k, re }) => re.test(title) || sub.startsWith(k) || sub.endsWith(k)
     );
+    const isAsk = QUESTION_RE.test(t.title);
+    const onTopic = fromMapSubs ? keywordHit || isAsk : keywordHit;
     if (!onTopic) continue;
 
     let score = 0;
+    // Mentioning the product's exact space beats everything else.
+    if (keywordHit) score += 5;
     // A question / ask is the easiest thing to genuinely reply to.
-    if (QUESTION_RE.test(t.title)) score += 4;
+    if (isAsk) score += 4;
     // Actual discussion happening.
     if ((t.comments ?? 0) >= 2) score += 3;
     else if ((t.comments ?? 0) >= 1) score += 1;
