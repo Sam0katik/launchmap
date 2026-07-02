@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   // Ownership + keywords + matched communities via RLS read.
   const { data: run } = await supabase
     .from("runs")
-    .select("id, product_data, result, unlocked")
+    .select("id, product_data, result, unlocked, opportunities")
     .eq("id", parsed.data.runId)
     .maybeSingle();
   if (!run) {
@@ -58,34 +58,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "no_keywords" }, { status: 422 });
   }
 
-  // Charge per search (compare-and-swap, same pattern as unlock; one retry on
-  // a concurrent balance change).
+  // The FIRST search on a map is free (included in the unlock); refreshes
+  // charge THREAD_SEARCH_PRICE_CENTS (CAS, same pattern as unlock).
   const admin = createAdminClient();
+  const isFirstSearch = run.opportunities == null;
   let charged = false;
   let balance = 0;
-  for (let attempt = 0; attempt < 2 && !charged; attempt++) {
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("balance_cents")
-      .eq("id", user.id)
-      .maybeSingle();
-    balance = (profile?.balance_cents as number) ?? 0;
-    if (balance < THREAD_SEARCH_PRICE_CENTS) {
-      return NextResponse.json(
-        { error: "insufficient", balanceCents: balance },
-        { status: 402 }
-      );
+  if (!isFirstSearch) {
+    for (let attempt = 0; attempt < 2 && !charged; attempt++) {
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("balance_cents")
+        .eq("id", user.id)
+        .maybeSingle();
+      balance = (profile?.balance_cents as number) ?? 0;
+      if (balance < THREAD_SEARCH_PRICE_CENTS) {
+        return NextResponse.json(
+          { error: "insufficient", balanceCents: balance },
+          { status: 402 }
+        );
+      }
+      const { data: ok } = await admin
+        .from("profiles")
+        .update({ balance_cents: balance - THREAD_SEARCH_PRICE_CENTS })
+        .eq("id", user.id)
+        .eq("balance_cents", balance)
+        .select("id");
+      charged = !!ok && ok.length > 0;
     }
-    const { data: ok } = await admin
-      .from("profiles")
-      .update({ balance_cents: balance - THREAD_SEARCH_PRICE_CENTS })
-      .eq("id", user.id)
-      .eq("balance_cents", balance)
-      .select("id");
-    charged = !!ok && ok.length > 0;
-  }
-  if (!charged) {
-    return NextResponse.json({ error: "conflict" }, { status: 409 });
+    if (!charged) {
+      return NextResponse.json({ error: "conflict" }, { status: 409 });
+    }
   }
 
   // Prefer scraping the map's own matched subreddits (guaranteed on-topic);
@@ -96,11 +99,13 @@ export async function POST(req: NextRequest) {
       ? await startSubredditsScrape(subs)
       : await startRedditSearch(terms);
   if ("error" in started) {
-    // Refund — the search never started.
-    await admin
-      .from("profiles")
-      .update({ balance_cents: balance })
-      .eq("id", user.id);
+    // Refund — the search never started (only if this run was charged).
+    if (charged) {
+      await admin
+        .from("profiles")
+        .update({ balance_cents: balance })
+        .eq("id", user.id);
+    }
     return NextResponse.json(
       { error: "start_failed", detail: started.error },
       { status: 502 }

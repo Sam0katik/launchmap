@@ -45,7 +45,7 @@ export function OpportunityFinder({
       if (!startRes.ok || !startData?.apifyRunId) {
         setError(
           startRes.status === 402
-            ? "Not enough balance — each search costs $0.20. Top up in your profile."
+            ? "Not enough balance — a refresh costs $0.50. Top up in your profile."
             : startRes.status === 422
               ? "Not enough product keywords to search."
               : startData?.detail
@@ -96,22 +96,22 @@ export function OpportunityFinder({
         </div>
         {enabled && unlocked && !armed && (
           <button
-            onClick={() => setArmed(true)}
+            onClick={() => (threads ? setArmed(true) : run())}
             disabled={busy}
             className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
           >
             {busy ? (
               <>Searching<Dots /></>
             ) : threads ? (
-              "Refresh · $0.20"
+              "Refresh · $0.50"
             ) : (
-              "Find live threads · $0.20"
+              "Find live threads · free"
             )}
           </button>
         )}
         {enabled && unlocked && armed && !busy && (
           <span className="flex shrink-0 items-center gap-2">
-            <span className="text-xs text-ink-muted">Charge $0.20?</span>
+            <span className="text-xs text-ink-muted">Charge $0.50?</span>
             <button
               onClick={() => {
                 setArmed(false);

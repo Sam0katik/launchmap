@@ -47,6 +47,7 @@ export interface RedditThread {
   subreddit: string | null;
   upvotes: number | null;
   comments: number | null;
+  createdUtc?: number | null; // epoch seconds, for freshness ranking
 }
 
 /** Start an actor run searching recent posts for the given terms. Returns the
@@ -142,6 +143,15 @@ export async function getRedditSearchResult(
       | undefined;
     const title = (it.title ?? it.postTitle) as string | undefined;
     if (!url || !title) continue;
+    // createdAt arrives as an ISO string (or epoch); normalize to seconds.
+    let createdUtc: number | null = null;
+    const rawCreated = it.createdAt ?? it.created ?? it.createdUtc;
+    if (typeof rawCreated === "number") {
+      createdUtc = rawCreated > 1e12 ? rawCreated / 1000 : rawCreated;
+    } else if (typeof rawCreated === "string") {
+      const ms = Date.parse(rawCreated);
+      if (!Number.isNaN(ms)) createdUtc = ms / 1000;
+    }
     threads.push({
       title: String(title).slice(0, 160),
       url: String(url),
@@ -154,6 +164,7 @@ export async function getRedditSearchResult(
       comments: numOrNull(
         it.commentsCount ?? it.numberOfComments ?? it.numComments
       ),
+      createdUtc,
     });
   }
   return { status: "SUCCEEDED", threads: threads.slice(0, 20) };
@@ -189,11 +200,15 @@ export async function startSubredditsScrape(
   const token = process.env.APIFY_TOKEN;
   if (!token) return { error: "no_token" };
   const input = {
-    startUrls: subs.map((s) => ({ url: `https://www.reddit.com/r/${s}/` })),
+    // maxPostsCount bills PER start URL (a 6-sub run with 50 returned 300
+    // results / $0.62) — keep it tight: 5 subs × 6 posts ≈ 30 results ≈ $0.06.
+    startUrls: subs
+      .slice(0, 5)
+      .map((s) => ({ url: `https://www.reddit.com/r/${s}/` })),
     searchPosts: false,
     searchComments: false,
     searchCommunities: false,
-    maxPostsCount: 50,
+    maxPostsCount: 6,
     maxCommentsCount: 1,
     crawlCommentsPerPost: false,
     fastMode: true,
@@ -558,16 +573,34 @@ export function rankThreads(
     if (keywordHit) score += 5;
     // A question / ask is the easiest thing to genuinely reply to.
     if (isAsk) score += 4;
-    // Actual discussion happening.
-    if ((t.comments ?? 0) >= 2) score += 3;
-    else if ((t.comments ?? 0) >= 1) score += 1;
+    // Live-but-joinable dialog: a few comments is the sweet spot — dead
+    // threads (0) and saturated ones (50+) are both hard to participate in.
+    const c = t.comments ?? 0;
+    if (c >= 2 && c <= 30) score += 3;
+    else if (c === 1 || (c > 30 && c <= 100)) score += 1;
     if ((t.upvotes ?? 0) >= 3) score += 1;
+    // Freshness: a conversation from this week is worth joining; older, less.
+    if (t.createdUtc) {
+      const days = (Date.now() / 1000 - t.createdUtc) / 86400;
+      if (days <= 3) score += 3;
+      else if (days <= 14) score += 1;
+    }
 
     scored.push({ t, score });
   }
 
-  return scored
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((s) => s.t);
+  // Diversity: at most 3 threads per subreddit, so one busy sub can't fill
+  // the whole list.
+  const PER_SUB_CAP = 3;
+  const perSub = new Map<string, number>();
+  const picked: RedditThread[] = [];
+  for (const { t } of scored.sort((a, b) => b.score - a.score)) {
+    const key = (t.subreddit ?? "?").toLowerCase();
+    const n = perSub.get(key) ?? 0;
+    if (n >= PER_SUB_CAP) continue;
+    perSub.set(key, n + 1);
+    picked.push(t);
+    if (picked.length >= limit) break;
+  }
+  return picked;
 }
