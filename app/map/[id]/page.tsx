@@ -126,13 +126,21 @@ export default async function MapPage({
           />
 
           {!run.unlocked && lockedCount > 0 && (
-            <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
-              <p className="text-sm text-ink-muted">
-                Paid analysis: unlock all{" "}
-                <span className="tnum">{lockedCount}</span> more publics + a
-                posting brief (rules + skeleton) for each{" "}
-                <span className="text-ink-subtle">— {UNLOCK_PRICE_LABEL}</span>
-              </p>
+            <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center">
+              <div className="text-sm text-ink-muted">
+                <p className="mb-1.5 text-ink">
+                  Unlock the full map{" "}
+                  <span className="text-ink-subtle">— {UNLOCK_PRICE_LABEL}</span>
+                </p>
+                <ul className="space-y-0.5">
+                  <li>
+                    → All <span className="tnum">{lockedCount}</span> remaining
+                    communities with posting briefs
+                  </li>
+                  <li>→ Each sub&apos;s live mod-pinned rules</li>
+                  <li>→ Live-thread finder (first search included)</li>
+                </ul>
+              </div>
               <UnlockButton
                 runId={run.id}
                 balanceCents={balanceCents}

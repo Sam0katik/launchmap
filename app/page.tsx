@@ -5,8 +5,8 @@ import { ClippedNote } from "@/components/ClippedNote";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
 
-// TODO: replace with the real destination for the "scan to launch" barcode.
-const SCAN_TO_LAUNCH_URL = "#";
+// The barcode "scans" into a live sample map — see the product before signing in.
+const SCAN_TO_LAUNCH_URL = "/demo?url=https%3A%2F%2Fexample-product.com";
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -50,16 +50,32 @@ export default function Home() {
 
               <UrlForm />
 
-              {/* receipt footer: barcode is a link (scan to launch) */}
-              <div className="receipt-rule mb-5 mt-9" />
+              {/* what you get — the offer in three lines */}
+              <ul className="mx-auto mt-7 max-w-sm space-y-1.5 text-left text-sm text-ink-muted">
+                <li className="flex gap-2">
+                  <span className="text-primary">→</span>
+                  Where to post without getting banned — per-sub rules &amp; briefs
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">→</span>
+                  Is your Reddit account ready — karma &amp; age check
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">→</span>
+                  Live threads in your niche to jump into today
+                </li>
+              </ul>
+
+              {/* receipt footer: the barcode "scans" into a sample map */}
+              <div className="receipt-rule mb-5 mt-8" />
               <a
                 href={SCAN_TO_LAUNCH_URL}
                 className="block cursor-pointer transition-opacity hover:opacity-70"
-                aria-label="Scan to launch"
+                aria-label="Scan to launch — see a sample map"
               >
                 <div className="barcode mx-auto w-3/4" />
                 <p className="mt-3 text-xs uppercase tracking-[0.3em] text-ink-subtle">
-                  * scan to launch *
+                  * scan to launch · see a sample map *
                 </p>
               </a>
             </div>
