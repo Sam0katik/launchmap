@@ -54,6 +54,14 @@ export function PostingBrief({
 
         {open && (
           <div className="mt-2.5 space-y-2.5">
+            {/* angle to lead with — the product-specific advice, first thing */}
+            {brief.angle && (
+              <div className="rounded border border-primary/40 bg-primary/5 px-2.5 py-1.5">
+                <span className="eyebrow text-[9px] text-primary">Lead with</span>
+                <p className="mt-0.5 text-ink">{brief.angle}</p>
+              </div>
+            )}
+
             {/* status chips — only the two we can actually stand behind */}
             <div className="flex flex-wrap gap-1.5">
               <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.policyTone]}`}>
@@ -63,14 +71,6 @@ export function PostingBrief({
                 {brief.linkChip}
               </span>
             </div>
-
-            {/* angle to lead with — the product-specific advice */}
-            {brief.angle && (
-              <div className="rounded border border-primary/40 bg-primary/5 px-2.5 py-1.5">
-                <span className="eyebrow text-[9px] text-primary">Lead with</span>
-                <p className="mt-0.5 text-ink">{brief.angle}</p>
-              </div>
-            )}
 
             {/* compact facts */}
             <dl className="grid grid-cols-[64px_1fr] gap-x-2 gap-y-1">

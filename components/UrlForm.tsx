@@ -20,12 +20,23 @@ const EXAMPLES = [
 // and route to /demo so entering a URL actually shows something.
 const BACKEND_READY = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
+// What the scan is actually doing, surfaced while it runs — the analyze call
+// really does these steps, so the button narrates real work, not theater.
+const SCAN_STEPS = [
+  "Reading your landing page",
+  "Extracting your niche",
+  "Matching 58 communities",
+  "Checking posting rules",
+  "Ranking your map",
+];
+
 export function UrlForm() {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [placeholder, setPlaceholder] = useState(EXAMPLES[0]);
+  const [step, setStep] = useState(0);
 
   // Cycle the placeholder while the field is empty.
   useEffect(() => {
@@ -37,6 +48,17 @@ export function UrlForm() {
     }, 2200);
     return () => clearInterval(t);
   }, [url]);
+
+  // Walk through the scan steps while the analysis runs (~8-15s total).
+  useEffect(() => {
+    if (!loading) return;
+    setStep(0);
+    const t = setInterval(
+      () => setStep((s) => Math.min(s + 1, SCAN_STEPS.length - 1)),
+      2600
+    );
+    return () => clearInterval(t);
+  }, [loading]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -106,7 +128,14 @@ export function UrlForm() {
         disabled={loading}
         className="focus-ring btn-press mt-7 w-full rounded-md border-2 border-hairline-strong bg-primary px-6 py-5 text-2xl text-white shadow-[5px_5px_0_0_var(--color-hairline-strong)] hover:bg-primary-hover disabled:opacity-60"
       >
-        {loading ? <>Scanning<Dots /></> : "Scan to launch →"}
+        {loading ? (
+          <>
+            {SCAN_STEPS[step]}
+            <Dots />
+          </>
+        ) : (
+          "Scan to launch →"
+        )}
       </button>
       {error && <p className="mt-3 text-base text-red-700">{error}</p>}
     </form>
