@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureProfileForUser } from "@/lib/profile";
 import {
   startRedditSearch,
   startSubredditsScrape,
@@ -37,6 +38,9 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
+
+  // Guarantee a profile row exists before any balance op.
+  await ensureProfileForUser(user);
 
   // Ownership + keywords + matched communities via RLS read.
   const { data: run } = await supabase

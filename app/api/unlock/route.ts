@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureProfileForUser } from "@/lib/profile";
 import { UNLOCK_PRICE_CENTS } from "@/lib/billing";
 
 // POST /api/unlock  Body: { runId }
@@ -25,6 +26,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
   const { runId } = parsed.data;
+
+  // Guarantee a profile row exists before any balance op — a missing profile
+  // would otherwise make the charge silently hit 0 rows.
+  await ensureProfileForUser(user);
 
   // Ownership via RLS (a user only sees their own runs).
   const { data: run } = await supabase

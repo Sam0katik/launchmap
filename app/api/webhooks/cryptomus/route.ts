@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureProfile } from "@/lib/profile";
 import {
   cryptomusConfigured,
   getPaymentStatus,
@@ -58,19 +59,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, already: true });
   }
 
-  // Credit the balance (read-add-write; only this claimant runs it).
+  // Guarantee the profile row exists before crediting — if it were missing the
+  // credit update below would hit 0 rows and the paid money would vanish.
+  await ensureProfile(topup.user_id as string);
+
+  // Credit the balance (read-add-write; only this claimant runs it). The
+  // update MUST be verified to have hit a row — a 0-row update returns no
+  // error, and answering ok would mark the topup credited while the money
+  // silently vanished.
   const { data: profile } = await admin
     .from("profiles")
     .select("balance_cents")
     .eq("id", topup.user_id)
     .maybeSingle();
   const balance = (profile?.balance_cents as number) ?? 0;
-  const { error: creditErr } = await admin
+  const { data: creditedRows, error: creditErr } = await admin
     .from("profiles")
     .update({ balance_cents: balance + (topup.amount_cents as number) })
-    .eq("id", topup.user_id);
-  if (creditErr) {
-    // Roll back the claim so a retry can credit.
+    .eq("id", topup.user_id)
+    .select("id");
+  if (creditErr || !creditedRows || creditedRows.length === 0) {
+    // Roll back the claim so the provider's retry can credit.
     await admin
       .from("topups")
       .update({ credited: false, status: "pending" })

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureProfileForUser } from "@/lib/profile";
 import { cryptomusConfigured, createInvoice } from "@/lib/cryptomus";
 
 // POST /api/topup/create  Body: { amountCents }
@@ -32,6 +33,10 @@ export async function POST(req: NextRequest) {
   }
   const amountCents = parsed.data.amountCents;
   const orderId = randomUUID();
+
+  // Guarantee the profile row exists now so the webhook always has a row to
+  // credit once payment completes — otherwise money could be paid and lost.
+  await ensureProfileForUser(user);
 
   const admin = createAdminClient();
   const { error: insErr } = await admin.from("topups").insert({
