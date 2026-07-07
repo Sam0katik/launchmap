@@ -11,8 +11,9 @@ const TONE: Record<string, string> = {
   bad: "border-red-700/50 text-red-700 bg-red-700/5",
 };
 
-// Per-community posting brief: rules to follow here + a tailored angle + a
-// fill-in skeleton. Color-coded and compact so it reads at a glance.
+// Per-community posting brief: only the facts we can stand behind — whether a
+// link is allowed, best time to post, and the karma bar to post here — plus the
+// real per-community and live-pinned rules. No advice, no fill-in template.
 export function PostingBrief({
   community,
   analysis,
@@ -21,22 +22,14 @@ export function PostingBrief({
   analysis?: ProductAnalysis | null;
 }) {
   const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const brief = buildBrief(community, analysis);
   const submitHref = bareSubmitLink(community) ?? community.url;
   const submitLabel = bareSubmitLink(community) ? "Open submit form" : "Open";
-
-  async function copySkeleton() {
-    try {
-      await navigator.clipboard.writeText(
-        brief.skeleton.map((s, i) => `${i + 1}. ${s}`).join("\n")
-      );
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
-    } catch {
-      /* clipboard blocked */
-    }
-  }
+  const karmaValue = brief.karmaTier
+    ? brief.karmaNote
+      ? `${brief.karmaTier} — ${brief.karmaNote}`
+      : brief.karmaTier
+    : brief.karmaNote || null;
 
   return (
     <div className="space-y-2">
@@ -54,31 +47,20 @@ export function PostingBrief({
 
         {open && (
           <div className="mt-2.5 space-y-2.5">
-            {/* angle to lead with — the product-specific advice, first thing */}
-            {brief.angle && (
-              <div className="rounded border border-primary/40 bg-primary/5 px-2.5 py-1.5">
-                <span className="eyebrow text-[9px] text-primary">Lead with</span>
-                <p className="mt-0.5 text-ink">{brief.angle}</p>
-              </div>
-            )}
-
-            {/* status chips — only the two we can actually stand behind */}
+            {/* the one status we lead with: can you post a link here or not */}
             <div className="flex flex-wrap gap-1.5">
-              <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.policyTone]}`}>
-                {brief.policyLabel}
-              </span>
               <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.linkTone]}`}>
                 {brief.linkChip}
               </span>
             </div>
 
-            {/* compact facts */}
-            <dl className="grid grid-cols-[64px_1fr] gap-x-2 gap-y-1">
-              <Row label="Where" value={brief.where} />
-              <Row label="Length" value={brief.length} />
-              <Row label="Title" value={brief.title} />
-              {brief.bestTime && <Row label="Time" value={brief.bestTime} />}
-            </dl>
+            {/* facts only: best time + karma bar to post here */}
+            {(brief.bestTime || karmaValue) && (
+              <dl className="grid grid-cols-[72px_1fr] gap-x-2 gap-y-1">
+                {brief.bestTime && <Row label="Best time" value={brief.bestTime} />}
+                {karmaValue && <Row label="Karma" value={karmaValue} />}
+              </dl>
+            )}
 
             {/* real per-community rules */}
             {brief.rules && (
@@ -105,34 +87,6 @@ export function PostingBrief({
                 </ul>
               </div>
             )}
-            {brief.karmaNote && (
-              <p className="text-[11px] text-ink-tertiary">⚑ {brief.karmaNote}</p>
-            )}
-
-            {/* skeleton */}
-            <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-2">
-              <div className="mb-1 flex items-center justify-between">
-                <span className="eyebrow text-[9px] text-ink-subtle">
-                  Skeleton — write your own
-                </span>
-                <button
-                  onClick={copySkeleton}
-                  className="menu-link rounded text-[10px] text-ink-muted"
-                >
-                  {copied ? "copied" : "copy"}
-                </button>
-              </div>
-              <ol className="space-y-1">
-                {brief.skeleton.map((line, i) => (
-                  <li key={i} className="flex gap-1.5 text-ink-muted">
-                    <span className="tnum text-primary">{i + 1}</span>
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <p className="text-[11px] text-ink-tertiary">{brief.warn}</p>
           </div>
         )}
       </div>

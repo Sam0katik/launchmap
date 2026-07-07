@@ -126,14 +126,14 @@ body {
 /* Flight feel: the inner layer rises/dips and pitches its nose on a separate,
    slightly off-beat cycle — layered on the linear glide it reads as gusts. */
 @keyframes plane-soar {
-  0%   { transform: translateY(0)     rotate(4deg); }
-  22%  { transform: translateY(-14px) rotate(-5deg); }
-  46%  { transform: translateY(4px)   rotate(7deg); }
-  70%  { transform: translateY(-9px)  rotate(-3deg); }
-  100% { transform: translateY(0)     rotate(4deg); }
+  0%   { transform: translateY(0)     rotate(6deg); }
+  20%  { transform: translateY(-46px) rotate(-11deg); }
+  45%  { transform: translateY(20px)  rotate(13deg); }
+  70%  { transform: translateY(-30px) rotate(-6deg); }
+  100% { transform: translateY(0)     rotate(6deg); }
 }
 .plane-soar {
-  animation: plane-soar 7.5s ease-in-out infinite;
+  animation: plane-soar 6s ease-in-out infinite;
   will-change: transform;
 }
 @media (prefers-reduced-motion: reduce) {

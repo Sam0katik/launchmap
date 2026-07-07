@@ -5,9 +5,6 @@ import { ClippedNote } from "@/components/ClippedNote";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
 
-// The barcode "scans" into a live sample map — see the product before signing in.
-const SCAN_TO_LAUNCH_URL = "/demo?url=https%3A%2F%2Fexample-product.com";
-
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link href={href} className="menu-link rounded-sm">
@@ -65,19 +62,6 @@ export default function Home() {
                   Live threads in your niche to jump into today
                 </li>
               </ul>
-
-              {/* receipt footer: the barcode "scans" into a sample map */}
-              <div className="receipt-rule mb-5 mt-8" />
-              <a
-                href={SCAN_TO_LAUNCH_URL}
-                className="block cursor-pointer transition-opacity hover:opacity-70"
-                aria-label="Scan to launch — see a sample map"
-              >
-                <div className="barcode mx-auto w-3/4" />
-                <p className="mt-3 text-xs uppercase tracking-[0.3em] text-ink-subtle">
-                  * scan to launch · see a sample map *
-                </p>
-              </a>
             </div>
 
             {/* beige note clipped to the card's top-right — the clip pinches
