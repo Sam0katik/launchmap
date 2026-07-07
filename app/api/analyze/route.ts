@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeProduct } from "@/lib/anthropic";
 import { rankCommunities } from "@/lib/matching";
 import { MAX_MAPS_PER_ACCOUNT } from "@/lib/billing";
 import type { Community } from "@/lib/types";
+
+// Daily analyses per account. The 2-map cap alone is bypassable via a
+// delete→create loop, which would burn unbounded AI + fetch budget.
+const MAX_ANALYZES_PER_DAY = 15;
 
 // POST /api/analyze
 // Body: { url, description? }
@@ -77,6 +82,25 @@ export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "ai_not_configured" }, { status: 503 });
   }
+
+  // 4b. Daily analyze limit (counted only for real AI runs — cache hits above
+  // don't reach here). Server-role read/write; resets when the date rolls.
+  const admin = createAdminClient();
+  const { data: prof } = await admin
+    .from("profiles")
+    .select("analyze_count, analyze_date")
+    .eq("id", user.id)
+    .maybeSingle();
+  const today = new Date().toISOString().slice(0, 10);
+  const sameDay = (prof?.analyze_date as string) === today;
+  const used = sameDay ? ((prof?.analyze_count as number) ?? 0) : 0;
+  if (used >= MAX_ANALYZES_PER_DAY) {
+    return NextResponse.json({ error: "daily_limit" }, { status: 429 });
+  }
+  await admin
+    .from("profiles")
+    .update({ analyze_count: used + 1, analyze_date: today })
+    .eq("id", user.id);
 
   try {
     // 5. Fetch landing page text (best-effort; falls back to description).

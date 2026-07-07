@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureProfileForUser } from "@/lib/profile";
 import { startUserScrape, apifyConfigured } from "@/lib/apify";
 import {
   KARMA_CHECK_PRICE_CENTS,
@@ -42,6 +43,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_username" }, { status: 400 });
   }
   const username = parsed.data.username;
+
+  // Guarantee a profile row exists before any balance op.
+  await ensureProfileForUser(user);
 
   const admin = createAdminClient();
 

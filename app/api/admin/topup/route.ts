@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureProfile } from "@/lib/profile";
 import { isAdminUser } from "@/lib/admins";
 
 // POST /api/admin/topup  Body: { userId, amountCents }
@@ -35,6 +36,10 @@ export async function POST(req: NextRequest) {
   }
   const { userId, amountCents } = parsed.data;
 
+  // Guarantee the target profile exists so the credit can't hit 0 rows and
+  // silently grant nothing.
+  await ensureProfile(userId);
+
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
@@ -43,11 +48,12 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
   const balance = (profile?.balance_cents as number) ?? 0;
 
-  const { error } = await admin
+  const { data: updated, error } = await admin
     .from("profiles")
     .update({ balance_cents: balance + amountCents })
-    .eq("id", userId);
-  if (error) {
+    .eq("id", userId)
+    .select("id");
+  if (error || !updated || updated.length === 0) {
     return NextResponse.json({ error: "topup_failed" }, { status: 500 });
   }
   return NextResponse.json({ ok: true, balanceCents: balance + amountCents });
