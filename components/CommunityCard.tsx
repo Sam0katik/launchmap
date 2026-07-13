@@ -61,12 +61,16 @@ export function CommunityCard({
       <div className="receipt-rule mx-5" />
 
       <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-5 text-sm">
-        {/* One meaningful signal on the face: can you self-promo here? */}
-        <span
-          className={`self-start rounded-sm border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
-        >
-          {POLICY_LABEL[community.self_promo_policy]}
-        </span>
+        {/* Only surface a face tag when it's a real restriction to flag —
+            "Welcome" / "Comments only" are noise, so they're hidden. */}
+        {(community.self_promo_policy === "megathread_only" ||
+          community.self_promo_policy === "banned") && (
+          <span
+            className={`self-start rounded-sm border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
+          >
+            {POLICY_LABEL[community.self_promo_policy]}
+          </span>
+        )}
 
         <div className="mt-auto pt-1">
           {locked ? (

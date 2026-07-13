@@ -86,5 +86,8 @@ export async function POST(req: NextRequest) {
     updated,
     withMembers,
     withRules,
+    // Raw field names from the actor's first item — lets us confirm whether it
+    // exposes the subreddit's rules widget, and under which key.
+    sampleKeys: result.sampleKeys,
   });
 }

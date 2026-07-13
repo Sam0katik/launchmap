@@ -379,7 +379,35 @@ export async function getUserScrapeResult(
 export interface ScannedCommunity {
   name: string; // subreddit name without "r/"
   members: number | null;
-  rules: string[]; // titles of pinned mod posts (live policy signals)
+  rules: string[]; // the subreddit's own rules, straight from its rules widget
+}
+
+/** Pull rule strings out of whatever shape the actor hands back for a
+ *  subreddit's rules — an array of strings, or of objects keyed by
+ *  shortName/short_name/title/name/description. Returns [] for anything else,
+ *  so we only ever store real rules (never fabricate). */
+function parseRules(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const r of raw) {
+    if (typeof r === "string") {
+      const s = r.trim();
+      if (s) out.push(s.slice(0, 160));
+    } else if (r && typeof r === "object") {
+      const o = r as Record<string, unknown>;
+      const label =
+        (o.shortName as string) ??
+        (o.short_name as string) ??
+        (o.title as string) ??
+        (o.name as string) ??
+        (o.description as string) ??
+        "";
+      const s = String(label).trim();
+      if (s) out.push(s.slice(0, 160));
+    }
+    if (out.length >= 15) break;
+  }
+  return out;
 }
 
 /** Start an actor run scraping community info for the given subreddit names. */
@@ -429,7 +457,7 @@ export async function getCommunityScanResult(
 ): Promise<
   | { status: "RUNNING" }
   | { status: "FAILED" }
-  | { status: "SUCCEEDED"; communities: ScannedCommunity[] }
+  | { status: "SUCCEEDED"; communities: ScannedCommunity[]; sampleKeys: string[] }
   | null
 > {
   const token = process.env.APIFY_TOKEN;
@@ -454,15 +482,21 @@ export async function getCommunityScanResult(
     `${API}/datasets/${datasetId}/items?clean=true&limit=200&token=${token}`,
     { signal: AbortSignal.timeout(12000) }
   );
-  if (!itemsRes.ok) return { status: "SUCCEEDED", communities: [] };
+  if (!itemsRes.ok) return { status: "SUCCEEDED", communities: [], sampleKeys: [] };
   const items = (await itemsRes.json().catch(() => [])) as Record<
     string,
     unknown
   >[];
 
-  // The actor returns posts. Aggregate per sub: `subredditSubscribers` (on
-  // every post) = real member count; pinned moderator posts = the sub's live
-  // posting policy, worth surfacing in the brief.
+  // Aggregate per sub. `subredditSubscribers` (on every post) = real member
+  // count. For rules we take ONLY the subreddit's own rules widget if the actor
+  // surfaces it (subredditRules / communityRules / rules) — never pinned-post
+  // titles, which aren't the actual rules. If it's absent, rules stay empty and
+  // the brief falls back to the curated summary. sampleKeys exposes the raw
+  // field names from the first item so the source can be verified.
+  const sampleKeys = Object.keys(
+    (Array.isArray(items) ? items : [])[0] ?? {}
+  );
   const bySub = new Map<string, ScannedCommunity>();
   for (const it of Array.isArray(items) ? items : []) {
     const type = (it.dataType ?? it.type) as string | undefined;
@@ -479,17 +513,19 @@ export async function getCommunityScanResult(
     const members = numOrNull(it.subredditSubscribers);
     if (members != null) entry.members = members;
 
-    // Pinned mod posts announcing policy ("self-promotion", "rules", weekly
-    // promo threads) are the live rules signal.
-    const isModPin =
-      it.stickied === true || it.distinguished === "moderator";
-    const title = typeof it.title === "string" ? it.title.trim() : "";
-    if (isModPin && title && entry.rules.length < 3) {
-      entry.rules.push(title.slice(0, 140));
+    if (entry.rules.length === 0) {
+      const parsed = parseRules(
+        it.subredditRules ?? it.communityRules ?? it.rules
+      );
+      if (parsed.length) entry.rules = parsed;
     }
     bySub.set(key, entry);
   }
-  return { status: "SUCCEEDED", communities: Array.from(bySub.values()) };
+  return {
+    status: "SUCCEEDED",
+    communities: Array.from(bySub.values()),
+    sampleKeys,
+  };
 }
 
 // ── Quality ranking ─────────────────────────────────────────────

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Dots } from "@/components/Dots";
+import { KARMA_CHECK_PRICE_LABEL } from "@/lib/billing";
+
+const PRICE = KARMA_CHECK_PRICE_LABEL;
 
 export interface SavedRedditAccount {
   username: string;
@@ -97,10 +100,12 @@ function recommendations(k: SavedRedditAccount): string[] {
 
 export function RedditKarmaCheck({
   enabled,
+  eligible,
   initialAccounts,
   maxAccounts,
 }: {
   enabled: boolean;
+  eligible: boolean;
   initialAccounts: SavedRedditAccount[];
   maxAccounts: number;
 }) {
@@ -125,14 +130,16 @@ export function RedditKarmaCheck({
       if (!startRes.ok || !startData?.apifyRunId) {
         setError(
           startRes.status === 402
-            ? "Not enough balance — a check costs $0.50. Top up above."
-            : startRes.status === 409 && startData?.error === "account_limit"
-              ? `You can keep ${maxAccounts} accounts. Re-check an existing one instead.`
-              : startRes.status === 400
-                ? "Enter a valid username."
-                : startData?.detail
-                  ? `Couldn't start: ${startData.detail}`
-                  : "Couldn't start the check — try again."
+            ? `Not enough balance — a check costs ${PRICE}. Top up above.`
+            : startRes.status === 403 && startData?.error === "need_unlock"
+              ? "Unlock at least one map first — the karma check is part of a launch."
+              : startRes.status === 409 && startData?.error === "account_limit"
+                ? `You can keep ${maxAccounts} accounts. Re-check an existing one instead.`
+                : startRes.status === 400
+                  ? "Enter a valid username."
+                  : startData?.detail
+                    ? `Couldn't start: ${startData.detail}`
+                    : "Couldn't start the check — try again."
         );
         return;
       }
@@ -200,7 +207,7 @@ export function RedditKarmaCheck({
         <RedditGlyph size={20} />
         <span className="text-sm font-medium text-ink">Reddit readiness</span>
         <span className="text-xs text-ink-tertiary">
-          {accounts.length}/{maxAccounts} accounts · $0.50 per check
+          {accounts.length}/{maxAccounts} accounts · {PRICE} per check
         </span>
         <button
           onClick={() => setOpen(false)}
@@ -240,7 +247,7 @@ export function RedditKarmaCheck({
                   <span className="ml-auto flex items-center gap-2">
                     {confirming === a.username ? (
                       <>
-                        <span className="text-xs text-ink-muted">$0.50?</span>
+                        <span className="text-xs text-ink-muted">{PRICE}?</span>
                         <button
                           onClick={() => runCheck(a.username)}
                           disabled={busy}
@@ -295,20 +302,27 @@ export function RedditKarmaCheck({
         </ul>
       )}
 
+      {/* gate: karma checks are part of a launch — need an unlocked map */}
+      {enabled && !eligible && (
+        <p className="text-sm text-ink-tertiary">
+          Unlock at least one map to check karma.
+        </p>
+      )}
+
       {/* add a new account */}
-      {enabled && accounts.length < maxAccounts && (
+      {enabled && eligible && accounts.length < maxAccounts && (
         <>
           {confirming === "__new__" ? (
             <div className="flex flex-wrap items-center gap-2 rounded-md border-2 border-hairline-strong bg-canvas px-3 py-2.5">
               <span className="text-sm text-ink-muted">
-                Check <span className="text-ink">u/{name.trim()}</span> for $0.50?
+                Check <span className="text-ink">u/{name.trim()}</span> for {PRICE}?
               </span>
               <button
                 onClick={() => runCheck(name.trim())}
                 disabled={busy}
                 className="focus-ring btn-press rounded-sm bg-primary px-3 py-1 text-xs font-medium text-white disabled:opacity-60"
               >
-                {busy ? <>Checking<Dots /></> : "Confirm — $0.50"}
+                {busy ? <>Checking<Dots /></> : `Confirm — ${PRICE}`}
               </button>
               <button
                 onClick={() => setConfirming(null)}
@@ -341,7 +355,7 @@ export function RedditKarmaCheck({
                 disabled={busy}
                 className="btn-press m-1 rounded-sm bg-primary px-4 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
               >
-                Check · $0.50
+                Check · {PRICE}
               </button>
             </form>
           )}

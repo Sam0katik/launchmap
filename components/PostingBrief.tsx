@@ -22,9 +22,17 @@ export function PostingBrief({
   analysis?: ProductAnalysis | null;
 }) {
   const [open, setOpen] = useState(false);
+  const [showAllRules, setShowAllRules] = useState(false);
   const brief = buildBrief(community, analysis);
   const submitHref = bareSubmitLink(community) ?? community.url;
   const submitLabel = bareSubmitLink(community) ? "Open submit form" : "Open";
+  // Real rules scraped straight from the subreddit (populated by the admin
+  // Reddit scan into scraped_rules). When present these are the source of truth;
+  // otherwise fall back to the curated one-line summary.
+  const subName = community.name.replace(/^r\//i, "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+  const liveRules = Array.isArray(community.scraped_rules)
+    ? community.scraped_rules.filter(Boolean)
+    : [];
   const karmaValue = brief.karmaTier
     ? brief.karmaNote
       ? `${brief.karmaTier} — ${brief.karmaNote}`
@@ -56,36 +64,48 @@ export function PostingBrief({
 
             {/* facts only: best time + karma bar to post here */}
             {(brief.bestTime || karmaValue) && (
-              <dl className="grid grid-cols-[72px_1fr] gap-x-2 gap-y-1">
+              <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
                 {brief.bestTime && <Row label="Best time" value={brief.bestTime} />}
                 {karmaValue && <Row label="Karma" value={karmaValue} />}
               </dl>
             )}
 
-            {/* real per-community rules */}
-            {brief.rules && (
+            {/* Rules straight from the subreddit (scraped). Collapsible so a long
+                list doesn't blow up the card. Falls back to the curated summary
+                when the sub hasn't been scanned yet. */}
+            {liveRules.length > 0 ? (
               <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
-                <span className="eyebrow text-[9px] text-ink-subtle">
-                  Rules &amp; removal
-                </span>
-                <p className="mt-0.5 text-ink-muted">{brief.rules}</p>
-              </div>
-            )}
-
-            {/* live policy signals: what the mods have pinned right now */}
-            {community.scraped_rules && community.scraped_rules.length > 0 && (
-              <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
-                <span className="eyebrow text-[9px] text-ink-subtle">
-                  Pinned by mods now
-                </span>
-                <ul className="mt-0.5 space-y-0.5">
-                  {community.scraped_rules.slice(0, 3).map((r, i) => (
-                    <li key={i} className="text-ink-muted">
-                      📌 {r}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="eyebrow text-[9px] text-ink-subtle">
+                    Rules · r/{subName}
+                  </span>
+                  {liveRules.length > 4 && (
+                    <button
+                      onClick={() => setShowAllRules((v) => !v)}
+                      className="menu-link rounded text-[10px] text-ink-muted"
+                    >
+                      {showAllRules ? "collapse" : `show all ${liveRules.length}`}
+                    </button>
+                  )}
+                </div>
+                <ol className="mt-0.5 space-y-0.5">
+                  {(showAllRules ? liveRules : liveRules.slice(0, 4)).map((r, i) => (
+                    <li key={i} className="flex gap-1.5 text-ink-muted">
+                      <span className="tnum text-ink-subtle">{i + 1}</span>
+                      <span>{r}</span>
                     </li>
                   ))}
-                </ul>
+                </ol>
               </div>
+            ) : (
+              brief.rules && (
+                <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
+                  <span className="eyebrow text-[9px] text-ink-subtle">
+                    Rules &amp; removal
+                  </span>
+                  <p className="mt-0.5 text-ink-muted">{brief.rules}</p>
+                </div>
+              )
             )}
           </div>
         )}
@@ -106,7 +126,7 @@ export function PostingBrief({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <>
-      <dt className="eyebrow text-[9px] text-ink-subtle">{label}</dt>
+      <dt className="eyebrow whitespace-nowrap text-[9px] text-ink-subtle">{label}</dt>
       <dd className="text-ink-muted">{value}</dd>
     </>
   );

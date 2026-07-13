@@ -47,6 +47,17 @@ export async function POST(req: NextRequest) {
   // Guarantee a profile row exists before any balance op.
   await ensureProfileForUser(user);
 
+  // Karma check requires at least one unlocked map (it's a paid add-on to a
+  // real launch, not a standalone tool).
+  const { count: unlockedCount } = await supabase
+    .from("runs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("unlocked", true);
+  if ((unlockedCount ?? 0) < 1) {
+    return NextResponse.json({ error: "need_unlock" }, { status: 403 });
+  }
+
   const admin = createAdminClient();
 
   // Enforce the account cap (re-checks of saved accounts don't count).
