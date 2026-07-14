@@ -109,7 +109,7 @@ export function UrlForm() {
   }
 
   const inputCls =
-    "focus-ring w-full rounded-md border-2 border-hairline-strong bg-canvas px-5 py-4 text-xl text-ink placeholder:text-ink-tertiary";
+    "focus-ring w-full rounded-md border-2 border-hairline-strong bg-canvas px-4 py-3.5 text-lg text-ink placeholder:text-ink-tertiary";
 
   return (
     <form onSubmit={onSubmit} className="w-full">
@@ -126,7 +126,7 @@ export function UrlForm() {
       <button
         type="submit"
         disabled={loading}
-        className="focus-ring btn-press mt-7 w-full rounded-md border-2 border-hairline-strong bg-primary px-6 py-5 text-2xl text-white shadow-[5px_5px_0_0_var(--color-hairline-strong)] hover:bg-primary-hover disabled:opacity-60"
+        className="focus-ring btn-press mt-6 w-full rounded-md border-2 border-hairline-strong bg-primary px-5 py-4 text-xl text-white shadow-[5px_5px_0_0_var(--color-hairline-strong)] hover:bg-primary-hover disabled:opacity-60"
       >
         {loading ? (
           <>

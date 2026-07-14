@@ -27,8 +27,11 @@ export function AuthButton() {
     const nameOf = (u: { user_metadata?: Record<string, unknown>; email?: string } | null) =>
       u ? ((u.user_metadata?.user_name as string) ?? u.email ?? "signed in") : null;
 
-    supabase.auth.getUser().then(({ data }) => {
-      setName(nameOf(data.user));
+    // getSession() reads the stored session locally (no network), so the button
+    // renders correctly right away instead of blocking on a slow getUser() —
+    // that network wait is why the sign-in button showed up late after a load.
+    supabase.auth.getSession().then(({ data }) => {
+      setName(nameOf(data.session?.user ?? null));
       setReady(true);
     });
 
