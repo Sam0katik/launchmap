@@ -38,8 +38,11 @@ export function AdminRefreshReddit() {
         const data = await res.json().catch(() => null);
         if (!res.ok || !data) continue;
         if (data.status === "SUCCEEDED") {
+          const keys = Array.isArray(data.sampleKeys)
+            ? ` · fields: ${data.sampleKeys.join(", ")}`
+            : "";
           setResult(
-            `Updated ${data.updated}/${startData.total} · members ${data.withMembers} · mod-rules ${data.withRules}`
+            `Updated ${data.updated}/${startData.total} · members ${data.withMembers} · rules ${data.withRules}${keys}`
           );
           router.refresh();
           return;

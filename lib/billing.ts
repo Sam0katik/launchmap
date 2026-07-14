@@ -69,9 +69,10 @@ export const UNLOCK_PRICE_LABEL = "$2 one-time";
 export const THREAD_SEARCH_PRICE_CENTS = 50;
 export const THREAD_SEARCH_PRICE_LABEL = "$0.50";
 
-// Per-check price for verifying a Reddit account's karma/readiness.
-export const KARMA_CHECK_PRICE_CENTS = 50;
-export const KARMA_CHECK_PRICE_LABEL = "$0.50";
+// Per-check price for verifying a Reddit account's karma/readiness. Requires at
+// least one unlocked map (enforced server-side in /api/reddit/karma/start).
+export const KARMA_CHECK_PRICE_CENTS = 30;
+export const KARMA_CHECK_PRICE_LABEL = "$0.30";
 // Max Reddit accounts a user can keep attached to their profile.
 export const MAX_REDDIT_ACCOUNTS = 3;
 

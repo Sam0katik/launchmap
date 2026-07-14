@@ -1,12 +1,17 @@
+import Link from "next/link";
+import { KARMA_CHECK_PRICE_LABEL } from "@/lib/billing";
+
 // Shown on an unlocked map: a styled panel with the account setup + behavior
 // rules that actually keep a launch from getting banned. The drafts are only
 // half the job — this is the other half, surfaced right where the user is about
 // to post. Static (no state) so it renders on the server.
-const STEPS: { n: string; title: string; body: string }[] = [
+const STEPS: { n: string; title: string; body: string; href?: string; cta?: string }[] = [
   {
     n: "1",
     title: "Age the account",
     body: "Use an account that's at least 2–4 weeks old with a verified email. Brand-new accounts that post their own link first get shadowbanned.",
+    href: "/profile#reddit-check",
+    cta: `Check this account's karma & age — ${KARMA_CHECK_PRICE_LABEL}`,
   },
   {
     n: "2",
@@ -49,6 +54,14 @@ export function AccountGuidePanel() {
               <p className="mt-1 text-xs leading-relaxed text-ink-muted">
                 {s.body}
               </p>
+              {s.href && s.cta && (
+                <Link
+                  href={s.href}
+                  className="menu-link mt-1.5 inline-block rounded-sm text-xs text-primary hover:underline"
+                >
+                  {s.cta} →
+                </Link>
+              )}
             </div>
           </li>
         ))}

@@ -161,10 +161,11 @@ export default async function ProfilePage() {
           </section>
 
           {/* Reddit readiness check */}
-          <section className="mb-12">
+          <section id="reddit-check" className="mb-12 scroll-mt-24">
             <h2 className="eyebrow mb-3">Reddit account check</h2>
             <RedditKarmaCheck
               enabled={apifyConfigured()}
+              eligible={runList.some((r) => r.unlocked)}
               initialAccounts={redditAccounts}
               maxAccounts={MAX_REDDIT_ACCOUNTS}
             />

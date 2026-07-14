@@ -38,7 +38,19 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Touch the user to trigger a token refresh when needed.
-  await supabase.auth.getUser();
+  // Touch the user to trigger a token refresh when needed. This runs on nearly
+  // every request, so it must NEVER hang: a slow/unreachable Supabase would
+  // otherwise time out the whole middleware and 504 the entire site
+  // (MIDDLEWARE_INVOCATION_TIMEOUT). Fail open — cap the call and, on timeout or
+  // error, just serve the request without a refresh (worst case: the user
+  // re-authenticates on a later request).
+  try {
+    await Promise.race([
+      supabase.auth.getUser(),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
+  } catch {
+    // best-effort refresh — ignore failures
+  }
   return response;
 }
