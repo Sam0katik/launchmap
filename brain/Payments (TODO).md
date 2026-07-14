@@ -24,7 +24,17 @@ Site side wires the integration; the adult owns the account and does KYC/payouts
 - Still requires store-owner onboarding/payouts (adult + KYC).
 - **Verdict:** likely wrong tool for a GitHub-auth SaaS balance top-up.
 
-### Better-fit candidates (still need adult + KYC)
+### Dodo Payments (screenshot 2026-07-14) — GOOD FIT ⭐
+- **Merchant of Record** for AI/SaaS: credit-based billing + usage metering +
+  global payments. Maps directly onto our internal USD balance model.
+- **USD card payments** — exactly what the operator wants (fiat, not crypto).
+- Integrates via API + webhooks + hosted checkout → slots into our existing
+  `topup/create` + webhook surface.
+- Still needs the **adult owner** to onboard with real identity/business KYC and
+  a payout account; **check Dodo's supported payout countries** for the owner.
+- **Recommended fiat option.** Need their API docs / webhook payload to map fields.
+
+### Other candidates (still need adult + KYC)
 - **Cryptomus** — scaffolded already (`lib/cryptomus.ts`, webhook re-verifies
   status). Crypto acquirer.
 - **NOWPayments** — crypto, previously discussed as the path via an adult owner.
