@@ -2,6 +2,10 @@
 
 Newest first. Each: what we decided + why.
 
+- **2026-07-14 — Payments go on the legit path only: a real adult owns the
+  merchant account and passes their own KYC.** We (site side) wire the
+  integration; the adult handles account/KYC/payouts. No setup on a minor/false
+  identity. See [[Payments (TODO)]].
 - **2026-07-14 — Karma check repriced $0.50 → $0.30, gated on ≥1 unlocked map.**
   It's an add-on to a real launch, not a standalone tool.
 - **2026-07-14 — Posting brief = facts only.** Show link-allowed, best time,

@@ -12,6 +12,9 @@ onboarding** (bank/tax/ID). We do **not** help bypass age/KYC.
 merchant account and completes their own real KYC. If the account is a made-up
 identity, we don't wire payments onto it.
 
+**Decided 2026-07-14:** operator confirmed the **adult-owner + real-KYC** path.
+Site side wires the integration; the adult owns the account and does KYC/payouts.
+
 ## Provider notes
 ### PayNow.gg (screenshot 2026-07-14) — POOR FIT
 - Built for **game-server / community** monetization; hosted webstore
