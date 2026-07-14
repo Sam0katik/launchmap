@@ -30,16 +30,17 @@ export default function Home() {
 
         <main className="flex flex-1 items-center justify-center px-6 py-16">
           <div className="relative">
-            {/* receipt-style card */}
-            <div className="panel w-full max-w-xl px-12 pb-10 pt-7 text-center">
+            {/* receipt-style card — narrower + taller so it reads as an
+                elongated receipt; inner elements scaled down to match */}
+            <div className="panel w-full max-w-lg px-10 pb-14 pt-9 text-center">
               {/* receipt meta line */}
-              <div className="mb-4 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
+              <div className="mb-4 flex items-center justify-between text-[11px] uppercase tracking-widest text-ink-subtle">
                 <span>ZeroFans Labs</span>
                 <span>No. 0207</span>
               </div>
-              <div className="receipt-rule mb-8" />
+              <div className="receipt-rule mb-9" />
 
-              <h1 className="display-xl mb-9 text-ink">
+              <h1 className="display-xl mb-10 text-ink" style={{ fontSize: "clamp(30px,4.4vw,44px)" }}>
                 Light the way
                 <br />
                 to first users
@@ -48,7 +49,7 @@ export default function Home() {
               <UrlForm />
 
               {/* what you get — the offer in three lines */}
-              <ul className="mx-auto mt-7 max-w-sm space-y-1.5 text-left text-sm text-ink-muted">
+              <ul className="mx-auto mt-8 max-w-sm space-y-1.5 text-left text-[13px] text-ink-muted">
                 <li className="flex gap-2">
                   <span className="text-primary">→</span>
                   Where to post without getting banned — per-sub rules &amp; briefs
