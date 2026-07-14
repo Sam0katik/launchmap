@@ -2,7 +2,13 @@
 
 Per-batch summary of shipped changes. Newest first.
 
-## 2026-07-14 · Map rules UX (branch, not yet merged)
+## 2026-07-14 · Site-down hotfix + deploy (merged to main, PR #43)
+- **Fixed site-wide 504 `MIDDLEWARE_INVOCATION_TIMEOUT`**: auth middleware
+  called `supabase.auth.getUser()` with no timeout on ~every request; a slow
+  Supabase hung the whole site. Now fails open (3s cap + swallow errors).
+- Deployed everything that was pending on the branch (Map rules UX + brain).
+
+## 2026-07-14 · Map rules UX (merged to main, PR #43)
 - Karma check $0.30 + gated on ≥1 unlocked map (server-enforced).
 - "Before you post" account-age step links to profile karma check.
 - Community card: dropped "Welcome"/"Comments only" face tags.
