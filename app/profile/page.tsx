@@ -18,6 +18,7 @@ import {
 import { isAdminUser } from "@/lib/admins";
 import { apifyConfigured } from "@/lib/apify";
 import { cryptomusConfigured } from "@/lib/cryptomus";
+import { dodoConfigured } from "@/lib/dodo";
 import { productNameFromUrl } from "@/lib/product-name";
 import type { SavedRedditAccount } from "@/components/RedditKarmaCheck";
 
@@ -111,7 +112,7 @@ export default async function ProfilePage() {
                   <p className="eyebrow mb-1">Balance</p>
                   <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
                 </div>
-                <TopUpButton enabled={cryptomusConfigured()} />
+                <TopUpButton enabled={dodoConfigured() || cryptomusConfigured()} />
               </div>
               <Stat
                 label="Maps"

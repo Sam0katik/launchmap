@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProfileForUser } from "@/lib/profile";
 import { cryptomusConfigured, createInvoice } from "@/lib/cryptomus";
+import { dodoConfigured, createDodoCheckout } from "@/lib/dodo";
 
 // POST /api/topup/create  Body: { amountCents }
 // Start a crypto top-up: record a pending row, create a Cryptomus invoice, and
@@ -15,7 +16,7 @@ const ALLOWED = new Set([200, 500, 1000]); // $2 / $5 / $10
 const bodySchema = z.object({ amountCents: z.number().int() });
 
 export async function POST(req: NextRequest) {
-  if (!cryptomusConfigured()) {
+  if (!dodoConfigured() && !cryptomusConfigured()) {
     return NextResponse.json({ error: "billing_off" }, { status: 503 });
   }
 
@@ -51,12 +52,22 @@ export async function POST(req: NextRequest) {
 
   const origin =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || req.nextUrl.origin;
-  const url = await createInvoice({
-    amountUsd: (amountCents / 100).toFixed(2),
-    orderId,
-    callbackUrl: `${origin}/api/webhooks/cryptomus`,
-    returnUrl: `${origin}/profile`,
-  });
+
+  // Prefer Dodo (USD cards) when configured; fall back to Cryptomus (crypto).
+  // Dodo matches the payment back to this top-up via metadata.order_id and its
+  // own webhook signature, so it needs no callback URL in the request.
+  const url = dodoConfigured()
+    ? await createDodoCheckout({
+        amountCents,
+        orderId,
+        returnUrl: `${origin}/profile`,
+      })
+    : await createInvoice({
+        amountUsd: (amountCents / 100).toFixed(2),
+        orderId,
+        callbackUrl: `${origin}/api/webhooks/cryptomus`,
+        returnUrl: `${origin}/profile`,
+      });
   if (!url) {
     return NextResponse.json({ error: "provider_error" }, { status: 502 });
   }
