@@ -1,5 +1,18 @@
 # CLAUDE.md
 
+## ⚡ READ FIRST: `brain/` is this project's memory
+
+**At the start of every session, read `brain/README.md` and follow its index
+before exploring the codebase.** It is the maintained source of truth for the
+product model, prices, architecture, security invariants, decisions and open
+work — reading it first avoids re-deriving context and burning tokens.
+
+**At the end of every batch, update it:** add a dated entry to `brain/Journal.md`,
+update `brain/Changelog.md`, record any call in `brain/Decisions Log.md`, and
+keep `brain/Open Questions & Next Steps.md` current.
+
+---
+
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed. Derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
