@@ -7,6 +7,7 @@ This folder is an **Obsidian vault**. Open the `brain/` folder in Obsidian
 don't lose context between sessions. Updated at the end of every work batch.
 
 ## Index
+- [[Reddit Compliance (BLOCKER)]] — ⛔ read this before touching payments/Apify
 - [[Journal]] — chronological work diary (newest first)
 - [[Overview]] — what ZeroFans is, who it's for, the money model
 - [[Architecture]] — stack, key files, routes, data model
