@@ -30,37 +30,30 @@ export default async function MapPage({
 }) {
   const supabase = createClient();
 
-  // Ownership via RLS (a user only sees their own runs) — then read the paid
-  // columns (`result`, `opportunities`) with the service role: they are
-  // revoked from the client roles so the locked part of a map can't be pulled
-  // straight from the REST API (migration 0016).
-  const { data: own } = await supabase
-    .from("runs")
-    .select("id")
-    .eq("id", params.id)
-    .maybeSingle();
-  if (!own) notFound();
-
-  const { data: run } = await createAdminClient()
-    .from("runs")
-    .select("id, product_url, product_data, result, unlocked, opportunities")
-    .eq("id", params.id)
-    .maybeSingle();
-  if (!run) notFound();
-
-  // Viewer (for balance). The map is RLS-scoped to the owner.
+  // Signed-out visitors get an explicit prompt, never a 404: a dropped session
+  // (expired cookie, or a slow/paused Supabase that middleware failed open on)
+  // used to render "page not found" on the user's own map.
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  let balanceCents = 0;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("balance_cents")
-      .eq("id", user.id)
-      .maybeSingle();
-    balanceCents = (profile?.balance_cents as number) ?? 0;
-  }
+  if (!user) return <SignedOut />;
+
+  // The paid columns (`result`, `opportunities`) are revoked from the client
+  // roles (migration 0016), so the row is read with the service role and
+  // ownership is checked here against the signed-in user.
+  const { data: run } = await createAdminClient()
+    .from("runs")
+    .select("id, user_id, product_url, product_data, result, unlocked, opportunities")
+    .eq("id", params.id)
+    .maybeSingle();
+  if (!run || run.user_id !== user.id) notFound();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("balance_cents")
+    .eq("id", user.id)
+    .maybeSingle();
+  const balanceCents = (profile?.balance_cents as number) ?? 0;
 
   const analysis = run.product_data as ProductAnalysis | null;
   const rankedRaw = (run.result ?? []) as RankedCommunity[];
@@ -258,6 +251,28 @@ export default async function MapPage({
             >
               Browse all communities →
             </a>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
+
+// Shown instead of a 404 when the visitor has no session: the map may well be
+// theirs, they just need to sign in again.
+function SignedOut() {
+  return (
+    <>
+      <VectorSketch variant="alt" />
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <SiteNav />
+        <main className="mx-auto flex w-full max-w-content flex-1 flex-col items-center justify-center px-6 text-center">
+          <div className="panel px-8 py-10">
+            <h1 className="display-lg mb-3 text-ink">Sign in to open this map</h1>
+            <p className="text-sm text-ink-muted">
+              Maps are private to the account that created them. Sign in with
+              GitHub (top right) and this page will load.
+            </p>
           </div>
         </main>
       </div>

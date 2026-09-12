@@ -2,6 +2,13 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Map page: no more 404 for signed-out owners
+- `/map/[id]` checked ownership through RLS, so a dropped session (expired
+  cookie, or a slow/paused Supabase that middleware failed open on) rendered
+  "404 page not found" on the user's own map. Now: no session → explicit
+  "Sign in to open this map"; ownership is checked against `runs.user_id` on
+  the service-role read (one query instead of two).
+
 ## 2026-09-12 · Balance ledger + full money alerts + bot buttons
 - Migration 0019 `balance_events`: every balance change (topup, admin_credit,
   unlock, thread_search, karma_check, refund) is a row; written best-effort by
