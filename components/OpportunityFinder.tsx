@@ -62,7 +62,7 @@ export function OpportunityFinder({
           startRes.status === 402
             ? "Not enough balance — a refresh costs $0.50. Top up in your profile."
             : startRes.status === 429
-              ? "Daily search budget is used up — try again tomorrow."
+              ? "Daily search limit for your account reached — try again tomorrow."
             : startRes.status === 422
               ? "Not enough product keywords to search."
               : startData?.detail

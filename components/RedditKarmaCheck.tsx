@@ -138,7 +138,7 @@ export function RedditKarmaCheck({
                 : startRes.status === 400
                   ? "Enter a valid username."
                   : startRes.status === 429
-                    ? "Daily check budget is used up — try again tomorrow."
+                    ? "Daily check limit for your account reached — try again tomorrow."
                   : startData?.detail
                     ? `Couldn't start: ${startData.detail}`
                     : "Couldn't start the check — try again."

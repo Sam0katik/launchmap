@@ -10,7 +10,9 @@ Per-batch summary of shipped changes. Newest first.
 - **Telegram alert on first sign-in** (`lib/telegram.ts`, `auth/callback`):
   once per account via `profiles.notified_at` claim. Env `TELEGRAM_BOT_TOKEN`,
   `TELEGRAM_CHAT_ID`; silent no-op when unset.
-- **Global caps lowered**: 100 analyses / 40 Apify runs / 2 scans per day.
+- **Caps**: 100 analyses/day global; Apify **20 runs per user per day** (paid
+  per use, so per-profile is the right unit) + 500/day global circuit breaker;
+  2 admin scans/day. Per-user counters reuse `daily_counters` (`apify:<uid>`).
 - **User note is a hint, not truth**: the Haiku prompt now ignores a
   description that contradicts or is unrelated to the page; it only fills gaps.
 - Favicon tilted 14° nose-up.

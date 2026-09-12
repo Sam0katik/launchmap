@@ -12,7 +12,7 @@ import {
   mapRedditSubs,
 } from "@/lib/apify";
 import { THREAD_SEARCH_PRICE_CENTS } from "@/lib/billing";
-import { withinDailyBudget, APIFY_GLOBAL_PER_DAY } from "@/lib/budget";
+import { withinApifyBudget } from "@/lib/budget";
 import type { ProductAnalysis } from "@/lib/types";
 
 // POST /api/opportunities/start  Body: { runId }
@@ -115,8 +115,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Global Apify budget (accounts are free; see lib/budget.ts).
-  if (!(await withinDailyBudget("apify", APIFY_GLOBAL_PER_DAY))) {
+  // Apify budget: per-user daily allowance + global circuit breaker.
+  if (!(await withinApifyBudget(user.id))) {
     if (charged) {
       await admin.rpc("credit_balance", {
         p_user_id: user.id,

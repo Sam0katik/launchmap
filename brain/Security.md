@@ -38,7 +38,7 @@
   profile row exists first. Idempotent; never overwrites balance.
 - **Rate limits**: 2 maps/account, 15 analyses/day (blocks delete→create budget
   burn), karma needs ≥1 unlock. **Global caps** (migration 0017, `lib/budget.ts`):
-  300 analyses / 150 Apify runs / 5 scans per day across all accounts.
+  100 analyses/day global; Apify 20/user/day + 500/day global; 2 scans/day.
 - **Blocking**: `profiles.blocked` gates every action route via
   `lib/auth.ts`; set only from the admin panel (service role).
 - **Apify run binding**: `/result` routes only accept the run id their own
