@@ -8,6 +8,7 @@ import { formatUsd } from "@/lib/billing";
 const HELP = [
   "ZeroFans bot — commands:",
   "/stats — totals + today's budget counters",
+  "/today — what happened today (sign-ups, maps, unlocks, top-ups)",
   "/users [n] — last n users (default 10)",
   "/maps [n] — last n maps",
   "/topups [n] — last n top-ups",
@@ -17,6 +18,26 @@ const HELP = [
 ].join("\n");
 
 type Row = Record<string, unknown>;
+
+// Persistent reply keyboard — tapping a button sends its label, which
+// BUTTON_COMMANDS maps back to a command, so the operator never types.
+export const BUTTON_COMMANDS: Record<string, string> = {
+  "📊 Stats": "/stats",
+  "👥 Users": "/users 10",
+  "🗺 Maps": "/maps 10",
+  "💳 Top-ups": "/topups 10",
+  "🆕 Today": "/today",
+  "❓ Help": "/help",
+};
+export const REPLY_KEYBOARD = {
+  keyboard: [
+    [{ text: "📊 Stats" }, { text: "🆕 Today" }],
+    [{ text: "👥 Users" }, { text: "🗺 Maps" }, { text: "💳 Top-ups" }],
+    [{ text: "❓ Help" }],
+  ],
+  resize_keyboard: true,
+  is_persistent: true,
+};
 
 function n(v: unknown): number {
   return typeof v === "number" ? v : 0;
@@ -67,7 +88,8 @@ async function userRows(limit: number, filter?: string): Promise<Row[]> {
   });
 }
 
-export async function handleTelegramCommand(text: string): Promise<string> {
+export async function handleTelegramCommand(input: string): Promise<string> {
+  const text = BUTTON_COMMANDS[input.trim()] ?? input;
   const [cmdRaw, ...args] = text.trim().split(/\s+/);
   const cmd = cmdRaw.toLowerCase().replace(/@.+$/, "");
   const admin = createAdminClient();
@@ -103,6 +125,25 @@ export async function handleTelegramCommand(text: string): Promise<string> {
           `💳 Top-ups: ${topups.count ?? 0}, paid ${paid.data?.length ?? 0} = ${formatUsd(paidUsd)} / ${paidRub} ₽`,
           `💰 Balances outstanding: ${formatUsd(totalBal)}`,
           `📊 Today: ${c || "no usage yet"}`,
+        ].join("\n");
+      }
+
+      case "/today": {
+        const since = new Date();
+        since.setUTCHours(0, 0, 0, 0);
+        const iso = since.toISOString();
+        const [users, runs, unlocked, topups] = await Promise.all([
+          admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", iso),
+          admin.from("runs").select("id", { count: "exact", head: true }).gte("created_at", iso),
+          admin.from("runs").select("id", { count: "exact", head: true }).eq("unlocked", true).gte("created_at", iso),
+          admin.from("topups").select("amount_cents").eq("credited", true).gte("paid_at", iso),
+        ]);
+        const paid = (topups.data ?? []).reduce((s, r) => s + n(r.amount_cents), 0);
+        return [
+          `📅 Today (UTC)`,
+          `🆕 sign-ups: ${users.count ?? 0}`,
+          `🗺 maps: ${runs.count ?? 0} (unlocked ${unlocked.count ?? 0})`,
+          `💳 top-ups paid: ${topups.data?.length ?? 0} = ${formatUsd(paid)}`,
         ].join("\n");
       }
 

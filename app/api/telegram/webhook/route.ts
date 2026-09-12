@@ -6,7 +6,7 @@ import {
   isOperatorChat,
   tgApi,
 } from "@/lib/telegram";
-import { handleTelegramCommand } from "@/lib/telegram-commands";
+import { handleTelegramCommand, BUTTON_COMMANDS, REPLY_KEYBOARD } from "@/lib/telegram-commands";
 
 // POST /api/telegram/webhook — Telegram delivers bot updates here (registered
 // from the admin panel). Two gates before anything runs:
@@ -36,13 +36,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
   const text = (msg.text ?? "").trim();
-  if (!text.startsWith("/")) return NextResponse.json({ ok: true });
+  if (!text.startsWith("/") && !(text in BUTTON_COMMANDS)) {
+    return NextResponse.json({ ok: true });
+  }
 
   const reply = await handleTelegramCommand(text);
   await tgApi("sendMessage", {
     chat_id: msg.chat.id,
     text: reply.slice(0, 4000),
     disable_web_page_preview: true,
+    reply_markup: REPLY_KEYBOARD,
   });
   return NextResponse.json({ ok: true });
 }
