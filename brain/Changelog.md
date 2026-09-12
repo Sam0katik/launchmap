@@ -7,7 +7,8 @@ Per-batch summary of shipped changes. Newest first.
   facets, 2px ink outlines, orange nose), rides a swooping flight path with a
   loop (SMIL `animateMotion`, nose follows the curve) and draws a faint dashed
   trail behind it. Replaces the old white sliding plane. No JS; reduced-motion
-  hides it. Used on `/map/[id]`.
+  hides it. Used on `/map/[id]`. Second pass: smaller (~68px), thinner
+  strokes, no shadow/highlight, fainter trail.
 
 ## 2026-07-14 · Site-down hotfix + deploy (merged to main, PR #43)
 - **Fixed site-wide 504 `MIDDLEWARE_INVOCATION_TIMEOUT`**: auth middleware

@@ -1,6 +1,6 @@
 // Ambient origami paper plane gliding across the background, behind all
 // content. Drawn in the site's print-zine language: cream paper facets, hard
-// ink outlines, one orange nose (the pixel mascot's signature). It rides a
+// thin ink outlines, one orange nose (the pixel mascot's signature). It rides a
 // swooping flight path with a loop-the-loop, nose always pointing along the
 // curve (SMIL animateMotion + rotate="auto"), and leaves a faint dashed trail
 // that draws itself behind the plane and fades before the next pass.
@@ -56,15 +56,15 @@ export function FlyingPlane() {
         d={FLIGHT_PATH}
         pathLength={100}
         stroke="#1b1a16"
-        strokeWidth="2"
-        strokeDasharray="0.9 1.3"
+        strokeWidth="1.5"
+        strokeDasharray="0.6 1.4"
         strokeLinecap="round"
-        opacity="0.22"
+        opacity="0.14"
         mask="url(#plane-trail-reveal)"
       >
         <animate
           attributeName="opacity"
-          values="0.22;0.22;0"
+          values="0.14;0.14;0"
           keyTimes="0;0.86;1"
           dur={DURATION}
           repeatCount="indefinite"
@@ -82,20 +82,14 @@ export function FlyingPlane() {
           <mpath href="#plane-flight-path" />
         </animateMotion>
         {/* inner group bobs on its own short cycle so it reads as riding air */}
-        <g transform="scale(1.6) translate(-40 -20)">
+        <g transform="scale(0.85) translate(-40 -20)">
         <g className="plane-bob">
-          {/* soft ink shadow under the paper */}
-          <path
-            d="M82 24 L20 8 L34 24 L20 40 Z"
-            fill="#1b1a16"
-            opacity="0.12"
-          />
           {/* lower wing (shaded underside) */}
           <path
             d="M80 20 L18 20 L4 38 Z"
             fill="#d8d3c4"
             stroke="#1b1a16"
-            strokeWidth="2"
+            strokeWidth="1.5"
             strokeLinejoin="round"
           />
           {/* keel — the fold hanging below the centre crease */}
@@ -103,7 +97,7 @@ export function FlyingPlane() {
             d="M80 20 L18 20 L26 31 Z"
             fill="#ccc6b4"
             stroke="#1b1a16"
-            strokeWidth="2"
+            strokeWidth="1.5"
             strokeLinejoin="round"
           />
           {/* upper wing (lit top) */}
@@ -111,13 +105,11 @@ export function FlyingPlane() {
             d="M80 20 L4 2 L18 20 Z"
             fill="#efece2"
             stroke="#1b1a16"
-            strokeWidth="2"
+            strokeWidth="1.5"
             strokeLinejoin="round"
           />
-          {/* fold crease highlight along the upper wing */}
-          <path d="M72 19 L14 8" stroke="#ffffff" strokeWidth="1" opacity="0.7" />
           {/* orange nose — the mascot's signature */}
-          <path d="M80 20 L66 16.5 L66 23.5 Z" fill="#ff6a14" stroke="#1b1a16" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M80 20 L66 16.5 L66 23.5 Z" fill="#ff6a14" stroke="#1b1a16" strokeWidth="1.5" strokeLinejoin="round" />
         </g>
         </g>
       </g>
