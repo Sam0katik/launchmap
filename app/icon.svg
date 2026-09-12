@@ -1,6 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- White origami send-plane, no background. A thin outline + light-gray fold
-       keep it visible on light browser tabs too. -->
-  <path d="M27 4.3 4.2 13a.7.7 0 0 0 .05 1.32l6 1.85 2.28 6.6a.7.7 0 0 0 1.25.16l3.02-3.9 5.7 4.2a.7.7 0 0 0 1.1-.4L27.9 5.1a.7.7 0 0 0-.9-.8Z" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.7" stroke-linejoin="round"/>
-  <path d="M12.25 16.7 25.4 6.6 14.7 18.9l-.02 4.6z" fill="#d7d7d7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Pixel paper plane (same sprite as components/PixelPlane.tsx), 24×14
+       grid centred in the 32×32 tile. No background so it sits on any tab. -->
+  <g transform="translate(4 9)">
+    <rect x="0" y="0" width="2" height="1" fill="#1b1a16"/>
+    <rect x="1" y="1" width="4" height="1" fill="#1b1a16"/>
+    <rect x="2" y="2" width="1" height="1" fill="#1b1a16"/>
+    <rect x="3" y="2" width="2" height="1" fill="#efece2"/>
+    <rect x="5" y="2" width="3" height="1" fill="#1b1a16"/>
+    <rect x="3" y="3" width="1" height="1" fill="#1b1a16"/>
+    <rect x="4" y="3" width="4" height="1" fill="#efece2"/>
+    <rect x="8" y="3" width="3" height="1" fill="#1b1a16"/>
+    <rect x="4" y="4" width="1" height="1" fill="#1b1a16"/>
+    <rect x="5" y="4" width="6" height="1" fill="#efece2"/>
+    <rect x="11" y="4" width="3" height="1" fill="#1b1a16"/>
+    <rect x="5" y="5" width="1" height="1" fill="#1b1a16"/>
+    <rect x="6" y="5" width="8" height="1" fill="#efece2"/>
+    <rect x="14" y="5" width="3" height="1" fill="#1b1a16"/>
+    <rect x="6" y="6" width="1" height="1" fill="#1b1a16"/>
+    <rect x="7" y="6" width="10" height="1" fill="#efece2"/>
+    <rect x="17" y="6" width="3" height="1" fill="#1b1a16"/>
+    <rect x="5" y="7" width="1" height="1" fill="#1b1a16"/>
+    <rect x="6" y="7" width="14" height="1" fill="#efece2"/>
+    <rect x="20" y="7" width="2" height="1" fill="#1b1a16"/>
+    <rect x="22" y="7" width="2" height="1" fill="#ff6a14"/>
+    <rect x="4" y="8" width="1" height="1" fill="#1b1a16"/>
+    <rect x="5" y="8" width="4" height="1" fill="#c9c4b3"/>
+    <rect x="9" y="8" width="1" height="1" fill="#1b1a16"/>
+    <rect x="10" y="8" width="7" height="1" fill="#d8d3c4"/>
+    <rect x="17" y="8" width="4" height="1" fill="#1b1a16"/>
+    <rect x="3" y="9" width="1" height="1" fill="#1b1a16"/>
+    <rect x="4" y="9" width="8" height="1" fill="#c9c4b3"/>
+    <rect x="12" y="9" width="1" height="1" fill="#1b1a16"/>
+    <rect x="13" y="9" width="1" height="1" fill="#d8d3c4"/>
+    <rect x="14" y="9" width="3" height="1" fill="#1b1a16"/>
+    <rect x="2" y="10" width="1" height="1" fill="#1b1a16"/>
+    <rect x="3" y="10" width="7" height="1" fill="#c9c4b3"/>
+    <rect x="10" y="10" width="4" height="1" fill="#1b1a16"/>
+    <rect x="1" y="11" width="1" height="1" fill="#1b1a16"/>
+    <rect x="2" y="11" width="5" height="1" fill="#c9c4b3"/>
+    <rect x="7" y="11" width="3" height="1" fill="#1b1a16"/>
+    <rect x="0" y="12" width="1" height="1" fill="#1b1a16"/>
+    <rect x="1" y="12" width="2" height="1" fill="#c9c4b3"/>
+    <rect x="3" y="12" width="4" height="1" fill="#1b1a16"/>
+    <rect x="0" y="13" width="3" height="1" fill="#1b1a16"/>
+  </g>
 </svg>

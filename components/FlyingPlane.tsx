@@ -1,17 +1,16 @@
-// Ambient origami paper plane gliding across the background, behind all
-// content. Drawn in the site's print-zine language: cream paper facets, hard
-// thin ink outlines, one orange nose (the pixel mascot's signature). It rides a
-// swooping flight path with a loop-the-loop, nose always pointing along the
-// curve (SMIL animateMotion + rotate="auto"), and leaves a faint dashed trail
-// that draws itself behind the plane and fades before the next pass.
-//
-// Everything lives in one full-viewport SVG (viewBox 1440×900, slice-scaled),
-// so the path stays proportional at any screen size. No JS, no layout cost.
-const FLIGHT_PATH =
-  "M-160 640 C 140 600, 300 330, 560 330 C 780 330, 880 470, 800 560 " +
-  "C 720 650, 560 560, 620 440 C 700 280, 1080 240, 1600 120";
+import { PixelPlaneGlyph } from "@/components/PixelPlane";
 
-const DURATION = "26s";
+// Ambient pixel paper plane gliding across the background, behind all content.
+// It rides a gentle wave (SMIL animateMotion) without rotating — pixel art
+// stays crisp only when it isn't turned — and leaves a short trail of pixel
+// dashes that draws in behind it and fades before the next pass.
+//
+// One full-viewport SVG (viewBox 1440×900, slice-scaled), so the path stays
+// proportional at any screen size. No JS, no layout cost.
+const FLIGHT_PATH =
+  "M-140 620 C 260 560, 420 360, 720 380 C 980 400, 1160 250, 1580 210";
+
+const DURATION = "24s";
 // ease-in-out over the whole pass — the slow ends are off-screen, so the
 // plane is already moving when it enters and still moving when it leaves.
 const EASE = { calcMode: "spline", keyTimes: "0;1", keySplines: "0.45 0 0.55 1" };
@@ -35,7 +34,7 @@ export function FlyingPlane() {
             d={FLIGHT_PATH}
             pathLength={100}
             stroke="#fff"
-            strokeWidth="8"
+            strokeWidth="10"
             strokeDasharray="100 100"
             strokeDashoffset="100"
           >
@@ -51,66 +50,38 @@ export function FlyingPlane() {
         </mask>
       </defs>
 
-      {/* dashed trail: draws in behind the plane, fades out at the end of the pass */}
+      {/* pixel-dash trail (square caps, crisp) */}
       <path
         d={FLIGHT_PATH}
         pathLength={100}
         stroke="#1b1a16"
-        strokeWidth="1.5"
-        strokeDasharray="0.6 1.4"
-        strokeLinecap="round"
-        opacity="0.14"
+        strokeWidth="2.5"
+        strokeDasharray="0.5 1.1"
+        strokeLinecap="butt"
+        shapeRendering="crispEdges"
+        opacity="0.16"
         mask="url(#plane-trail-reveal)"
       >
         <animate
           attributeName="opacity"
-          values="0.14;0.14;0"
+          values="0.16;0.16;0"
           keyTimes="0;0.86;1"
           dur={DURATION}
           repeatCount="indefinite"
         />
       </path>
 
-      {/* the plane — nose points along +x, rotate="auto" aligns it to the curve */}
+      {/* the plane — glides along the path, never rotates */}
       <g>
-        <animateMotion
-          dur={DURATION}
-          repeatCount="indefinite"
-          rotate="auto"
-          {...EASE}
-        >
+        <animateMotion dur={DURATION} repeatCount="indefinite" {...EASE}>
           <mpath href="#plane-flight-path" />
         </animateMotion>
-        {/* inner group bobs on its own short cycle so it reads as riding air */}
-        <g transform="scale(0.85) translate(-40 -20)">
-        <g className="plane-bob">
-          {/* lower wing (shaded underside) */}
-          <path
-            d="M80 20 L18 20 L4 38 Z"
-            fill="#d8d3c4"
-            stroke="#1b1a16"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          {/* keel — the fold hanging below the centre crease */}
-          <path
-            d="M80 20 L18 20 L26 31 Z"
-            fill="#ccc6b4"
-            stroke="#1b1a16"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          {/* upper wing (lit top) */}
-          <path
-            d="M80 20 L4 2 L18 20 Z"
-            fill="#efece2"
-            stroke="#1b1a16"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          {/* orange nose — the mascot's signature */}
-          <path d="M80 20 L66 16.5 L66 23.5 Z" fill="#ff6a14" stroke="#1b1a16" strokeWidth="1.5" strokeLinejoin="round" />
-        </g>
+        {/* 24×14 sprite at 2.4 units per pixel (~58px wide on a 1440 screen),
+            centred on the path; the inner group bobs on its own short cycle */}
+        <g transform="translate(-29 -17) scale(2.4)">
+          <g className="plane-bob">
+            <PixelPlaneGlyph />
+          </g>
         </g>
       </g>
     </svg>

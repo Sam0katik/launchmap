@@ -2,6 +2,14 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Pixel-art plane + favicon (pushed to main)
+- New `components/PixelPlane.tsx`: the mascot as a 24×14 pixel sprite (ink
+  outline, cream wing, shaded underside, keel facet, orange nose), rendered as
+  SVG rects with `crispEdges`.
+- `app/icon.svg` (favicon) now carries the same sprite.
+- `FlyingPlane` uses the sprite: glides along a gentle wave without rotating
+  (pixels stay crisp), 2-frame stepped bob, pixel-dash trail. ~58px wide.
+
 ## 2026-09-12 · New background paper plane (pushed to main)
 - `FlyingPlane` rebuilt: origami dart in the site's print-zine language (cream
   facets, 2px ink outlines, orange nose), rides a swooping flight path with a

@@ -114,16 +114,14 @@ body {
 
 /* Background paper plane (components/FlyingPlane.tsx). The flight path is
    SMIL inside the SVG; this is only the inner bob (rides air currents) and
-   the reduced-motion switch. transform-box keeps the pivot on the plane. */
+   the reduced-motion switch (2-frame stepped bob = pixel feel). */
 @keyframes plane-bob {
-  0%   { transform: translateY(0)    rotate(0deg); }
-  50%  { transform: translateY(-4px) rotate(-2deg); }
-  100% { transform: translateY(0)    rotate(0deg); }
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
 }
 .plane-bob {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: plane-bob 3.2s ease-in-out infinite;
+  animation: plane-bob 2.4s steps(2, jump-none) infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .plane-flight { display: none; }

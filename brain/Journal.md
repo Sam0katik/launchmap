@@ -7,7 +7,9 @@ running "what happened / what we were thinking" log.)
 ## 2026-09-12
 - Session resumed after a ~7-week gap. Operator restored Supabase + Vercel;
   working directly on `main` (Vercel auto-deploys) for quick visual tests.
-- Shipped the redesigned background paper plane (see [[Changelog]]).
+- Shipped the redesigned background paper plane, then reworked it (per
+  operator reference) into a pixel-art sprite shared with the favicon (see
+  [[Changelog]]).
 - **Not yet acted on:** the Reddit ToS / Dodo-rejection blocker documented on
   branch `claude/trusting-franklin-2c3hl3` (`brain/Reddit Compliance
   (BLOCKER).md`) is still unmerged; the "Next steps" below it in
