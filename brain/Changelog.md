@@ -2,6 +2,16 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Thread searches survive leaving the page
+- Saved threads already persisted on the run; the gap was an *uncollected*
+  search: if the tab closed (or the 60 s poll window expired) before Apify
+  finished, the $0.50 run was never fetched or saved, and the panel offered a
+  fresh paid search on return.
+- `/map/[id]` now passes `opportunities_run_id`; the panel resumes that paid run
+  for free on mount (the `/result` route only accepts the id the server stored).
+- Panel shows "Saved <date> - kept until you refresh"; polling logic shared
+  between a fresh search and the resume path.
+
 ## 2026-09-12 · Map page: no more 404 for signed-out owners
 - `/map/[id]` checked ownership through RLS, so a dropped session (expired
   cookie, or a slow/paused Supabase that middleware failed open on) rendered

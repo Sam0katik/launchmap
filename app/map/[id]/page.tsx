@@ -43,7 +43,9 @@ export default async function MapPage({
   // ownership is checked here against the signed-in user.
   const { data: run } = await createAdminClient()
     .from("runs")
-    .select("id, user_id, product_url, product_data, result, unlocked, opportunities")
+    .select(
+      "id, user_id, product_url, product_data, result, unlocked, opportunities, opportunities_at, opportunities_run_id"
+    )
     .eq("id", params.id)
     .maybeSingle();
   if (!run || run.user_id !== user.id) notFound();
@@ -125,6 +127,8 @@ export default async function MapPage({
             initialThreads={
               (run.opportunities as OppThread[] | null) ?? null
             }
+            updatedAt={(run.opportunities_at as string | null) ?? null}
+            pendingRunId={(run.opportunities_run_id as string | null) ?? null}
           />
 
           {!run.unlocked && lockedCount > 0 && (

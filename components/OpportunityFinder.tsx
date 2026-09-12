@@ -16,18 +16,27 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // "Where to jump in" — live Reddit threads about the product's space that the
 // maker can join with a genuine comment. Runs an Apify actor on demand (async:
-// start → poll) and caches the result on the run. Every search costs $0.50
-// (confirm step before charging).
+// start → poll) and caches the result on the run, so the panel keeps showing
+// the same threads on every later visit until the user pays for a refresh.
+// Every search costs $0.50 (confirm step before charging). If a search was
+// started but its result never got fetched (tab closed, poll window expired),
+// `pendingRunId` lets this component finish that already-paid run for free.
 export function OpportunityFinder({
   runId,
   enabled,
   unlocked,
   initialThreads,
+  updatedAt,
+  pendingRunId,
 }: {
   runId: string;
   enabled: boolean;
   unlocked: boolean;
   initialThreads: Thread[] | null;
+  /** When the saved threads were fetched (ISO), null if never. */
+  updatedAt: string | null;
+  /** Apify run that was paid for but never collected, if any. */
+  pendingRunId: string | null;
 }) {
   const [threads, setThreads] = useState<Thread[] | null>(initialThreads);
   const [busy, setBusy] = useState(false);
@@ -40,6 +49,56 @@ export function OpportunityFinder({
   useEffect(() => {
     setThreads(initialThreads);
   }, [initialThreads]);
+
+  // Resume an already-paid search whose result was never collected. No charge:
+  // /result only reads the run id the server itself stored.
+  useEffect(() => {
+    if (initialThreads !== null || !pendingRunId || !unlocked || !enabled) return;
+    let cancelled = false;
+    (async () => {
+      setBusy(true);
+      try {
+        const collected = await poll(pendingRunId, (t) => !cancelled && setThreads(t));
+        if (!cancelled && collected) router.refresh();
+      } finally {
+        if (!cancelled) setBusy(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingRunId, initialThreads, unlocked, enabled]);
+
+  /** Poll a started Apify run until it finishes. Returns true if threads were
+   *  saved server-side. Shared by a fresh search and by the resume path. */
+  async function poll(
+    apifyRunId: string,
+    onThreads: (t: Thread[]) => void
+  ): Promise<boolean> {
+    for (let i = 0; i < 20; i++) {
+      await sleep(3000);
+      const res = await fetch("/api/opportunities/result", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ runId, apifyRunId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) continue;
+      if (data.status === "SUCCEEDED") {
+        onThreads(data.threads ?? []);
+        return true;
+      }
+      if (data.status === "FAILED") {
+        setError("Search failed on Reddit — try again later.");
+        return false;
+      }
+    }
+    setError(
+      "Search is taking longer than usual — reopen this page in a minute, the result is kept."
+    );
+    return false;
+  }
 
   async function run() {
     setBusy(true);
@@ -67,27 +126,8 @@ export function OpportunityFinder({
       }
       const apifyRunId = startData.apifyRunId as string;
 
-      // Poll until the actor finishes (~10–25s typical).
-      for (let i = 0; i < 20; i++) {
-        await sleep(3000);
-        const res = await fetch("/api/opportunities/result", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ runId, apifyRunId }),
-        });
-        const data = await res.json().catch(() => null);
-        if (!res.ok || !data) continue;
-        if (data.status === "SUCCEEDED") {
-          setThreads(data.threads ?? []);
-          router.refresh(); // keep the server-rendered props in sync
-          return;
-        }
-        if (data.status === "FAILED") {
-          setError("Search failed on Reddit — try again later.");
-          return;
-        }
-      }
-      setError("Search is taking too long — try again.");
+      const collected = await poll(apifyRunId, setThreads);
+      if (collected) router.refresh(); // keep the server-rendered props in sync
     } catch {
       setError("Network error.");
     } finally {
@@ -105,6 +145,12 @@ export function OpportunityFinder({
           <p className="mt-1 text-sm text-ink-subtle">
             Live threads about your space — join with a real comment, not a link.
           </p>
+          {threads && updatedAt && (
+            <p className="mt-1 text-xs text-ink-tertiary">
+              Saved {new Date(updatedAt).toLocaleString()} — kept until you
+              refresh.
+            </p>
+          )}
         </div>
         {enabled && unlocked && !armed && (
           <button

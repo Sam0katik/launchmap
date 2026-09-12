@@ -17,6 +17,8 @@ Internal USD balance economy, all amounts in **cents**. Config in `lib/billing.t
   success flip `runs.unlocked`. CAS prevents double-spend on concurrent calls.
 - **Thread search**: every search charges $0.50 via the same CAS, refunds if
   the Apify run fails to start. (Free first search removed 2026-09-12.)
+  Results are cached on `runs.opportunities` until the next paid refresh; an
+  uncollected run is resumed free via `runs.opportunities_run_id`.
 - **Karma check**: charges $0.30 via CAS; refunds if scrape fails to start;
   gated on ≥1 unlocked run.
 - **Top-up (credit in)**: `topup/create` → Platega transaction (RUB, rate =
