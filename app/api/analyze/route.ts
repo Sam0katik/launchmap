@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActionUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeProduct } from "@/lib/anthropic";
-import { fetchLandingContent, isSafePublicUrl } from "@/lib/landing";
+import { fetchLandingContent, isSafePublicUrl, isNotAProductSite } from "@/lib/landing";
 import { withinDailyBudget, ANALYZE_GLOBAL_PER_DAY } from "@/lib/budget";
 import { notifyTelegram } from "@/lib/telegram";
 import { githubLogin } from "@/lib/admins";
@@ -58,6 +58,13 @@ export async function POST(req: NextRequest) {
   // allow http(s). Stops a submitted URL from reading internal services.
   if (!isSafePublicUrl(url)) {
     return NextResponse.json({ error: "invalid_url" }, { status: 400 });
+  }
+
+  // A platform (youtube.com, github.com, a marketplace…) is not a product to
+  // launch: the analysis would return generic tags and a meaningless map, while
+  // costing the user a map slot and us an AI call. Refuse before spending.
+  if (isNotAProductSite(url)) {
+    return NextResponse.json({ error: "not_a_product" }, { status: 400 });
   }
 
   // 3. URL cache — return an existing recent run for the same URL, no AI spend.

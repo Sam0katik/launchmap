@@ -28,6 +28,9 @@ export default function Privacy() {
             <h1 className="pixel text-ink" style={{ fontSize: "clamp(26px,3.4vw,38px)" }}>
               What we store, and why
             </h1>
+            <p className="mt-3 text-xs text-ink-subtle">
+              Last updated 12 September 2026
+            </p>
           </header>
 
           <LegalNav active="privacy" />
@@ -44,8 +47,16 @@ export default function Privacy() {
                   build and cache your launch maps.
                 </li>
                 <li>
-                  The generated maps (matched communities, scores, drafts) tied
-                  to your account.
+                  The generated maps (matched communities, scores, posting
+                  briefs) and any saved thread searches, tied to your account.
+                </li>
+                <li>
+                  Reddit usernames you choose to check, and the public karma /
+                  account-age figures returned for them.
+                </li>
+                <li>
+                  Your balance and a record of each balance movement (top-ups and
+                  what you spent credit on) — needed for billing and refunds.
                 </li>
               </ul>
               <p className="mt-3">
@@ -83,6 +94,25 @@ export default function Privacy() {
                 <li>
                   <strong className="text-ink">GitHub</strong> — OAuth sign-in
                   identity only.
+                </li>
+                <li>
+                  <strong className="text-ink">Vercel</strong> — hosting; it
+                  processes the requests to this site and keeps short-lived
+                  server logs.
+                </li>
+                <li>
+                  <strong className="text-ink">Apify</strong> — the service that
+                  fetches public Reddit data for the live-thread search and the
+                  Reddit account check. A username you ask us to check is sent to
+                  them for that lookup.
+                </li>
+                <li>
+                  <strong className="text-ink">Telegram</strong> — we send
+                  ourselves operational alerts (a new sign-up, a new map, a
+                  purchase). These contain your GitHub username, the email your
+                  GitHub account exposes, your account id and the product URL —
+                  they go to a private chat owned by the operator, and nowhere
+                  else.
                 </li>
                 <li>
                   <strong className="text-ink">Platega</strong> (platega.io) —
@@ -127,6 +157,12 @@ export default function Privacy() {
                   profile page
                 </Link>
                 . Deletion is immediate and irreversible.
+              </p>
+              <p className="mt-3">
+                Two things outlive deletion, because we are legally required to
+                keep billing records: rows describing your payments and balance
+                movements. They keep the amounts and dates, and the link to your
+                account is severed when the account is deleted.
               </p>
               <p className="mt-3">
                 For data questions or export requests, contact us via the{" "}

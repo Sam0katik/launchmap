@@ -182,6 +182,8 @@ function messageFor(code: string): string {
       return "This account is blocked. Contact us if you think that's a mistake.";
     case "daily_limit":
       return "Daily analysis limit reached — try again tomorrow.";
+    case "not_a_product":
+      return "That's a big platform, not a product launch. Paste your own product's landing page.";
     case "invalid_input":
       return "Enter a valid URL.";
     case "empty_landing":

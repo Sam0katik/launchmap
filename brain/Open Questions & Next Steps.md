@@ -36,6 +36,13 @@ test credit.
    gaps; grow the catalog where matches are thin, never by bulk-adding
    unverified subs (accuracy is the product).
 
+## Legal gaps still open (operator decision)
+- No governing-law / jurisdiction clause and no named legal entity on the site.
+  Standard for an MVP, but a payment provider or an EU user may ask. Decide what
+  identity the merchant account will use and add it to Terms + Privacy.
+- Privacy says "contact us for export"; there is no self-serve data export.
+  Deletion IS self-serve, which covers the main obligation.
+
 ## Watch-outs
 - Vercel Hobby ~10s function limit → long jobs stay on async start+poll.
 - Fixed RUB rate in env: revisit when RUB/USD moves >5%.

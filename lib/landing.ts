@@ -5,6 +5,41 @@ import { isIP } from "net";
 // a small same-origin crawl when the landing itself is thin (JS-only shells,
 // one-line hero pages). Everything here is best-effort and never throws.
 
+// Sites that are never "your product": platforms, search engines, social
+// networks, marketplaces and our own domain. Analyzing one burns a map slot and
+// an AI call to produce a meaningless generic map, so we refuse early.
+const NOT_A_PRODUCT = new Set([
+  "google.com", "youtube.com", "facebook.com", "instagram.com", "tiktok.com",
+  "x.com", "twitter.com", "reddit.com", "linkedin.com", "pinterest.com",
+  "snapchat.com", "whatsapp.com", "telegram.org", "t.me", "discord.com",
+  "twitch.tv", "netflix.com", "spotify.com", "apple.com", "microsoft.com",
+  "amazon.com", "ebay.com", "aliexpress.com", "wikipedia.org", "yahoo.com",
+  "yandex.ru", "vk.com", "ozon.ru", "wildberries.ru", "avito.ru",
+  "producthunt.com", "github.com", "gitlab.com", "stackoverflow.com",
+  "medium.com", "substack.com", "notion.so", "chatgpt.com", "openai.com",
+  "anthropic.com", "claude.ai", "zerofans.org",
+]);
+
+/** True when the URL points at a platform rather than someone's own product. */
+export function isNotAProductSite(raw: string): boolean {
+  let host: string;
+  try {
+    host = new URL(raw).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return false;
+  }
+  if (NOT_A_PRODUCT.has(host)) return true;
+  // youtube.co.uk, google.de … — apex + a country/second-level suffix.
+  const parts = host.split(".");
+  for (let i = 0; i < parts.length - 1; i++) {
+    const brand = parts[i];
+    if (["google", "youtube", "facebook", "amazon", "yandex"].includes(brand) && i === parts.length - 2) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** True only for public http(s) URLs — blocks localhost, link-local (cloud
  *  metadata at 169.254.169.254), private and reserved ranges to prevent SSRF.
  *  Hostname/literal-IP check only; the resolved address is re-checked with

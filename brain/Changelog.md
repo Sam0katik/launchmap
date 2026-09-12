@@ -2,6 +2,23 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Legal pages match reality; platform URLs refused
+- **Terms §5 was wrong**: it described "free vs paid plans" and "drafts". Now it
+  states the real model — free analysis, prepaid balance, $2 unlock / $0.50
+  thread search / $0.30 karma check, no subscription, Platega charges in RUB,
+  balance is non-transferable prepaid credit. §4 adds blocking + a 16+ / under-18
+  consent line.
+- **Privacy**: added the third parties that were missing (Vercel, Apify —
+  including that a checked Reddit username is sent to them, Telegram operator
+  alerts and exactly what they contain); listed balance/ledger data; noted that
+  billing records outlive account deletion with the account link severed;
+  removed "drafts"; added a last-updated date.
+- **Refunds**: unused-balance clause (14 days, back to the payment method) and
+  provider-failure case.
+- **Platform URLs refused** (`not_a_product`): youtube.com, github.com,
+  marketplaces, our own domain… produce a generic meaningless map while burning
+  a map slot and an AI call. Checked before any spend; unit-tested.
+
 ## 2026-09-12 · Admin panel trim
 - Removed the "Unlock / Lock maps" control and `api/admin/test-unlock` (test
   affordance from before the balance model; unlocks now go through payment).

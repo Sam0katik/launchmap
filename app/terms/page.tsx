@@ -60,17 +60,37 @@ export default function Terms() {
             <Section title="4. Accounts">
               <p>
                 You sign in with GitHub. You are responsible for activity under
-                your account. We may suspend accounts that violate these terms.
+                your account. We may suspend or block accounts that violate these
+                terms; a blocked account keeps read access but cannot run
+                analyses, unlock maps or top up.
+              </p>
+              <p className="mt-3">
+                You must be at least 16 to use ZeroFans and able to enter a
+                binding agreement. If you are under 18, only make purchases with
+                the consent of a parent or guardian.
               </p>
             </Section>
 
-            <Section title="5. Plans, payments & limits">
+            <Section title="5. Payments, balance & limits">
               <p>
-                Free accounts may generate a limited number of maps per day. Paid
-                plans raise that limit and unlock the full community list and
-                drafts. Prices are shown before purchase. Payments are processed
-                by our third-party payment provider; by purchasing you also agree
-                to their terms. See our{" "}
+                Analyzing a product and seeing the top matches is free. Paid
+                features are bought from a prepaid balance held on your account:
+                unlocking one map costs <strong className="text-ink">$2</strong>,
+                a live-thread search <strong className="text-ink">$0.50</strong>,
+                and a Reddit account check{" "}
+                <strong className="text-ink">$0.30</strong>. There is no
+                subscription — every charge is one-off and shown before you
+                confirm it.
+              </p>
+              <p className="mt-3">
+                You top the balance up through our payment provider, Platega
+                (platega.io), whose checkout is charged in roubles at the rate
+                shown before payment; by paying you also accept their terms. The
+                balance is prepaid credit for use on this site only: it is not
+                money, cannot be transferred to another account or withdrawn as
+                cash, and does not expire while your account exists. Limits apply
+                per account (currently 2 maps at a time, a daily analysis cap and
+                a daily cap on paid Reddit lookups). See our{" "}
                 <Link href="/refunds" className="text-primary hover:underline">
                   Refund &amp; Cancellation Policy
                 </Link>

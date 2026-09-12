@@ -30,10 +30,22 @@ export default function Refunds() {
           <div className="mt-8 space-y-9 text-sm leading-relaxed text-ink-muted">
             <Section title="Digital goods">
               <p>
-                ZeroFans sells one-time digital access — a per-project map unlock
-                (all publics + tailored posts). Because access and AI generation
-                are delivered immediately, sales are generally final once the
-                purchased map has been used.
+                ZeroFans sells one-time digital access from a prepaid balance: a
+                per-project map unlock, a live-thread search, and a Reddit account
+                check. Because access and AI generation are delivered
+                immediately, a purchase is generally final once the feature it
+                paid for has been delivered.
+              </p>
+            </Section>
+
+            <Section title="Unused balance">
+              <p>
+                If you topped up and have not spent the credit, you can ask for
+                the unused part back within 14 days of the payment and we will
+                return it to the original payment method through our provider.
+                Credit that has already been spent on a delivered feature is not
+                refundable, and balance cannot be paid out as cash in any other
+                case.
               </p>
             </Section>
 
@@ -42,6 +54,11 @@ export default function Refunds() {
                 <li>You were charged twice for the same purchase.</li>
                 <li>
                   The feature you paid for did not unlock and we could not fix it.
+                </li>
+                <li>
+                  A paid Reddit lookup returned nothing because our provider
+                  failed (these are normally refunded to your balance
+                  automatically).
                 </li>
                 <li>You were charged in error / for something you did not buy.</li>
               </ul>
