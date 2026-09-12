@@ -137,6 +137,8 @@ export function RedditKarmaCheck({
                 ? `You can keep ${maxAccounts} accounts. Re-check an existing one instead.`
                 : startRes.status === 400
                   ? "Enter a valid username."
+                  : startRes.status === 429
+                    ? "Daily check budget is used up — try again tomorrow."
                   : startData?.detail
                     ? `Couldn't start: ${startData.detail}`
                     : "Couldn't start the check — try again."

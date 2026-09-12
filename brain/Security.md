@@ -37,7 +37,10 @@
 - **`ensureProfile` guarantee** (`lib/profile.ts`): every money path ensures the
   profile row exists first. Idempotent; never overwrites balance.
 - **Rate limits**: 2 maps/account, 15 analyses/day (blocks delete→create budget
-  burn), karma needs ≥1 unlock.
+  burn), karma needs ≥1 unlock. **Global caps** (migration 0017, `lib/budget.ts`):
+  300 analyses / 150 Apify runs / 5 scans per day across all accounts.
+- **Apify run binding**: `/result` routes only accept the run id their own
+  `/start` stored on the row. Token sent as a header, never in the URL.
 - **SSRF guard** (`analyze`): blocks localhost/link-local/private/reserved
   ranges (v4, v6, v4-mapped), DNS-resolves every hop and requires all addresses
   to be public, re-checks each redirect hop, caps the body at 1 MB.
@@ -47,12 +50,13 @@
   (last 14.x); several 2026 advisories are fixed only in 15.5.x (and postcss
   8.4 bundled by Next). Migration to Next 15.5 is a separate task (React 19,
   async `cookies()`/`params`).
-- `opportunities/result` and `reddit/karma/result` accept any Apify run id
-  from the client; a user could attach another run's results to their own row.
-  No money moves, so low priority — fix by storing the pending run id
-  server-side at `/start`.
 - DNS rebinding between our lookup and Node's own fetch resolution is still
   theoretically possible (TOCTOU); low risk on Vercel.
+- Per-user limits are per GitHub account; GitHub accounts are free. The global
+  caps bound the damage; there is no IP-level limiting (Vercel WAF rate rules
+  are the place for that if abuse shows up).
+- `scripts/reddit-*.mjs` use Reddit's public JSON API, which returns 403 since
+  May 2026 — operator scripts only, not shipped code.
 
 ## Safety context (operator)
 - Operator is a **minor (under 18)** in RF with a banned Reddit account.

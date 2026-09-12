@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { formatUsd } from "@/lib/billing";
 import { Dots } from "@/components/Dots";
 
-// Unlock a map by spending internal balance ($3, same for everyone). Two-step:
-// click "Spend $3" → confirm (no refunds) → charge. Refreshes on success.
+// Unlock a map by spending internal balance ($2, same for everyone). Two-step:
+// click "Spend $2" → confirm (no refunds) → charge. Refreshes on success.
 export function UnlockButton({
   runId,
   balanceCents,

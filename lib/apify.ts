@@ -5,7 +5,8 @@
 // Reddit from Apify's own infra. We use the Reddit Scraper Lite actor to search
 // recent posts for a product's keywords, so a maker sees live threads to engage.
 //
-// Set APIFY_TOKEN in the host env (Vercel), never in code.
+// Set APIFY_TOKEN in the host env (Vercel), never in code. It is sent as an
+// Authorization header (never in the URL, where it would land in logs).
 //
 // Actors take ~10–20s, which is over Vercel's function limit, so we START a run
 // (returns fast) and POLL it, rather than running synchronously.
@@ -79,9 +80,9 @@ export async function startRedditSearch(
   };
   let res: Response;
   try {
-    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(9000),
     });
@@ -109,7 +110,8 @@ export async function getRedditSearchResult(
   const token = process.env.APIFY_TOKEN;
   if (!token) return null;
 
-  const runRes = await fetch(`${API}/actor-runs/${runId}?token=${token}`, {
+  const runRes = await fetch(`${API}/actor-runs/${runId}`, {
+    headers: { Authorization: `Bearer ${token}` },
     signal: AbortSignal.timeout(9000),
   });
   if (!runRes.ok) return null;
@@ -125,8 +127,8 @@ export async function getRedditSearchResult(
   }
 
   const itemsRes = await fetch(
-    `${API}/datasets/${datasetId}/items?clean=true&limit=40&token=${token}`,
-    { signal: AbortSignal.timeout(9000) }
+    `${API}/datasets/${datasetId}/items?clean=true&limit=40`,
+    { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(9000) }
   );
   if (!itemsRes.ok) return { status: "SUCCEEDED", threads: [] };
   const items = (await itemsRes.json().catch(() => [])) as Record<
@@ -222,9 +224,9 @@ export async function startSubredditsScrape(
   };
   let res: Response;
   try {
-    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(9000),
     });
@@ -275,9 +277,9 @@ export async function startUserScrape(
   };
   let res: Response;
   try {
-    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(9000),
     });
@@ -305,7 +307,8 @@ export async function getUserScrapeResult(
   const token = process.env.APIFY_TOKEN;
   if (!token) return null;
 
-  const runRes = await fetch(`${API}/actor-runs/${runId}?token=${token}`, {
+  const runRes = await fetch(`${API}/actor-runs/${runId}`, {
+    headers: { Authorization: `Bearer ${token}` },
     signal: AbortSignal.timeout(9000),
   });
   if (!runRes.ok) return null;
@@ -321,8 +324,8 @@ export async function getUserScrapeResult(
   }
 
   const itemsRes = await fetch(
-    `${API}/datasets/${datasetId}/items?clean=true&limit=20&token=${token}`,
-    { signal: AbortSignal.timeout(9000) }
+    `${API}/datasets/${datasetId}/items?clean=true&limit=20`,
+    { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(9000) }
   );
   if (!itemsRes.ok) return { status: "SUCCEEDED", user: null };
   const items = (await itemsRes.json().catch(() => [])) as Record<
@@ -433,9 +436,9 @@ export async function startCommunityScan(
   };
   let res: Response;
   try {
-    res = await fetch(`${API}/acts/${ACTOR_ID}/runs?token=${token}`, {
+    res = await fetch(`${API}/acts/${ACTOR_ID}/runs`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(9000),
     });
@@ -463,7 +466,8 @@ export async function getCommunityScanResult(
   const token = process.env.APIFY_TOKEN;
   if (!token) return null;
 
-  const runRes = await fetch(`${API}/actor-runs/${runId}?token=${token}`, {
+  const runRes = await fetch(`${API}/actor-runs/${runId}`, {
+    headers: { Authorization: `Bearer ${token}` },
     signal: AbortSignal.timeout(9000),
   });
   if (!runRes.ok) return null;
@@ -479,8 +483,8 @@ export async function getCommunityScanResult(
   }
 
   const itemsRes = await fetch(
-    `${API}/datasets/${datasetId}/items?clean=true&limit=200&token=${token}`,
-    { signal: AbortSignal.timeout(12000) }
+    `${API}/datasets/${datasetId}/items?clean=true&limit=200`,
+    { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(12000) }
   );
   if (!itemsRes.ok) return { status: "SUCCEEDED", communities: [], sampleKeys: [] };
   const items = (await itemsRes.json().catch(() => [])) as Record<

@@ -12,8 +12,9 @@
   source. See [[Reddit & Apify]].
 
 ## Key API routes (`app/api/`)
-- `analyze` — auth → SSRF-guarded landing fetch → Haiku → rank → persist run.
-  Caps: 2 maps/account, **15 analyses/day**.
+- `analyze` — auth → SSRF-guarded landing read (`lib/landing.ts`: meta +
+  body; thin pages get up to 4 same-origin pages crawled) → Haiku → rank →
+  persist run. Caps: 2 maps/account, **15 analyses/day**, 300/day global.
 - `unlock` — CAS deduct $2 from balance, flip run.unlocked. Service-role.
 - `opportunities/start` + `/result` — Apify thread search (first free, refresh
   $0.50). CAS deduct.
@@ -36,6 +37,7 @@
   then read them with the service role.
 - `profiles` — one per auth user (created by `handle_new_user` trigger). Fields:
   `balance_cents`, `reddit_accounts` (jsonb, ≤3), `analyze_count`/`analyze_date`.
+- `daily_counters` — global per-day budget counters (`bump_daily_counter()`).
 - `topups` — pending/paid balance top-ups, idempotent via `order_id` +
   `credited`; Platega fields (`provider_txn_id`, `amount_rub`, …); rows are
   kept after account deletion.

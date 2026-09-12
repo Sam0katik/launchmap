@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as dns } from "dns";
-import { isIP } from "net";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeProduct } from "@/lib/anthropic";
+import { fetchLandingContent, isSafePublicUrl } from "@/lib/landing";
+import { withinDailyBudget, ANALYZE_GLOBAL_PER_DAY } from "@/lib/budget";
 import { rankCommunities } from "@/lib/matching";
 import { MAX_MAPS_PER_ACCOUNT } from "@/lib/billing";
 import type { Community } from "@/lib/types";
@@ -27,6 +27,9 @@ const bodySchema = z.object({
 });
 
 const URL_CACHE_HOURS = Number(process.env.URL_CACHE_HOURS ?? 24);
+
+// Landing fetch + optional same-origin crawl + Haiku can exceed the 10s default.
+export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   const supabase = createClient();
@@ -99,14 +102,21 @@ export async function POST(req: NextRequest) {
   if (used >= MAX_ANALYZES_PER_DAY) {
     return NextResponse.json({ error: "daily_limit" }, { status: 429 });
   }
+  // 4c. Global daily budget (accounts are free, so per-account caps alone
+  //     can't protect the Anthropic bill from account farming).
+  if (!(await withinDailyBudget("analyze", ANALYZE_GLOBAL_PER_DAY))) {
+    return NextResponse.json({ error: "daily_limit" }, { status: 429 });
+  }
   await admin
     .from("profiles")
     .update({ analyze_count: used + 1, analyze_date: today })
     .eq("id", user.id);
 
   try {
-    // 5. Fetch landing page text (best-effort; falls back to description).
-    const landingText = await fetchLandingText(url);
+    // 5. Fetch landing page content (meta + text; thin pages get up to a few
+    //    same-origin pages crawled too). Best-effort; falls back to description.
+    const landing = await fetchLandingContent(url);
+    const landingText = landing.text;
 
     // 6. Analyze with Haiku.
     const analysis = await analyzeProduct(landingText, description);
@@ -119,7 +129,7 @@ export async function POST(req: NextRequest) {
     const ranked = rankCommunities(
       analysis,
       (communities ?? []) as Community[],
-      false // basic analysis: top publics free, rest unlock with the $3 payment
+      false // basic analysis: top publics free, rest unlock with the $2 payment
     );
 
     // 8. Persist the run.
@@ -143,127 +153,5 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     console.error("[analyze] failed:", e);
     return NextResponse.json({ error: "analysis_failed" }, { status: 502 });
-  }
-}
-
-/** True only for public http(s) URLs — blocks localhost, link-local (cloud
- *  metadata at 169.254.169.254), private and reserved ranges to prevent SSRF.
- *  Hostname/literal-IP check only; the resolved address is re-checked with
- *  resolvesToPublicIp() right before each fetch. */
-function isSafePublicUrl(raw: string): boolean {
-  let u: URL;
-  try {
-    u = new URL(raw);
-  } catch {
-    return false;
-  }
-  if (u.protocol !== "http:" && u.protocol !== "https:") return false;
-
-  const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
-  if (host === "localhost" || host.endsWith(".localhost")) return false;
-  if (host === "metadata" || host.endsWith(".internal")) return false;
-  if (isIP(host) && isPrivateIp(host)) return false;
-  return true;
-}
-
-/** Private / loopback / link-local / reserved — v4, v6 and v4-mapped v6. */
-function isPrivateIp(ip: string): boolean {
-  // v4-mapped v6 arrives dotted (::ffff:10.0.0.1) or, after URL parsing,
-  // as hex groups (::ffff:a00:1) — normalise both to dotted v4.
-  const dotted = ip.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i);
-  const hexed = ip.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
-  let v4: string | null = dotted ? dotted[1] : isIP(ip) === 4 ? ip : null;
-  if (!v4 && hexed) {
-    const hi = parseInt(hexed[1], 16);
-    const lo = parseInt(hexed[2], 16);
-    v4 = `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
-  }
-  if (v4) {
-    const [a, b] = v4.split(".").map(Number);
-    if (a === 0 || a === 10 || a === 127) return true;
-    if (a === 169 && b === 254) return true; // link-local / cloud metadata
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
-    if (a >= 224) return true; // multicast + reserved
-    return false;
-  }
-  const l = ip.toLowerCase();
-  if (l === "::" || l === "::1") return true;
-  if (/^f[cd]/.test(l)) return true; // fc00::/7 unique-local
-  if (/^fe[89ab]/.test(l)) return true; // fe80::/10 link-local
-  if (l.startsWith("ff")) return true; // multicast
-  return false;
-}
-
-/** DNS-resolve the host and require EVERY address to be public. Stops a public
- *  hostname that points at 127.0.0.1 / 169.254.169.254 (DNS rebinding) from
- *  slipping past the hostname check. */
-async function resolvesToPublicIp(hostname: string): Promise<boolean> {
-  const host = hostname.replace(/^\[|\]$/g, "");
-  if (isIP(host)) return !isPrivateIp(host);
-  try {
-    const addrs = await dns.lookup(host, { all: true, verbatim: true });
-    return addrs.length > 0 && addrs.every((a) => !isPrivateIp(a.address));
-  } catch {
-    return false;
-  }
-}
-
-// Landing pages are read for text only — never pull more than this.
-const MAX_LANDING_BYTES = 1_000_000;
-
-/** Read at most `limit` bytes of a response body as text. */
-async function readCapped(res: Response, limit: number): Promise<string> {
-  if (!res.body) return "";
-  const reader = res.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (total < limit) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    total += value.byteLength;
-  }
-  reader.cancel().catch(() => {});
-  return Buffer.concat(chunks.map((c) => Buffer.from(c))).toString("utf8", 0, limit);
-}
-
-/** Fetch a landing page and crudely strip it to text. Never throws.
- *  Redirects are followed manually so every hop's target is re-checked with the
- *  SSRF guard — otherwise a public URL could 3xx-redirect into a private range
- *  (e.g. cloud metadata) and slip past the initial check. */
-async function fetchLandingText(url: string): Promise<string> {
-  try {
-    let current = url;
-    let res: Response | null = null;
-    for (let hop = 0; hop < 5; hop++) {
-      if (!isSafePublicUrl(current)) return "";
-      if (!(await resolvesToPublicIp(new URL(current).hostname))) return "";
-      res = await fetch(current, {
-        headers: { "user-agent": "LaunchMapBot/0.1 (+https://launchmap.app)" },
-        signal: AbortSignal.timeout(8000),
-        redirect: "manual",
-      });
-      // 3xx with a Location → re-validate the next hop before following it.
-      if (res.status >= 300 && res.status < 400) {
-        const loc = res.headers.get("location");
-        if (!loc) break;
-        current = new URL(loc, current).toString();
-        continue;
-      }
-      break;
-    }
-    if (!res || !res.ok) return "";
-    const html = await readCapped(res, MAX_LANDING_BYTES);
-    return html
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 8000);
-  } catch {
-    return "";
   }
 }

@@ -11,6 +11,7 @@ import {
   mapRedditSubs,
 } from "@/lib/apify";
 import { THREAD_SEARCH_PRICE_CENTS } from "@/lib/billing";
+import { withinDailyBudget, APIFY_GLOBAL_PER_DAY } from "@/lib/budget";
 import type { ProductAnalysis } from "@/lib/types";
 
 // POST /api/opportunities/start  Body: { runId }
@@ -112,6 +113,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Global Apify budget (accounts are free; see lib/budget.ts).
+  if (!(await withinDailyBudget("apify", APIFY_GLOBAL_PER_DAY))) {
+    if (charged) {
+      await admin.rpc("credit_balance", {
+        p_user_id: user.id,
+        p_cents: THREAD_SEARCH_PRICE_CENTS,
+      });
+    }
+    return NextResponse.json({ error: "budget_exhausted" }, { status: 429 });
+  }
+
   // Prefer scraping the map's own matched subreddits (guaranteed on-topic);
   // fall back to global keyword search only when the map has no reddit subs.
   const subs = mapRedditSubs(run.result);
@@ -132,5 +144,10 @@ export async function POST(req: NextRequest) {
       { status: 502 }
     );
   }
+  // Bind the run to this map: /result only accepts this id (migration 0017).
+  await admin
+    .from("runs")
+    .update({ opportunities_run_id: started.runId })
+    .eq("id", run.id);
   return NextResponse.json({ ok: true, apifyRunId: started.runId, terms });
 }

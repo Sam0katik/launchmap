@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminUser } from "@/lib/admins";
 import { startCommunityScan, apifyConfigured } from "@/lib/apify";
+import { withinDailyBudget, APIFY_SCANS_PER_DAY } from "@/lib/budget";
 
 // POST /api/admin/refresh-reddit/start  (admin-only)
 // Kick off ONE Apify actor run over every reddit community in the DB. The
@@ -42,6 +43,9 @@ export async function POST() {
     return NextResponse.json({ error: "no_communities" }, { status: 422 });
   }
 
+  if (!(await withinDailyBudget("apify_scan", APIFY_SCANS_PER_DAY))) {
+    return NextResponse.json({ error: "budget_exhausted" }, { status: 429 });
+  }
   const started = await startCommunityScan(subs);
   if ("error" in started) {
     return NextResponse.json(

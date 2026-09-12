@@ -15,6 +15,10 @@ running "what happened / what we were thinking" log.)
   Details in [[Changelog]] / [[Security]].
 - **Platega chosen** as the payment provider; Dodo/Cryptomus removed;
   integration written and env-gated. Merchant onboarding is on the operator.
+- Second security pass after the operator confirmed 0016 live: black-box
+  probe of the production site from the operator's own browser (all green),
+  global budget caps, Apify run binding, thin-landing crawler, description
+  field restored on the URL form, dead code removed. Migration 0017 pending.
 - Merged the Reddit ToS blocker doc from the side branch into this vault.
   **Still undecided:** option A (compliant pivot: drop Apify-backed paid
   features) vs B (Reddit licence). Payments on Reddit-scraped features remain

@@ -8,6 +8,7 @@ import {
   KARMA_CHECK_PRICE_CENTS,
   MAX_REDDIT_ACCOUNTS,
 } from "@/lib/billing";
+import { withinDailyBudget, APIFY_GLOBAL_PER_DAY } from "@/lib/budget";
 
 // POST /api/reddit/karma/start  Body: { username }
 // Kick off an Apify scrape of a Reddit user profile (public karma + age).
@@ -106,6 +107,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "conflict" }, { status: 409 });
   }
 
+  // Global Apify budget (see lib/budget.ts).
+  if (!(await withinDailyBudget("apify", APIFY_GLOBAL_PER_DAY))) {
+    await admin.rpc("credit_balance", {
+      p_user_id: user.id,
+      p_cents: KARMA_CHECK_PRICE_CENTS,
+    });
+    return NextResponse.json({ error: "budget_exhausted" }, { status: 429 });
+  }
+
   const started = await startUserScrape(username);
   if ("error" in started) {
     // Refund — the check never started.
@@ -118,5 +128,10 @@ export async function POST(req: NextRequest) {
       { status: 502 }
     );
   }
+  // Bind the run to this profile: /result only accepts this id.
+  await admin
+    .from("profiles")
+    .update({ karma_run_id: started.runId })
+    .eq("id", user.id);
   return NextResponse.json({ ok: true, apifyRunId: started.runId });
 }

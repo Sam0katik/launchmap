@@ -7,11 +7,11 @@ the merchant credentials exist. All money features still run on admin-granted
 test credit.
 
 ## Blocking / needs operator
-- [ ] **Run migration `0016_platega_hardening.sql`** in the Supabase SQL
-      Editor (and confirm `0014`/`0015` were run). Until 0016 runs: refunds /
-      admin credit call a missing RPC, and the paywall column fix isn't active.
-- [ ] **Set `ADMIN_USER_IDS`** in Vercel (Supabase → Auth → Users → copy the
-      UUID). `ADMIN_USERNAMES` still works (now identity-based).
+- [x] Migration 0016 applied and verified live (2026-09-12).
+- [ ] **Run migration `0017_budget_caps_and_run_binding.sql`**. Until then:
+      global caps are not enforced (logged, fail-open) and the Apify `/result`
+      routes return 403 `run_mismatch` because the pending-run columns don't
+      exist → thread search / karma check won't complete.
 - [ ] **Decide the Reddit question** — [[Reddit Compliance (BLOCKER)]]:
       (A) drop Apify-backed paid features and sell only our own curated
       map + briefs, or (B) get written approval from Reddit. Turning on payments
@@ -23,7 +23,7 @@ test credit.
 - [ ] **Keep Supabase awake** — Free tier auto-pauses after ~7 days idle.
 
 ## Next steps (ordered)
-1. Migration 0016 + `ADMIN_USER_IDS`.
+1. Migration 0017.
 2. Reddit decision (A/B). If A: remove `opportunities/*`, `reddit/karma/*`,
    admin scan, `lib/apify.ts`; rewrite map/landing copy that promises "live
    mod-pinned rules" / "live threads" / "karma check"; drop the two add-on
@@ -33,7 +33,9 @@ test credit.
 4. Verify method 12 ("international card") with a non-Russian card before
    advertising it; otherwise the paying audience is RU-only.
 5. Next.js 15.5 migration (security backports for 14.x have ended).
-6. Bind Apify run ids to the user at `/start` (see residuals in [[Security]]).
+6. Catalog growth: log unmatched niche tags from analyses to find coverage
+   gaps; grow the catalog where matches are thin, never by bulk-adding
+   unverified subs (accuracy is the product).
 
 ## Watch-outs
 - Vercel Hobby ~10s function limit → long jobs stay on async start+poll.

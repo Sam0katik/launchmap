@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dots } from "@/components/Dots";
+import communities from "@/data/communities.json";
 
 // Rotating example URLs — cycled through the placeholder for a bit of life and
 // to hint at what to paste.
@@ -25,7 +26,7 @@ const BACKEND_READY = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SCAN_STEPS = [
   "Reading your landing page",
   "Extracting your niche",
-  "Matching 58 communities",
+  `Matching ${communities.length} communities`,
   "Checking posting rules",
   "Ranking your map",
 ];
@@ -33,6 +34,8 @@ const SCAN_STEPS = [
 export function UrlForm() {
   const router = useRouter();
   const [url, setUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [showDescription, setShowDescription] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [placeholder, setPlaceholder] = useState(EXAMPLES[0]);
@@ -93,11 +96,17 @@ export function UrlForm() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({
+          url,
+          description: description.trim() || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(messageFor(data.error));
+        // A page we couldn't read: open the description field so the retry
+        // has something to analyze.
+        if (data.error === "empty_landing") setShowDescription(true);
         return;
       }
       router.push(`/map/${data.runId}`);
@@ -121,6 +130,27 @@ export function UrlForm() {
         placeholder={placeholder}
         className={inputCls}
       />
+
+      {/* optional one-liner — the fallback when the landing page is thin or
+          JS-only; opens automatically after an "empty_landing" error */}
+      {showDescription ? (
+        <input
+          type="text"
+          value={description}
+          maxLength={280}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="One line: what it does, for whom (optional)"
+          className={`${inputCls} mt-3 text-base`}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowDescription(true)}
+          className="focus-ring mt-2 text-sm text-ink-subtle hover:text-ink"
+        >
+          + add a one-line description (optional)
+        </button>
+      )}
 
       {/* emphasized print-style CTA, with a noticeable gap */}
       <button

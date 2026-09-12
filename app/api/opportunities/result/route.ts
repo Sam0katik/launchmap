@@ -53,11 +53,15 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient();
   const { data: run } = await admin
     .from("runs")
-    .select("id, product_data, result")
+    .select("id, product_data, result, opportunities_run_id")
     .eq("id", runId)
     .maybeSingle();
   if (!run) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  // Only the run this map started may be attached to it.
+  if (run.opportunities_run_id !== apifyRunId) {
+    return NextResponse.json({ error: "run_mismatch" }, { status: 403 });
   }
 
   const result = await getRedditSearchResult(apifyRunId);

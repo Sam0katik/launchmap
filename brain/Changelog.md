@@ -2,6 +2,32 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Security pass 2: budget caps, run binding, thin-landing reader
+- **Live black-box check** (from the operator's browser): security headers on,
+  old webhooks 404, image optimizer 404, every API 401 without a session,
+  `runs.result`/`opportunities` and `credit_balance()` denied to the anon key
+  (42501), anon writes to profiles/communities/runs/topups blocked,
+  `/auth/callback?next=@evil.com` → `/auth/auth-error`.
+- **Global daily budget caps** (`lib/budget.ts`, migration 0017): analyses
+  300/day, Apify runs 150/day, admin scans 5/day across all accounts — stops
+  account-farming from burning the Anthropic/Apify bill. Fail-open with a loud
+  log if the counter is missing.
+- **Apify run ids bound to their row**: `/start` stores the id
+  (`runs.opportunities_run_id`, `profiles.karma_run_id`); `/result` refuses any
+  other id (403 `run_mismatch`). Apify token moved from URL query to the
+  Authorization header.
+- **Thin landing pages** (`lib/landing.ts`): meta/OG/JSON-LD extraction; when
+  the body is under 1 200 chars, up to 4 same-origin pages (about/pricing/docs…)
+  are read in parallel, all SSRF-guarded. `analyze` `maxDuration = 30`.
+- **URL form**: optional one-line description restored (was referenced by the
+  `empty_landing` error but had no field); opens automatically on that error.
+  Community count in the scan steps now comes from the data file.
+- Dead `lib/reddit.ts` (public CORS proxies) removed; stale "$3" comments → $2;
+  `ANTHROPIC_MODEL_DRAFT` dropped from `.env.example`.
+- Local load test (keyless build, 50 concurrent, 15 s): `/` 540 req/s p99
+  166 ms, `/communities` 292 req/s, `/demo` 126 req/s, zero errors. DB/AI/Apify
+  paths can't be load-tested from the sandbox (egress policy).
+
 ## 2026-09-12 · Stale "free thread search" fix
 - Root cause: Next's client router cache served a stale map page (30 s), so
   the OpportunityFinder rendered "Find live threads · free" on a map whose free

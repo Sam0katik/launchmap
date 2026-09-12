@@ -22,7 +22,7 @@ type OppThread = {
 };
 
 // The map result screen. Reads a persisted run, renders ranked community cards.
-// Basic (free) analysis shows the top publics; the rest unlock per-map for $3.
+// Basic (free) analysis shows the top publics; the rest unlock per-map for $2.
 export default async function MapPage({
   params,
 }: {

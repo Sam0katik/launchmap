@@ -30,6 +30,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
 
+  // Only the scrape this user started may be attached to their profile.
+  const admin = createAdminClient();
+  const { data: pending } = await admin
+    .from("profiles")
+    .select("karma_run_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (pending?.karma_run_id !== parsed.data.apifyRunId) {
+    return NextResponse.json({ error: "run_mismatch" }, { status: 403 });
+  }
+
   const result = await getUserScrapeResult(parsed.data.apifyRunId);
   if (!result) {
     return NextResponse.json({ error: "poll_failed" }, { status: 502 });
@@ -43,7 +54,6 @@ export async function POST(req: NextRequest) {
 
   // Attach the checked account to the profile (server-side; the username comes
   // from the scrape result, not from the client).
-  const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
     .select("reddit_accounts")
