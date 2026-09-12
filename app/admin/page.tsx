@@ -4,7 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminUser } from "@/lib/admins";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
-import { AdminUnlockToggle } from "@/components/AdminUnlockToggle";
 import { AdminTopUpButton } from "@/components/AdminTopUpButton";
 import { AdminRefreshReddit } from "@/components/AdminRefreshReddit";
 import { AdminBlockToggle } from "@/components/AdminBlockToggle";
@@ -143,10 +142,6 @@ export default async function AdminPage() {
                     <Td>
                       <div className="flex items-center gap-2">
                         <AdminTopUpButton userId={r.id} />
-                        <AdminUnlockToggle
-                          userId={r.id}
-                          unlocked={r.unlocked > 0}
-                        />
                         {!r.isSelf && (
                           <AdminBlockToggle userId={r.id} blocked={r.blocked} />
                         )}

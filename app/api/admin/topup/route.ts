@@ -5,8 +5,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProfile } from "@/lib/profile";
 import { isAdminUser, githubLogin } from "@/lib/admins";
 import { recordBalanceEvent } from "@/lib/ledger";
-import { notifyTelegram } from "@/lib/telegram";
-import { formatUsd } from "@/lib/billing";
 
 // POST /api/admin/topup  Body: { userId, amountCents }
 // Admin-only: add to a user's internal balance. Used to grant test credit while
@@ -48,9 +46,8 @@ export async function POST(req: NextRequest) {
   if (error || balance == null) {
     return NextResponse.json({ error: "topup_failed" }, { status: 500 });
   }
+  // No Telegram alert: the operator performed this action themselves. It is
+  // still recorded in the ledger (and excluded from revenue in /stats).
   await recordBalanceEvent({ userId, deltaCents: amountCents, kind: "admin_credit", note: `by ${githubLogin(user) ?? user.email ?? user.id}` });
-  await notifyTelegram(
-    `🛠 Admin credit ${formatUsd(amountCents)} → user ${userId}\nnew balance ${formatUsd(balance as number)} (test credit, not revenue)`
-  );
   return NextResponse.json({ ok: true, balanceCents: balance });
 }

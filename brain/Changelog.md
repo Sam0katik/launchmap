@@ -2,6 +2,12 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Admin panel trim
+- Removed the "Unlock / Lock maps" control and `api/admin/test-unlock` (test
+  affordance from before the balance model; unlocks now go through payment).
+- Admin credits no longer ping Telegram (the operator's own action); they stay
+  in the ledger and remain excluded from revenue in `/stats`.
+
 ## 2026-09-12 · Thread searches survive leaving the page
 - Saved threads already persisted on the run; the gap was an *uncollected*
   search: if the tab closed (or the 60 s poll window expired) before Apify
