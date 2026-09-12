@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { getActionUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeProduct } from "@/lib/anthropic";
 import { fetchLandingContent, isSafePublicUrl } from "@/lib/landing";
@@ -35,11 +36,12 @@ export async function POST(req: NextRequest) {
   const supabase = createClient();
 
   // 1. Auth — runs require a signed-in user (GitHub OAuth).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, blocked } = await getActionUser();
   if (!user) {
     return NextResponse.json({ error: "auth_required" }, { status: 401 });
+  }
+  if (blocked) {
+    return NextResponse.json({ error: "blocked" }, { status: 403 });
   }
 
   // 2. Validate input.

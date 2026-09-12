@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { getActionUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProfileForUser } from "@/lib/profile";
 import { UNLOCK_PRICE_CENTS } from "@/lib/billing";
@@ -14,11 +15,12 @@ const bodySchema = z.object({ runId: z.string().uuid() });
 
 export async function POST(req: NextRequest) {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, blocked } = await getActionUser();
   if (!user) {
     return NextResponse.json({ error: "auth_required" }, { status: 401 });
+  }
+  if (blocked) {
+    return NextResponse.json({ error: "blocked" }, { status: 403 });
   }
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));

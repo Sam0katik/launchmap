@@ -5,9 +5,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // farming accounts could burn the whole Anthropic / Apify budget in a night.
 // Counted in the daily_counters table via bump_daily_counter() (migration
 // 0017). Tune with env; the defaults are generous for a solo product.
-export const ANALYZE_GLOBAL_PER_DAY = envInt("ANALYZE_GLOBAL_PER_DAY", 300);
-export const APIFY_GLOBAL_PER_DAY = envInt("APIFY_GLOBAL_PER_DAY", 150);
-export const APIFY_SCANS_PER_DAY = envInt("APIFY_SCANS_PER_DAY", 5);
+export const ANALYZE_GLOBAL_PER_DAY = envInt("ANALYZE_GLOBAL_PER_DAY", 100);
+export const APIFY_GLOBAL_PER_DAY = envInt("APIFY_GLOBAL_PER_DAY", 40);
+export const APIFY_SCANS_PER_DAY = envInt("APIFY_SCANS_PER_DAY", 2);
 
 function envInt(name: string, fallback: number): number {
   const n = Number(process.env[name]);

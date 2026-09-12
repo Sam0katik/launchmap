@@ -2,6 +2,19 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Blocking, signup alerts, lower caps
+- **User blocking** (migration 0018, `profiles.blocked`): admin panel Block /
+  Unblock per user; `lib/auth.ts#getActionUser` refuses blocked accounts on
+  analyze / unlock / thread search / karma / rename / top-up (403 `blocked`);
+  profile shows a banner. Admins can't block themselves.
+- **Telegram alert on first sign-in** (`lib/telegram.ts`, `auth/callback`):
+  once per account via `profiles.notified_at` claim. Env `TELEGRAM_BOT_TOKEN`,
+  `TELEGRAM_CHAT_ID`; silent no-op when unset.
+- **Global caps lowered**: 100 analyses / 40 Apify runs / 2 scans per day.
+- **User note is a hint, not truth**: the Haiku prompt now ignores a
+  description that contradicts or is unrelated to the page; it only fills gaps.
+- Favicon tilted 14° nose-up.
+
 ## 2026-09-12 · Security pass 2: budget caps, run binding, thin-landing reader
 - **Live black-box check** (from the operator's browser): security headers on,
   old webhooks 404, image optimizer 404, every API 401 without a session,

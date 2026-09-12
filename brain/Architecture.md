@@ -24,6 +24,8 @@
 - `webhooks/platega` — header-authenticated callback → server-to-server
   re-check → idempotent atomic credit (`credit_balance()` RPC).
 - `admin/topup` — grant test credit (admin only).
+- `admin/block` — block/unblock a user (admin only).
+- `auth/callback` — OAuth exchange + one-time Telegram "new user" alert.
 - `admin/refresh-reddit/start` + `/result` — one Apify scan over all reddit subs
   → writes real members + `scraped_rules`.
 

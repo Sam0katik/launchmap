@@ -41,7 +41,7 @@ export default async function ProfilePage() {
       .order("created_at", { ascending: false }),
     supabase
       .from("profiles")
-      .select("balance_cents, reddit_accounts")
+      .select("balance_cents, reddit_accounts, blocked")
       .eq("id", user.id)
       .maybeSingle(),
   ]);
@@ -64,6 +64,12 @@ export default async function ProfilePage() {
         <SiteNav />
 
         <main className="mx-auto w-full max-w-content px-6 pb-20 pt-4">
+          {profile?.blocked === true && (
+            <div className="mb-6 rounded-md border-2 border-red-700 bg-surface-1 px-5 py-4 text-sm text-red-700">
+              This account is blocked: maps, unlocks, checks and top-ups are
+              disabled. If you think this is a mistake, use the contact page.
+            </div>
+          )}
           {/* identity header */}
           <header className="panel mb-10 px-8 pb-7 pt-6">
             <div className="mb-3 flex items-center justify-between gap-3 text-xs uppercase tracking-widest text-ink-subtle">

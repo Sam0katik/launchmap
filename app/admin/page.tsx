@@ -7,6 +7,7 @@ import { SiteNav } from "@/components/SiteNav";
 import { AdminUnlockToggle } from "@/components/AdminUnlockToggle";
 import { AdminTopUpButton } from "@/components/AdminTopUpButton";
 import { AdminRefreshReddit } from "@/components/AdminRefreshReddit";
+import { AdminBlockToggle } from "@/components/AdminBlockToggle";
 import { formatUsd } from "@/lib/billing";
 
 // Owner dashboard: every user, their plan, and run activity. Gated by the
@@ -30,7 +31,7 @@ export default async function AdminPage() {
   // Auth users + profiles (balance) + all runs, in parallel.
   const [usersRes, profilesRes, runsRes] = await Promise.all([
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-    admin.from("profiles").select("id, balance_cents"),
+    admin.from("profiles").select("id, balance_cents, blocked"),
     admin.from("runs").select("user_id, unlocked, created_at"),
   ]);
 
@@ -40,6 +41,9 @@ export default async function AdminPage() {
       p.id as string,
       (p.balance_cents as number) ?? 0,
     ])
+  );
+  const blockedById = new Map(
+    (profilesRes.data ?? []).map((p) => [p.id as string, p.blocked === true])
   );
 
   // Aggregate run activity per user.
@@ -64,6 +68,8 @@ export default async function AdminPage() {
         email: u.email ?? "—",
         joined: u.created_at,
         balanceCents: balanceById.get(u.id) ?? 0,
+        blocked: blockedById.get(u.id) ?? false,
+        isSelf: u.id === user.id,
         ...agg,
       };
     })
@@ -116,6 +122,11 @@ export default async function AdminPage() {
                   <tr key={r.id} className="border-b border-hairline last:border-0">
                     <Td>
                       <span className="text-ink">{r.name}</span>
+                      {r.blocked && (
+                        <span className="ml-2 rounded-sm bg-red-700 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-white">
+                          blocked
+                        </span>
+                      )}
                       <span className="block text-xs text-ink-subtle">{r.email}</span>
                     </Td>
                     <Td className="tnum">{formatUsd(r.balanceCents)}</Td>
@@ -129,6 +140,9 @@ export default async function AdminPage() {
                           userId={r.id}
                           unlocked={r.unlocked > 0}
                         />
+                        {!r.isSelf && (
+                          <AdminBlockToggle userId={r.id} blocked={r.blocked} />
+                        )}
                       </div>
                     </Td>
                   </tr>

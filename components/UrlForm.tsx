@@ -178,6 +178,8 @@ function messageFor(code: string): string {
       return "Sign in with GitHub first.";
     case "map_limit":
       return "You can keep 2 maps at a time. Delete one in your profile to analyze a new product.";
+    case "blocked":
+      return "This account is blocked. Contact us if you think that's a mistake.";
     case "daily_limit":
       return "Daily analysis limit reached — try again tomorrow.";
     case "invalid_input":

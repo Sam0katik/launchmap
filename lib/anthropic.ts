@@ -28,13 +28,20 @@ export async function analyzeProduct(
       "matching it to relevant launch communities and searching Reddit for " +
       "threads its maker should join. Precision over breadth: a wrong or " +
       "generic tag surfaces irrelevant communities and wastes the user's " +
-      "money. Respond ONLY with JSON.",
+      "money. The page content is the source of truth. A user note is only a " +
+      "hint: use it to fill gaps the page leaves (empty or JS-only pages, " +
+      "unclear audience). If the note contradicts the page, describes a " +
+      "different product, or is unrelated/nonsense, IGNORE it entirely and " +
+      "analyze the page alone. Never let a note add features or audiences " +
+      "the page does not support. Respond ONLY with JSON.",
     messages: [
       {
         role: "user",
         content:
           `Product content:\n"""\n${source.slice(0, 6000)}\n"""\n\n` +
-          (description ? `User note: ${description}\n\n` : "") +
+          (description
+            ? `User note (unverified, from the person submitting the URL): """${description.slice(0, 280)}"""\n\n`
+            : "") +
           `Return JSON with exactly these keys:\n` +
           `{\n` +
           `  "product_summary": "one sentence on what it does",\n` +
