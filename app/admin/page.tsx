@@ -8,6 +8,8 @@ import { AdminUnlockToggle } from "@/components/AdminUnlockToggle";
 import { AdminTopUpButton } from "@/components/AdminTopUpButton";
 import { AdminRefreshReddit } from "@/components/AdminRefreshReddit";
 import { AdminBlockToggle } from "@/components/AdminBlockToggle";
+import { AdminTelegramTest } from "@/components/AdminTelegramTest";
+import { telegramConfigured } from "@/lib/telegram";
 import { formatUsd } from "@/lib/billing";
 
 // Owner dashboard: every user, their plan, and run activity. Gated by the
@@ -94,7 +96,10 @@ export default async function AdminPage() {
               <h1 className="pixel text-ink" style={{ fontSize: "clamp(24px,3vw,34px)" }}>
                 Operator dashboard
               </h1>
-              <AdminRefreshReddit />
+              <div className="flex flex-wrap items-center gap-2">
+                <AdminTelegramTest configured={telegramConfigured()} />
+                <AdminRefreshReddit />
+              </div>
             </div>
           </header>
 
