@@ -48,7 +48,7 @@ Route Handler (server)
    └─ persist run → return runId
    ▼
 /map/[id]  → renders ranked CommunityCards (top 4 free, rest locked)
-   └─ unlock (Lemon Squeezy) → drafts (Sonnet, lazy) + submit links revealed
+   └─ unlock (internal balance, topped up via Platega) → briefs + submit links revealed
 ```
 
 **Why this stack:** app hosted on **Render** (per the spec) via a `render.yaml`
@@ -124,14 +124,16 @@ take it from scaffold to shipped.
 - [ ] "Draft to adapt, don't copy verbatim" warning (anti-template-ban).
 
 ### Step 5 — Tiers & payment (day 9–12)
-- [ ] Lemon Squeezy product ($7–12 one-time per map); checkout from the unlock CTA.
-- [ ] `POST /api/webhooks/lemonsqueezy` → set `runs.unlocked = true` for the run.
+- [x] Internal USD balance; unlock is a server-side CAS deduction ($2/map).
+- [x] Platega top-ups: `POST /api/topup/create` → hosted checkout →
+      `POST /api/webhooks/platega` credits the balance (idempotent). Status:
+      code ready, waiting on merchant credentials — see `brain/Payments.md`.
 - [ ] Free tier shows top 4 fully; locked rest reveal on unlock.
 - [ ] Confirm rate limit (5/day) + URL cache (24h) behave under abuse.
 
 ### Step 6 — Deploy & full-cycle test (day 12)
 - [ ] Deploy to **Render** via `render.yaml` Blueprint; set secret env vars in
-      the dashboard; point Supabase + Lemon Squeezy URLs at the Render domain.
+      the dashboard; point Supabase + Platega callback URLs at the production domain.
 - [ ] Run the full loop on a real product end-to-end.
 - [ ] Security pass (ECC `security-review`): RLS, webhook signature, no service
       key on client, input validation.
@@ -152,7 +154,7 @@ take it from scaffold to shipped.
 | `components/*` | working draft | draft block; checkout button |
 | `supabase/*.sql` | schema done, seed needs verify | hand-verify 7 rows; grow to 20 |
 | Auth (GitHub OAuth) | not wired | Step 0 |
-| Payment (Lemon Squeezy) | not wired | Step 5 |
+| Payment (Platega) | code ready, env not set | Step 5 |
 | Draft route | not built | Step 4 |
 
 ---

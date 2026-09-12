@@ -2,10 +2,21 @@
 
 Newest first. Each: what we decided + why.
 
+- **2026-09-12 — Payment provider = Platega (platega.io).** Operator's call;
+  all Dodo / Cryptomus / generic-webhook code and docs removed. USD stays the
+  unit of account; RUB price = fixed `PLATEGA_RUB_PER_USD`. See [[Payments]].
+- **2026-09-12 — `runs.result` / `runs.opportunities` are server-only columns.**
+  Paywall integrity: the client roles could read the whole locked map via REST.
+- **2026-09-12 — Admin allowlist keyed on identity data / user id, never
+  `user_metadata`** (user-editable → privilege escalation).
+- **2026-09-12 — Payment records outlive accounts** (`topups.user_id` set null
+  on delete) — needed for refunds/disputes.
+- **2026-09-12 — Background paper plane removed; pixel favicon kept.**
+
 - **2026-07-14 — Payments go on the legit path only: a real adult owns the
   merchant account and passes their own KYC.** We (site side) wire the
   integration; the adult handles account/KYC/payouts. No setup on a minor/false
-  identity. See [[Payments (TODO)]].
+  identity. See [[Payments]].
 - **2026-07-14 — Karma check repriced $0.50 → $0.30, gated on ≥1 unlocked map.**
   It's an add-on to a real launch, not a standalone tool.
 - **2026-07-14 — Posting brief = facts only.** Show link-allowed, best time,

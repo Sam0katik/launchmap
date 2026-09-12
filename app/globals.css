@@ -112,21 +112,6 @@ body {
   .mascot-fly { animation: none; }
 }
 
-/* Background paper plane (components/FlyingPlane.tsx). The flight path is
-   SMIL inside the SVG; this is only the inner bob (rides air currents) and
-   the reduced-motion switch (2-frame stepped bob = pixel feel). */
-@keyframes plane-bob {
-  0%   { transform: translateY(0); }
-  50%  { transform: translateY(-2px); }
-  100% { transform: translateY(0); }
-}
-.plane-bob {
-  animation: plane-bob 2.4s steps(2, jump-none) infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .plane-flight { display: none; }
-}
-
 /* Animated loading ellipsis — three dots that pulse in sequence so any async
    action reads as "alive" rather than frozen. */
 @keyframes dot-blink {

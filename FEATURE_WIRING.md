@@ -99,13 +99,14 @@ Tailored post drafts, generated only when needed.
 
 ---
 
-## Stage 6 — Tiers + payment (Lemon Squeezy) (2-3 days) ⬜
+## Stage 6 — Tiers + payment (Platega) (2-3 days) 🟡
 
 Free top-4 vs paid full map.
 
-1. Create a Lemon Squeezy product ($7-12 one-time per map).
-2. Unlock CTA → Lemon Squeezy checkout (overlay or hosted), pass the `runId`.
-3. `POST /api/webhooks/lemonsqueezy` (signature-verified) → set
+1. Internal USD balance (`profiles.balance_cents`); unlock = CAS deduction.
+2. Top-up → `POST /api/topup/create` → Platega hosted checkout (RUB).
+3. `POST /api/webhooks/platega` (header-authenticated + server-side re-check) → credit
+   the balance once; the unlock route then sets
    `runs.unlocked = true` for that run.
 4. `/map/[id]` reveals locked cards when `unlocked`. Free tier stays top-4.
 5. Confirm daily limit (5/run) + 24h URL cache hold under abuse.
@@ -117,8 +118,8 @@ Free top-4 vs paid full map.
 ## Stage 7 — Deploy to Render + harden (1 day) ⬜
 
 1. Push to GitHub → Render → New → Blueprint → this repo (`render.yaml`).
-2. Set secret env vars in the Render dashboard; point Supabase + Lemon Squeezy
-   redirect/callback/webhook URLs at the Render domain.
+2. Set secret env vars in the host dashboard; point Supabase redirect + Platega
+   callback URLs at the production domain.
 3. Security pass (ECC `security-review` / `security-scan`): RLS on, webhook
    signature verified, service-role key server-only, all input validated.
 4. Full-loop smoke test on a real product in prod.

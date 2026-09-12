@@ -22,10 +22,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "auth_required" }, { status: 401 });
   }
   if (
-    !isAdminUser({
-      email: user.email,
-      username: user.user_metadata?.user_name as string,
-    })
+    !isAdminUser(user)
   ) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
@@ -41,20 +38,12 @@ export async function POST(req: NextRequest) {
   await ensureProfile(userId);
 
   const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("balance_cents")
-    .eq("id", userId)
-    .maybeSingle();
-  const balance = (profile?.balance_cents as number) ?? 0;
-
-  const { data: updated, error } = await admin
-    .from("profiles")
-    .update({ balance_cents: balance + amountCents })
-    .eq("id", userId)
-    .select("id");
-  if (error || !updated || updated.length === 0) {
+  const { data: balance, error } = await admin.rpc("credit_balance", {
+    p_user_id: userId,
+    p_cents: amountCents,
+  });
+  if (error || balance == null) {
     return NextResponse.json({ error: "topup_failed" }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, balanceCents: balance + amountCents });
+  return NextResponse.json({ ok: true, balanceCents: balance });
 }

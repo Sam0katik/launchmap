@@ -86,8 +86,9 @@ export async function POST(req: NextRequest) {
     .update({ unlocked: true })
     .eq("id", runId);
   if (unlockErr) {
-    // refund
-    await admin.from("profiles").update({ balance_cents: balance }).eq("id", user.id);
+    // refund (atomic add — a snapshot write could clobber a top-up that
+    // landed in between)
+    await admin.rpc("credit_balance", { p_user_id: user.id, p_cents: UNLOCK_PRICE_CENTS });
     return NextResponse.json({ error: "unlock_failed" }, { status: 500 });
   }
 

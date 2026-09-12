@@ -17,8 +17,7 @@ import {
 } from "@/lib/billing";
 import { isAdminUser } from "@/lib/admins";
 import { apifyConfigured } from "@/lib/apify";
-import { cryptomusConfigured } from "@/lib/cryptomus";
-import { dodoConfigured } from "@/lib/dodo";
+import { plategaConfigured, rubPerUsd } from "@/lib/platega";
 import { productNameFromUrl } from "@/lib/product-name";
 import type { SavedRedditAccount } from "@/components/RedditKarmaCheck";
 
@@ -52,10 +51,7 @@ export default async function ProfilePage() {
   const redditAccounts = (
     Array.isArray(profile?.reddit_accounts) ? profile!.reddit_accounts : []
   ) as SavedRedditAccount[];
-  const isAdmin = isAdminUser({
-    email: user.email,
-    username: user.user_metadata?.user_name as string,
-  });
+  const isAdmin = isAdminUser(user);
 
   const username =
     (user.user_metadata?.user_name as string) ?? user.email ?? "you";
@@ -112,7 +108,7 @@ export default async function ProfilePage() {
                   <p className="eyebrow mb-1">Balance</p>
                   <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
                 </div>
-                <TopUpButton enabled={dodoConfigured() || cryptomusConfigured()} />
+                <TopUpButton enabled={plategaConfigured()} rubPerUsd={rubPerUsd()} />
               </div>
               <Stat
                 label="Maps"

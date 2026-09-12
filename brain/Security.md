@@ -9,27 +9,53 @@
    chat is considered compromised → regenerate it.
 
 ## Posture (verified)
-- **RLS**: `communities` world-read/no client write; `runs` read/insert/update
-  own only, delete via server route; `profiles` read own, no client UPDATE
+- **RLS**: `communities` world-read/no client write; `runs` read/insert own
+  only, update/delete via server routes; `profiles` read own, no client UPDATE
   (dropped in migration 0006).
+- **Paid columns are server-only** (migration 0016): `runs.result` (the full
+  ranked map incl. locked entries) and `runs.opportunities` are revoked from
+  `anon`/`authenticated`. Before this any signed-in user could read the whole
+  locked map through the REST API with the public anon key. Pages/routes check
+  ownership via RLS, then read with the service role.
+- **Admin check is identity-based** (`lib/admins.ts`): GitHub login is read
+  from `user.identities` (provider-issued), never `user_metadata` (any user can
+  rewrite their own via `auth.updateUser`). `ADMIN_USER_IDS` is the preferred
+  allowlist.
 - **CAS deductions**: balance updates use `where balance_cents = <old>` so
   concurrent spends can't double-charge.
-- **Idempotent top-up**: webhook re-verifies status server-to-server and claims
-  `credited false→true` atomically; credit update verified to hit a row (0-row
-  update = rollback + fail, never silent loss).
+- **Idempotent top-up**: Platega callback is header-authenticated, then the
+  transaction is re-read server-to-server (status CONFIRMED + exact RUB amount)
+  before an atomic claim `credited false→true`; credit is `credit_balance()`
+  (SQL, service-role only). Failure = rollback + 5xx so the provider retries;
+  never silent loss.
+- **Atomic credits everywhere**: refunds and admin credits use
+  `credit_balance()` — a snapshot write could erase a concurrent CAS spend or
+  a top-up landing in between.
+- **OAuth callback `next`** only accepts same-origin paths (no open redirect).
+- **Response headers**: nosniff, X-Frame-Options DENY, referrer policy,
+  permissions policy; `poweredByHeader` off; image optimizer disabled (unused).
 - **`ensureProfile` guarantee** (`lib/profile.ts`): every money path ensures the
   profile row exists first. Idempotent; never overwrites balance.
 - **Rate limits**: 2 maps/account, 15 analyses/day (blocks delete→create budget
   burn), karma needs ≥1 unlock.
-- **SSRF guard** (`analyze`): blocks localhost/link-local/private ranges and
-  re-checks every redirect hop before fetching.
+- **SSRF guard** (`analyze`): blocks localhost/link-local/private/reserved
+  ranges (v4, v6, v4-mapped), DNS-resolves every hop and requires all addresses
+  to be public, re-checks each redirect hop, caps the body at 1 MB.
 
-## Known residual (low priority)
-- DNS-rebinding: SSRF guard checks hostnames, not the resolved IP at fetch time.
-  Low risk on Vercel; noted, not fixed.
+## Known residual
+- **Next.js 14.2.x is past its security-backport window.** We're on 14.2.35
+  (last 14.x); several 2026 advisories are fixed only in 15.5.x (and postcss
+  8.4 bundled by Next). Migration to Next 15.5 is a separate task (React 19,
+  async `cookies()`/`params`).
+- `opportunities/result` and `reddit/karma/result` accept any Apify run id
+  from the client; a user could attach another run's results to their own row.
+  No money moves, so low priority — fix by storing the pending run id
+  server-side at `/start`.
+- DNS rebinding between our lookup and Node's own fetch resolution is still
+  theoretically possible (TOCTOU); low risk on Vercel.
 
 ## Safety context (operator)
 - Operator is a **minor (under 18)** in RF with a banned Reddit account.
 - **We do NOT help evade KYC/age verification** for payments. Legit path only:
   a real adult who genuinely owns the merchant account with real KYC. See
-  [[Payments (TODO)]].
+  [[Payments]].

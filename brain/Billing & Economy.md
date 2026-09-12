@@ -19,9 +19,12 @@ Internal USD balance economy, all amounts in **cents**. Config in `lib/billing.t
   refresh charges $0.50 via same CAS, refunds if the Apify run fails to start.
 - **Karma check**: charges $0.30 via CAS; refunds if scrape fails to start;
   gated on ≥1 unlocked run.
-- **Top-up (credit in)**: `topup/create` → provider invoice → provider webhook
-  → `webhooks/cryptomus` re-verifies status → idempotent claim
-  (`credited false→true`) → credit balance (verified to hit a row).
+- **Top-up (credit in)**: `topup/create` → Platega transaction (RUB, rate =
+  `PLATEGA_RUB_PER_USD`, rounded up) → hosted checkout → `webhooks/platega`
+  re-reads the transaction server-to-server → idempotent claim
+  (`credited false→true`) → `credit_balance()` atomic RPC. See [[Payments]].
+- **Refunds of failed spends** (unlock/thread search/karma) and admin credits
+  also go through `credit_balance()` — never a snapshot write.
 
 ## Money-safety invariants — see [[Security]]
 - All balance/unlock writes go through **service-role** server routes.
@@ -30,4 +33,4 @@ Internal USD balance economy, all amounts in **cents**. Config in `lib/billing.t
 - Every money path calls `ensureProfile*` first so a missing profile row can't
   make a credit silently hit 0 rows.
 
-Related: [[Payments (TODO)]] · [[Overview]]
+Related: [[Payments]] · [[Overview]]

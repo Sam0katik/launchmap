@@ -85,11 +85,10 @@ export default function Privacy() {
                   identity only.
                 </li>
                 <li>
-                  <strong className="text-ink">A crypto payment processor</strong>{" "}
-                  — handles the hosted checkout when you top up your balance; the
-                  payment is made on their page and we never see or store your
-                  wallet or card details, only a confirmation that a top-up
-                  succeeded.
+                  <strong className="text-ink">Platega</strong> (platega.io) —
+                  payment provider for balance top-ups; the payment is made on
+                  their hosted page and we never see or store your card or
+                  wallet details, only a confirmation that a top-up succeeded.
                 </li>
               </ul>
               <p className="mt-3">We do not sell your data.</p>
@@ -107,10 +106,10 @@ export default function Privacy() {
             <Section title="Payments">
               <p>
                 We keep a small internal USD balance on your account. You top it
-                up through a third-party crypto payment processor&apos;s hosted
-                checkout — the payment happens entirely on their page, and we
-                receive only a signature-verified confirmation that a top-up
-                succeeded. Unlocking a full map then spends $2 from that balance.
+                up through our payment provider&apos;s (Platega) hosted checkout
+                — the payment happens entirely on their page, and we receive
+                only an authenticated confirmation that a top-up succeeded,
+                which we re-verify with the provider before crediting. Unlocking a full map then spends $2 from that balance.
               </p>
               <p className="mt-3">
                 We store only your balance and a paid/unpaid flag per map. We

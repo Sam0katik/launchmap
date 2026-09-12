@@ -1,8 +1,6 @@
-# Render Blueprint — host LaunchMap as a Next.js Web Service.
-# DB + Auth stay on Supabase (managed Postgres + GitHub OAuth); Render runs the app.
-#
-# Deploy: push to GitHub → Render → New → Blueprint → pick this repo.
-# Set the secret env vars (marked sync:false) in the Render dashboard.
+# Render Blueprint — alternative host for the Next.js app (production currently
+# runs on Vercel from `main`; see brain/Architecture.md). DB + Auth stay on
+# Supabase. Set the secret env vars (sync:false) in the host dashboard.
 services:
   - type: web
     name: launchmap
@@ -31,15 +29,15 @@ services:
         value: claude-haiku-4-5-20251001
       - key: ANTHROPIC_MODEL_DRAFT
         value: claude-sonnet-4-6
-      - key: LEMONSQUEEZY_API_KEY
+      - key: PLATEGA_MERCHANT_ID
         sync: false
-      - key: LEMONSQUEEZY_STORE_ID
+      - key: PLATEGA_SECRET
         sync: false
-      - key: LEMONSQUEEZY_VARIANT_ID
+      - key: PLATEGA_RUB_PER_USD
         sync: false
-      - key: LEMONSQUEEZY_WEBHOOK_SECRET
+      - key: APIFY_TOKEN
         sync: false
-      - key: FREE_RUNS_PER_DAY
-        value: "5"
+      - key: ADMIN_USER_IDS
+        sync: false
       - key: URL_CACHE_HOURS
         value: "24"

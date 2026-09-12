@@ -17,8 +17,9 @@ with rules, a karma bar, best time to post, and a rule-based posting brief.
   (included in unlock), refresh **$0.50** (with a confirm step).
 - **Karma check** **$0.30** per check, up to **3** saved Reddit accounts,
   **requires ≥1 unlocked map**.
-- **Top-up** is currently inert — no working payment provider yet
-  (see [[Payments (TODO)]]). Admin grants test credit meanwhile.
+- **Top-up** goes through Platega (hosted checkout, RUB rails); off until the
+  merchant credentials are set
+  (see [[Payments]]). Admin grants test credit meanwhile.
 
 ## Non-negotiables
 - **Data is real, never fabricated.** No invented member counts / karma / rules.

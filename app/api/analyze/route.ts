@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { promises as dns } from "dns";
+import { isIP } from "net";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
   ).toISOString();
   const { data: cached } = await supabase
     .from("runs")
-    .select("id, result, product_data")
+    .select("id")
     .eq("user_id", user.id)
     .eq("product_url", url)
     .gte("created_at", cacheSince)
@@ -145,7 +147,9 @@ export async function POST(req: NextRequest) {
 }
 
 /** True only for public http(s) URLs — blocks localhost, link-local (cloud
- *  metadata at 169.254.169.254) and RFC-1918 private ranges to prevent SSRF. */
+ *  metadata at 169.254.169.254), private and reserved ranges to prevent SSRF.
+ *  Hostname/literal-IP check only; the resolved address is re-checked with
+ *  resolvesToPublicIp() right before each fetch. */
 function isSafePublicUrl(raw: string): boolean {
   let u: URL;
   try {
@@ -155,22 +159,74 @@ function isSafePublicUrl(raw: string): boolean {
   }
   if (u.protocol !== "http:" && u.protocol !== "https:") return false;
 
-  const host = u.hostname.toLowerCase();
+  const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (host === "localhost" || host.endsWith(".localhost")) return false;
-  if (host === "0.0.0.0" || host === "::1" || host === "[::1]") return false;
   if (host === "metadata" || host.endsWith(".internal")) return false;
-
-  // Literal IPv4 in private / loopback / link-local ranges.
-  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (m) {
-    const [a, b] = [Number(m[1]), Number(m[2])];
-    if (a === 127 || a === 10 || a === 0) return false;
-    if (a === 169 && b === 254) return false; // link-local / metadata
-    if (a === 192 && b === 168) return false;
-    if (a === 172 && b >= 16 && b <= 31) return false;
-    if (a === 100 && b >= 64 && b <= 127) return false; // CGNAT
-  }
+  if (isIP(host) && isPrivateIp(host)) return false;
   return true;
+}
+
+/** Private / loopback / link-local / reserved — v4, v6 and v4-mapped v6. */
+function isPrivateIp(ip: string): boolean {
+  // v4-mapped v6 arrives dotted (::ffff:10.0.0.1) or, after URL parsing,
+  // as hex groups (::ffff:a00:1) — normalise both to dotted v4.
+  const dotted = ip.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i);
+  const hexed = ip.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+  let v4: string | null = dotted ? dotted[1] : isIP(ip) === 4 ? ip : null;
+  if (!v4 && hexed) {
+    const hi = parseInt(hexed[1], 16);
+    const lo = parseInt(hexed[2], 16);
+    v4 = `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
+  }
+  if (v4) {
+    const [a, b] = v4.split(".").map(Number);
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 169 && b === 254) return true; // link-local / cloud metadata
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+    if (a >= 224) return true; // multicast + reserved
+    return false;
+  }
+  const l = ip.toLowerCase();
+  if (l === "::" || l === "::1") return true;
+  if (/^f[cd]/.test(l)) return true; // fc00::/7 unique-local
+  if (/^fe[89ab]/.test(l)) return true; // fe80::/10 link-local
+  if (l.startsWith("ff")) return true; // multicast
+  return false;
+}
+
+/** DNS-resolve the host and require EVERY address to be public. Stops a public
+ *  hostname that points at 127.0.0.1 / 169.254.169.254 (DNS rebinding) from
+ *  slipping past the hostname check. */
+async function resolvesToPublicIp(hostname: string): Promise<boolean> {
+  const host = hostname.replace(/^\[|\]$/g, "");
+  if (isIP(host)) return !isPrivateIp(host);
+  try {
+    const addrs = await dns.lookup(host, { all: true, verbatim: true });
+    return addrs.length > 0 && addrs.every((a) => !isPrivateIp(a.address));
+  } catch {
+    return false;
+  }
+}
+
+// Landing pages are read for text only — never pull more than this.
+const MAX_LANDING_BYTES = 1_000_000;
+
+/** Read at most `limit` bytes of a response body as text. */
+async function readCapped(res: Response, limit: number): Promise<string> {
+  if (!res.body) return "";
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (total < limit) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    total += value.byteLength;
+  }
+  reader.cancel().catch(() => {});
+  return Buffer.concat(chunks.map((c) => Buffer.from(c))).toString("utf8", 0, limit);
 }
 
 /** Fetch a landing page and crudely strip it to text. Never throws.
@@ -183,6 +239,7 @@ async function fetchLandingText(url: string): Promise<string> {
     let res: Response | null = null;
     for (let hop = 0; hop < 5; hop++) {
       if (!isSafePublicUrl(current)) return "";
+      if (!(await resolvesToPublicIp(new URL(current).hostname))) return "";
       res = await fetch(current, {
         headers: { "user-agent": "LaunchMapBot/0.1 (+https://launchmap.app)" },
         signal: AbortSignal.timeout(8000),
@@ -198,7 +255,7 @@ async function fetchLandingText(url: string): Promise<string> {
       break;
     }
     if (!res || !res.ok) return "";
-    const html = await res.text();
+    const html = await readCapped(res, MAX_LANDING_BYTES);
     return html
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
       .replace(/<style[\s\S]*?<\/style>/gi, " ")

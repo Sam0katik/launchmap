@@ -42,8 +42,18 @@ export async function POST(req: NextRequest) {
   // Guarantee a profile row exists before any balance op.
   await ensureProfileForUser(user);
 
-  // Ownership + keywords + matched communities via RLS read.
-  const { data: run } = await supabase
+  // Ownership via RLS read; `result`/`opportunities` are server-only columns
+  // (migration 0016), so read them with the service role afterwards.
+  const { data: own } = await supabase
+    .from("runs")
+    .select("id")
+    .eq("id", parsed.data.runId)
+    .maybeSingle();
+  if (!own) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  const admin = createAdminClient();
+  const { data: run } = await admin
     .from("runs")
     .select("id, product_data, result, unlocked, opportunities")
     .eq("id", parsed.data.runId)
@@ -64,7 +74,6 @@ export async function POST(req: NextRequest) {
 
   // The FIRST search on a map is free (included in the unlock); refreshes
   // charge THREAD_SEARCH_PRICE_CENTS (CAS, same pattern as unlock).
-  const admin = createAdminClient();
   const isFirstSearch = run.opportunities == null;
   let charged = false;
   let balance = 0;
@@ -105,10 +114,10 @@ export async function POST(req: NextRequest) {
   if ("error" in started) {
     // Refund — the search never started (only if this run was charged).
     if (charged) {
-      await admin
-        .from("profiles")
-        .update({ balance_cents: balance })
-        .eq("id", user.id);
+      await admin.rpc("credit_balance", {
+        p_user_id: user.id,
+        p_cents: THREAD_SEARCH_PRICE_CENTS,
+      });
     }
     return NextResponse.json(
       { error: "start_failed", detail: started.error },

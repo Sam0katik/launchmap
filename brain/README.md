@@ -13,7 +13,8 @@ don't lose context between sessions. Updated at the end of every work batch.
 - [[Billing & Economy]] — prices, unlock/karma/thread flows, tables
 - [[Security]] — the invariants that must never break
 - [[Reddit & Apify]] — the only working Reddit data source + how it's used
-- [[Payments (TODO)]] — status, provider options, the KYC/age blocker
+- [[Reddit Compliance (BLOCKER)]] — ⛔ read this before touching payments/Apify
+- [[Payments]] — Platega integration: wiring, go-live checklist, limitations
 - [[Decisions Log]] — decisions we've locked in, with dates
 - [[Changelog]] — what changed each batch
 - [[Open Questions & Next Steps]] — the live plan
@@ -23,4 +24,4 @@ don't lose context between sessions. Updated at the end of every work batch.
 - **No secrets.** Reference env var *names* only, never values.
 - Keep it terse. This is a map, not a novel.
 
-_Last updated: 2026-07-14_
+_Last updated: 2026-09-12_

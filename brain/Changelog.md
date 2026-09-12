@@ -2,6 +2,24 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Security audit + Platega scaffold (pushed to main)
+- **Platega** top-ups: `lib/platega.ts`, `api/topup/create` (rewritten),
+  `api/webhooks/platega`; migration `0016` (topups provider fields,
+  `credit_balance()` RPC, `runs` column privileges, topups survive account
+  deletion). Env-gated; off until `PLATEGA_*` are set.
+- **Removed** Dodo, Cryptomus and the generic `webhooks/payment` (libs, routes,
+  env, docs). Legal/privacy wording now names Platega.
+- **Fixed — privilege escalation**: admin check read the GitHub login from
+  user-editable `user_metadata`; now from the OAuth identity / `ADMIN_USER_IDS`.
+- **Fixed — paywall bypass**: full ranked map was client-readable via REST.
+- **Fixed — open redirect** in `/auth/callback?next=`.
+- **Fixed — lost-update races**: refunds and admin credits now atomic.
+- **Hardened** landing fetch (DNS-resolved SSRF guard, 1 MB cap), security
+  headers, image optimizer off, Next 14.2.15 → 14.2.35, undici/postcss bumps.
+- Background plane removed; favicon enlarged (24×24 tile).
+- Brain: [[Payments]] rewritten, [[Reddit Compliance (BLOCKER)]] merged from
+  the side branch, [[Security]] posture updated.
+
 ## 2026-09-12 · Pixel-art plane + favicon (pushed to main)
 - New `components/PixelPlane.tsx`: the mascot as a 24×14 pixel sprite (ink
   outline, cream wing, shaded underside, keel facet, orange nose), rendered as

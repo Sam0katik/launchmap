@@ -10,10 +10,10 @@ For indie makers and vibe-coders with zero audience and zero followers.
 
 ## Stack
 
-- **Next.js 14** (App Router) on **Render** (`render.yaml` Blueprint)
+- **Next.js 14** (App Router) on **Vercel** (deploys from `main`; `render.yaml` kept as an alternative)
 - **Supabase** — Postgres + GitHub OAuth + RLS
 - **Anthropic** — Claude Haiku (landing analysis + matching), Claude Sonnet (drafts)
-- **Lemon Squeezy** — one-time map unlock (merchant of record, handles VAT)
+- **Platega** — balance top-ups via hosted checkout (SBP / cards / crypto); unlocks are paid from the internal balance
 - **Linear** design language (via `awesome-design-md`) + Pixelify Sans display font
 
 ## Quick start
@@ -41,8 +41,9 @@ URL → fetch landing → Haiku (ICP + tags) → tag-match curated DB →
 rank → map (rules + time + submit link + draft)
 ```
 
-Free tier shows the top 4 communities fully; the rest unlock with a one-time
-payment. Drafts are generated lazily (Sonnet) only for unlocked communities.
+Free tier shows the top 4 communities fully; the rest unlock per map from the
+internal balance (topped up through Platega). Each community ships a
+rules-derived posting brief.
 
 ## Project docs
 

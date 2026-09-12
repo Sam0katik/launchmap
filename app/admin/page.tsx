@@ -21,10 +21,7 @@ export default async function AdminPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
   if (
-    !isAdminUser({
-      email: user.email,
-      username: user.user_metadata?.user_name as string,
-    })
+    !isAdminUser(user)
   )
     notFound();
 

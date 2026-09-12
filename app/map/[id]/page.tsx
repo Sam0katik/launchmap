@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { CommunityCard } from "@/components/CommunityCard";
 import { CollapsibleHeadline } from "@/components/CollapsibleHeadline";
 import { AccountGuidePanel } from "@/components/AccountGuidePanel";
 import { UnlockButton } from "@/components/UnlockButton";
-import { FlyingPlane } from "@/components/FlyingPlane";
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { OpportunityFinder } from "@/components/OpportunityFinder";
@@ -30,12 +30,22 @@ export default async function MapPage({
 }) {
   const supabase = createClient();
 
-  const { data: run } = await supabase
+  // Ownership via RLS (a user only sees their own runs) — then read the paid
+  // columns (`result`, `opportunities`) with the service role: they are
+  // revoked from the client roles so the locked part of a map can't be pulled
+  // straight from the REST API (migration 0016).
+  const { data: own } = await supabase
+    .from("runs")
+    .select("id")
+    .eq("id", params.id)
+    .maybeSingle();
+  if (!own) notFound();
+
+  const { data: run } = await createAdminClient()
     .from("runs")
     .select("id, product_url, product_data, result, unlocked, opportunities")
     .eq("id", params.id)
     .maybeSingle();
-
   if (!run) notFound();
 
   // Viewer (for balance). The map is RLS-scoped to the owner.
@@ -102,7 +112,6 @@ export default async function MapPage({
   return (
     <>
       <VectorSketch variant="alt" />
-      <FlyingPlane />
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <SiteNav />

@@ -40,8 +40,18 @@ export async function POST(req: NextRequest) {
   }
   const { runId, apifyRunId } = parsed.data;
 
-  // Ownership check via RLS (product_data + result feed the quality ranking).
-  const { data: run } = await supabase
+  // Ownership check via RLS; then `result` (server-only column, migration
+  // 0016) with the service role — it feeds the quality ranking below.
+  const { data: own } = await supabase
+    .from("runs")
+    .select("id")
+    .eq("id", runId)
+    .maybeSingle();
+  if (!own) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  const admin = createAdminClient();
+  const { data: run } = await admin
     .from("runs")
     .select("id, product_data, result")
     .eq("id", runId)
@@ -65,7 +75,6 @@ export async function POST(req: NextRequest) {
     threads = rankThreads(threads, terms, 12, fromMapSubs);
 
     // Cache on the run so we don't re-run the paid actor on every visit.
-    const admin = createAdminClient();
     await admin
       .from("runs")
       .update({

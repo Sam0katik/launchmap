@@ -5,7 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  // Only a same-origin path may be used as the post-login destination —
+  // anything else (`//evil.com`, `@evil.com`, absolute URLs) would turn this
+  // into an open redirect right after sign-in.
+  const rawNext = searchParams.get("next") ?? "/";
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+      ? rawNext
+      : "/";
 
   if (code) {
     const supabase = createClient();

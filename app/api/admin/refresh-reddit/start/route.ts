@@ -22,10 +22,7 @@ export async function POST() {
     return NextResponse.json({ error: "auth_required" }, { status: 401 });
   }
   if (
-    !isAdminUser({
-      email: user.email,
-      username: user.user_metadata?.user_name as string,
-    })
+    !isAdminUser(user)
   ) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

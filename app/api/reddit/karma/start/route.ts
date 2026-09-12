@@ -109,10 +109,10 @@ export async function POST(req: NextRequest) {
   const started = await startUserScrape(username);
   if ("error" in started) {
     // Refund — the check never started.
-    await admin
-      .from("profiles")
-      .update({ balance_cents: balance })
-      .eq("id", user.id);
+    await admin.rpc("credit_balance", {
+      p_user_id: user.id,
+      p_cents: KARMA_CHECK_PRICE_CENTS,
+    });
     return NextResponse.json(
       { error: "start_failed", detail: started.error },
       { status: 502 }

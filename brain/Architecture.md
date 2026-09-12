@@ -18,9 +18,10 @@
 - `opportunities/start` + `/result` — Apify thread search (first free, refresh
   $0.50). CAS deduct.
 - `reddit/karma/start` + `/result` — Apify user scrape ($0.30, needs ≥1 unlock).
-- `topup/create` — creates a `topups` row + provider invoice (Cryptomus scaffold).
-- `webhooks/cryptomus` — re-verifies status server-to-server, idempotent credit.
-- `webhooks/payment` — generic HMAC-signed unlock webhook (provider-agnostic).
+- `topup/create` — creates a `topups` row + Platega transaction, returns the
+  hosted-checkout URL. See [[Payments]].
+- `webhooks/platega` — header-authenticated callback → server-to-server
+  re-check → idempotent atomic credit (`credit_balance()` RPC).
 - `admin/topup` — grant test credit (admin only).
 - `admin/refresh-reddit/start` + `/result` — one Apify scan over all reddit subs
   → writes real members + `scraped_rules`.
@@ -29,12 +30,15 @@
 - `communities` — curated catalog (58 rows: 35 reddit, 21 directory, 1 HN, 1
   Discord). World-readable, no client writes. Live fields: `members`,
   `scraped_rules` (from the scan).
-- `runs` — a user's maps. RLS: read/insert/update own; no delete policy (delete
-  via server route). Fields incl. `unlocked`, `result`, `product_data`,
-  `opportunities`.
+- `runs` — a user's maps. RLS: read/insert own; no client update/delete
+  (server routes). **`result` and `opportunities` are server-only columns**
+  (column privileges, migration 0016): pages/routes verify ownership via RLS,
+  then read them with the service role.
 - `profiles` — one per auth user (created by `handle_new_user` trigger). Fields:
   `balance_cents`, `reddit_accounts` (jsonb, ≤3), `analyze_count`/`analyze_date`.
-- `topups` — pending/paid balance top-ups, idempotent via `order_id` + `credited`.
+- `topups` — pending/paid balance top-ups, idempotent via `order_id` +
+  `credited`; Platega fields (`provider_txn_id`, `amount_rub`, …); rows are
+  kept after account deletion.
 
 ## Notable components
 - `UrlForm` (home), `CommunityCard`, `PostingBrief`, `AccountGuidePanel`,

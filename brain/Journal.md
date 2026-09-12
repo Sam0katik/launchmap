@@ -7,21 +7,25 @@ running "what happened / what we were thinking" log.)
 ## 2026-09-12
 - Session resumed after a ~7-week gap. Operator restored Supabase + Vercel;
   working directly on `main` (Vercel auto-deploys) for quick visual tests.
-- Shipped the redesigned background paper plane, then reworked it (per
-  operator reference) into a pixel-art sprite shared with the favicon (see
-  [[Changelog]]).
-- **Not yet acted on:** the Reddit ToS / Dodo-rejection blocker documented on
-  branch `claude/trusting-franklin-2c3hl3` (`brain/Reddit Compliance
-  (BLOCKER).md`) is still unmerged; the "Next steps" below it in
-  [[Open Questions & Next Steps]] are stale until the operator picks
-  option A (compliant pivot) or B (Reddit licence).
+- Shipped a pixel-art favicon; the background plane was tried in two versions
+  and then removed on request.
+- **Full security/bug audit** before wiring payments — found and fixed a
+  privilege escalation (admin via `user_metadata`), a paywall bypass (locked
+  map readable via REST), an open redirect, and lost-update races on credits.
+  Details in [[Changelog]] / [[Security]].
+- **Platega chosen** as the payment provider; Dodo/Cryptomus removed;
+  integration written and env-gated. Merchant onboarding is on the operator.
+- Merged the Reddit ToS blocker doc from the side branch into this vault.
+  **Still undecided:** option A (compliant pivot: drop Apify-backed paid
+  features) vs B (Reddit licence). Payments on Reddit-scraped features remain
+  a legal exposure regardless of provider.
 
 ## 2026-07-14
 - **Dodo Payments scaffold added** (`lib/dodo.ts`, `app/api/webhooks/dodo`,
   wired into `topup/create`, env-gated, off by default). Dodo chosen as the
   **USD card** fiat option (good fit; MoR + credit billing). Still needs
   adult-owner KYC + confirming Dodo's exact API field names. See
-  [[Payments (TODO)]].
+  [[Payments]].
 - **Supabase was PAUSED** (Free tier auto-pause) — that was the real cause of
   the earlier 504 + broken login. Operator resumed it. Reminder: Free tier
   pauses after ~7 days idle; use the site regularly or upgrade to Pro (needs
