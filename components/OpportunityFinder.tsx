@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Dots } from "@/components/Dots";
 
 interface Thread {
@@ -31,6 +32,13 @@ export function OpportunityFinder({
   const [busy, setBusy] = useState(false);
   const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  // After router.refresh() the server sends fresh props — adopt them, otherwise
+  // the initial useState value would stick for the life of the component.
+  useEffect(() => {
+    setThreads(initialThreads);
+  }, [initialThreads]);
 
   async function run() {
     setBusy(true);
@@ -39,9 +47,16 @@ export function OpportunityFinder({
       const startRes = await fetch("/api/opportunities/start", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ runId }),
+        body: JSON.stringify({ runId, expectFree: threads === null }),
       });
       const startData = await startRes.json().catch(() => null);
+      if (startRes.status === 409 && startData?.error === "not_free") {
+        // Stale page: this map already used its free search. Reload the saved
+        // threads from the server instead of charging.
+        setError("This map already used its free search — refreshing costs $0.50.");
+        router.refresh();
+        return;
+      }
       if (!startRes.ok || !startData?.apifyRunId) {
         setError(
           startRes.status === 402
@@ -68,6 +83,7 @@ export function OpportunityFinder({
         if (!res.ok || !data) continue;
         if (data.status === "SUCCEEDED") {
           setThreads(data.threads ?? []);
+          router.refresh(); // keep the server-rendered props in sync
           return;
         }
         if (data.status === "FAILED") {

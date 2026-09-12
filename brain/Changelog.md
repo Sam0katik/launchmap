@@ -2,6 +2,14 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Stale "free thread search" fix
+- Root cause: Next's client router cache served a stale map page (30 s), so
+  the OpportunityFinder rendered "Find live threads · free" on a map whose free
+  search was already used — and a click would have charged $0.50 silently.
+- `experimental.staleTimes.dynamic = 0` (no client cache for dynamic pages);
+  `/api/opportunities/start` refuses `expectFree` clicks with 409 `not_free`
+  instead of charging; the component refreshes server props after a search.
+
 ## 2026-09-12 · Security audit + Platega scaffold (pushed to main)
 - **Platega** top-ups: `lib/platega.ts`, `api/topup/create` (rewritten),
   `api/webhooks/platega`; migration `0016` (topups provider fields,

@@ -19,7 +19,12 @@ import type { ProductAnalysis } from "@/lib/types";
 // THREAD_SEARCH_PRICE_CENTS from the internal balance (covers the actor cost).
 export const dynamic = "force-dynamic";
 
-const bodySchema = z.object({ runId: z.string().uuid() });
+const bodySchema = z.object({
+  runId: z.string().uuid(),
+  // What the client believes: true = it showed the "free" button. If the free
+  // search is already used up, we refuse instead of silently charging $0.50.
+  expectFree: z.boolean().optional(),
+});
 
 export async function POST(req: NextRequest) {
   if (!apifyConfigured()) {
@@ -75,6 +80,9 @@ export async function POST(req: NextRequest) {
   // The FIRST search on a map is free (included in the unlock); refreshes
   // charge THREAD_SEARCH_PRICE_CENTS (CAS, same pattern as unlock).
   const isFirstSearch = run.opportunities == null;
+  if (parsed.data.expectFree && !isFirstSearch) {
+    return NextResponse.json({ error: "not_free" }, { status: 409 });
+  }
   let charged = false;
   let balance = 0;
   if (!isFirstSearch) {

@@ -5,6 +5,10 @@ const nextConfig = {
   // No next/image in the app — switch the image optimizer off entirely so its
   // /_next/image endpoint (a recurring source of Next.js advisories) is inert.
   images: { unoptimized: true },
+  // Dynamic pages (map, profile) must never be served from the client router
+  // cache: a stale RSC payload showed "Find live threads · free" on a map that
+  // had already used its free search (and the profile showed an old balance).
+  experimental: { staleTimes: { dynamic: 0 } },
   async headers() {
     return [
       {
