@@ -16,7 +16,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // "Where to jump in" — live Reddit threads about the product's space that the
 // maker can join with a genuine comment. Runs an Apify actor on demand (async:
-// start → poll) and caches the result on the run.
+// start → poll) and caches the result on the run. Every search costs $0.50
+// (confirm step before charging).
 export function OpportunityFinder({
   runId,
   enabled,
@@ -47,20 +48,13 @@ export function OpportunityFinder({
       const startRes = await fetch("/api/opportunities/start", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ runId, expectFree: threads === null }),
+        body: JSON.stringify({ runId }),
       });
       const startData = await startRes.json().catch(() => null);
-      if (startRes.status === 409 && startData?.error === "not_free") {
-        // Stale page: this map already used its free search. Reload the saved
-        // threads from the server instead of charging.
-        setError("This map already used its free search — refreshing costs $0.50.");
-        router.refresh();
-        return;
-      }
       if (!startRes.ok || !startData?.apifyRunId) {
         setError(
           startRes.status === 402
-            ? "Not enough balance — a refresh costs $0.50. Top up in your profile."
+            ? "Not enough balance — a search costs $0.50. Top up in your profile."
             : startRes.status === 429
               ? "Daily search limit for your account reached — try again tomorrow."
             : startRes.status === 422
@@ -114,7 +108,7 @@ export function OpportunityFinder({
         </div>
         {enabled && unlocked && !armed && (
           <button
-            onClick={() => (threads ? setArmed(true) : run())}
+            onClick={() => setArmed(true)}
             disabled={busy}
             className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
           >
@@ -123,7 +117,7 @@ export function OpportunityFinder({
             ) : threads ? (
               "Refresh · $0.50"
             ) : (
-              "Find live threads · free"
+              "Find live threads · $0.50"
             )}
           </button>
         )}

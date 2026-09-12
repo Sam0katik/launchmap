@@ -2,6 +2,10 @@
 
 Newest first. Each: what we decided + why.
 
+- **2026-09-12 — No free first thread search.** Every Apify search is $0.50;
+  the unlock ($2) covers the map + briefs only. Simpler accounting, no
+  stale-state edge case, cost always covered by the payer.
+
 - **2026-09-12 — Payment provider = Platega (platega.io).** Operator's call;
   all Dodo / Cryptomus / generic-webhook code and docs removed. USD stays the
   unit of account; RUB price = fixed `PLATEGA_RUB_PER_USD`. See [[Payments]].

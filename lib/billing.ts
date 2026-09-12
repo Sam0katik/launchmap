@@ -8,8 +8,8 @@
 export const UNLOCK_PRICE_CENTS = 200;
 export const UNLOCK_PRICE_LABEL = "$2 one-time";
 
-// "Where to jump in" (live Reddit threads via Apify): the first search on a
-// map is free (included in the unlock); refreshes are paid.
+// "Where to jump in" (live Reddit threads via Apify): every search is paid
+// (covers the actor cost); refunded if the actor fails to start.
 export const THREAD_SEARCH_PRICE_CENTS = 50;
 export const THREAD_SEARCH_PRICE_LABEL = "$0.50";
 

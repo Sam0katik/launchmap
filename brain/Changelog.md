@@ -2,6 +2,10 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Free first thread search removed
+- Every thread search now charges $0.50 (confirm step first). `expectFree` /
+  `not_free` logic dropped; unlock offer copy updated.
+
 ## 2026-09-12 · Blocking, signup alerts, lower caps
 - **User blocking** (migration 0018, `profiles.blocked`): admin panel Block /
   Unblock per user; `lib/auth.ts#getActionUser` refuses blocked accounts on

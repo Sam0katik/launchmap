@@ -13,7 +13,7 @@ with rules, a karma bar, best time to post, and a rule-based posting brief.
 - Account keeps **max 2 maps**; delete one to free a slot.
 - **Unlock a map** = one-time **$2** from internal USD balance → all publics +
   posting briefs.
-- **Where to jump in** (live Reddit threads): first search per map **free**
+- **Where to jump in** (live Reddit threads): **$0.50 per search**
   (included in unlock), refresh **$0.50** (with a confirm step).
 - **Karma check** **$0.30** per check, up to **3** saved Reddit accounts,
   **requires ≥1 unlocked map**.

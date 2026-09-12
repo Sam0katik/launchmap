@@ -6,7 +6,7 @@ Internal USD balance economy, all amounts in **cents**. Config in `lib/billing.t
 | Item | Const | Value |
 |---|---|---|
 | Map unlock (one-time) | `UNLOCK_PRICE_CENTS` | **200** ($2) |
-| Thread search refresh | `THREAD_SEARCH_PRICE_CENTS` | **50** ($0.50) — first free |
+| Thread search (every run) | `THREAD_SEARCH_PRICE_CENTS` | **50** ($0.50) |
 | Karma check | `KARMA_CHECK_PRICE_CENTS` | **30** ($0.30) — needs ≥1 unlock |
 | Max Reddit accounts | `MAX_REDDIT_ACCOUNTS` | 3 |
 | Max maps/account | `MAX_MAPS_PER_ACCOUNT` | 2 |
@@ -15,8 +15,8 @@ Internal USD balance economy, all amounts in **cents**. Config in `lib/billing.t
 ## Flows
 - **Unlock**: read balance → CAS `update ... where balance_cents = old` → on
   success flip `runs.unlocked`. CAS prevents double-spend on concurrent calls.
-- **Thread search**: first search on a map free (`run.opportunities == null`);
-  refresh charges $0.50 via same CAS, refunds if the Apify run fails to start.
+- **Thread search**: every search charges $0.50 via the same CAS, refunds if
+  the Apify run fails to start. (Free first search removed 2026-09-12.)
 - **Karma check**: charges $0.30 via CAS; refunds if scrape fails to start;
   gated on ≥1 unlocked run.
 - **Top-up (credit in)**: `topup/create` → Platega transaction (RUB, rate =

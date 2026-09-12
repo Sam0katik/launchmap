@@ -16,7 +16,7 @@
   body; thin pages get up to 4 same-origin pages crawled) → Haiku → rank →
   persist run. Caps: 2 maps/account, **15 analyses/day**, 300/day global.
 - `unlock` — CAS deduct $2 from balance, flip run.unlocked. Service-role.
-- `opportunities/start` + `/result` — Apify thread search (first free, refresh
+- `opportunities/start` + `/result` — Apify thread search (every run
   $0.50). CAS deduct.
 - `reddit/karma/start` + `/result` — Apify user scrape ($0.30, needs ≥1 unlock).
 - `topup/create` — creates a `topups` row + Platega transaction, returns the

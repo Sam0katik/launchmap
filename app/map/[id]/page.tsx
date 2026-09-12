@@ -147,7 +147,7 @@ export default async function MapPage({
                     communities with posting briefs
                   </li>
                   <li>→ Each sub&apos;s live mod-pinned rules</li>
-                  <li>→ Live-thread finder (first search included)</li>
+                  <li>→ Live-thread finder ($0.50 per search)</li>
                 </ul>
               </div>
               <UnlockButton
