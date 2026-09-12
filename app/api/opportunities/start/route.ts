@@ -13,6 +13,10 @@ import {
 } from "@/lib/apify";
 import { THREAD_SEARCH_PRICE_CENTS } from "@/lib/billing";
 import { withinApifyBudget } from "@/lib/budget";
+import { recordBalanceEvent } from "@/lib/ledger";
+import { notifyTelegram } from "@/lib/telegram";
+import { githubLogin } from "@/lib/admins";
+import { formatUsd } from "@/lib/billing";
 import type { ProductAnalysis } from "@/lib/types";
 
 // POST /api/opportunities/start  Body: { runId }
@@ -113,6 +117,7 @@ export async function POST(req: NextRequest) {
         p_user_id: user.id,
         p_cents: THREAD_SEARCH_PRICE_CENTS,
       });
+      await recordBalanceEvent({ userId: user.id, deltaCents: THREAD_SEARCH_PRICE_CENTS, kind: "refund", ref: run.id, note: "thread search: budget" });
     }
     return NextResponse.json({ error: "budget_exhausted" }, { status: 429 });
   }
@@ -131,12 +136,19 @@ export async function POST(req: NextRequest) {
         p_user_id: user.id,
         p_cents: THREAD_SEARCH_PRICE_CENTS,
       });
+      await recordBalanceEvent({ userId: user.id, deltaCents: THREAD_SEARCH_PRICE_CENTS, kind: "refund", ref: run.id, note: "thread search: start failed" });
     }
     return NextResponse.json(
       { error: "start_failed", detail: started.error },
       { status: 502 }
     );
   }
+  await recordBalanceEvent({ userId: user.id, deltaCents: -THREAD_SEARCH_PRICE_CENTS, kind: "thread_search", ref: run.id });
+  await notifyTelegram(
+    `🔎 Thread search (${formatUsd(THREAD_SEARCH_PRICE_CENTS)}) by ${githubLogin(user) ?? user.email ?? user.id}\n` +
+      `run ${run.id} · balance left ${formatUsd(balance - THREAD_SEARCH_PRICE_CENTS)}`
+  );
+
   // Bind the run to this map: /result only accepts this id (migration 0017).
   await admin
     .from("runs")

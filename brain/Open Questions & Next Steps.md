@@ -9,11 +9,9 @@ test credit.
 ## Blocking / needs operator
 - [x] Migration 0016 applied and verified live (2026-09-12).
 - [x] Migration 0017 applied and verified (2026-09-12).
-- [ ] **Run migration `0018_blocking_and_signup_alerts.sql`** — until then the
-      block check reads a missing column (treated as not blocked) and the
-      Telegram alert can't claim `notified_at`.
-- [ ] **Telegram**: create a bot (@BotFather), set `TELEGRAM_BOT_TOKEN` +
-      `TELEGRAM_CHAT_ID` in Vercel.
+- [x] Migration 0018 applied; Telegram bot connected (2026-09-12).
+- [ ] **Run migration `0019_balance_ledger.sql`** — until then ledger writes
+      fail (logged) and `/stats` / `/ledger` show empty movement data.
 - [ ] **Decide the Reddit question** — [[Reddit Compliance (BLOCKER)]]:
       (A) drop Apify-backed paid features and sell only our own curated
       map + briefs, or (B) get written approval from Reddit. Turning on payments
@@ -25,7 +23,7 @@ test credit.
 - [ ] **Keep Supabase awake** — Free tier auto-pauses after ~7 days idle.
 
 ## Next steps (ordered)
-1. Migration 0018 + Telegram env.
+1. Migration 0019.
 2. Reddit decision (A/B). If A: remove `opportunities/*`, `reddit/karma/*`,
    admin scan, `lib/apify.ts`; rewrite map/landing copy that promises "live
    mod-pinned rules" / "live threads" / "karma check"; drop the two add-on

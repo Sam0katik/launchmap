@@ -42,6 +42,7 @@
 - `profiles` — one per auth user (created by `handle_new_user` trigger). Fields:
   `balance_cents`, `reddit_accounts` (jsonb, ≤3), `analyze_count`/`analyze_date`.
 - `daily_counters` — global per-day budget counters (`bump_daily_counter()`).
+- `balance_events` — ledger of every balance change (kind, delta, ref).
 - `topups` — pending/paid balance top-ups, idempotent via `order_id` +
   `credited`; Platega fields (`provider_txn_id`, `amount_rub`, …); rows are
   kept after account deletion.

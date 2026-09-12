@@ -7,6 +7,7 @@ import { ensureProfileForUser } from "@/lib/profile";
 import { UNLOCK_PRICE_CENTS, formatUsd } from "@/lib/billing";
 import { notifyTelegram } from "@/lib/telegram";
 import { githubLogin } from "@/lib/admins";
+import { recordBalanceEvent } from "@/lib/ledger";
 
 // POST /api/unlock  Body: { runId }
 // Unlock one of the user's maps (all publics + briefs) by spending the internal
@@ -93,9 +94,11 @@ export async function POST(req: NextRequest) {
     // refund (atomic add — a snapshot write could clobber a top-up that
     // landed in between)
     await admin.rpc("credit_balance", { p_user_id: user.id, p_cents: UNLOCK_PRICE_CENTS });
+    await recordBalanceEvent({ userId: user.id, deltaCents: UNLOCK_PRICE_CENTS, kind: "refund", ref: runId, note: "unlock failed" });
     return NextResponse.json({ error: "unlock_failed" }, { status: 500 });
   }
 
+  await recordBalanceEvent({ userId: user.id, deltaCents: -UNLOCK_PRICE_CENTS, kind: "unlock", ref: runId });
   await notifyTelegram(
     `🔓 Map unlocked (${formatUsd(UNLOCK_PRICE_CENTS)}) by ${githubLogin(user) ?? user.email ?? user.id}\n` +
       `run ${runId} · balance left ${formatUsd(next)}`

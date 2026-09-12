@@ -12,12 +12,25 @@ const HELP = [
   "/users [n] — last n users (default 10)",
   "/maps [n] — last n maps",
   "/topups [n] — last n top-ups",
+  "/ledger [n] — last n balance movements (all kinds)",
   "/user <github login | uuid> — one user in detail",
   "/block <login|uuid>, /unblock <login|uuid>",
   "/help",
 ].join("\n");
 
 type Row = Record<string, unknown>;
+
+const KIND_ICON: Record<string, string> = {
+  topup: "💳",
+  admin_credit: "🛠",
+  unlock: "🔓",
+  thread_search: "🔎",
+  karma_check: "🧪",
+  refund: "↩️",
+};
+function signed(cents: number): string {
+  return `${cents < 0 ? "−" : "+"}${formatUsd(Math.abs(cents))}`;
+}
 
 // Persistent reply keyboard — tapping a button sends its label, which
 // BUTTON_COMMANDS maps back to a command, so the operator never types.
@@ -27,13 +40,14 @@ export const BUTTON_COMMANDS: Record<string, string> = {
   "🗺 Maps": "/maps 10",
   "💳 Top-ups": "/topups 10",
   "🆕 Today": "/today",
+  "🧾 Ledger": "/ledger 15",
   "❓ Help": "/help",
 };
 export const REPLY_KEYBOARD = {
   keyboard: [
     [{ text: "📊 Stats" }, { text: "🆕 Today" }],
     [{ text: "👥 Users" }, { text: "🗺 Maps" }, { text: "💳 Top-ups" }],
-    [{ text: "❓ Help" }],
+    [{ text: "🧾 Ledger" }, { text: "❓ Help" }],
   ],
   resize_keyboard: true,
   is_persistent: true,
@@ -102,7 +116,7 @@ export async function handleTelegramCommand(input: string): Promise<string> {
 
       case "/stats": {
         const today = new Date().toISOString().slice(0, 10);
-        const [users, profiles, runs, unlocked, topups, paid, counters, balance] = await Promise.all([
+        const [users, profiles, runs, unlocked, topups, paid, counters, balance, ledger] = await Promise.all([
           admin.auth.admin.listUsers({ page: 1, perPage: 1 }),
           admin.from("profiles").select("id", { count: "exact", head: true }),
           admin.from("runs").select("id", { count: "exact", head: true }),
@@ -111,7 +125,11 @@ export async function handleTelegramCommand(input: string): Promise<string> {
           admin.from("topups").select("amount_cents, amount_rub").eq("credited", true),
           admin.from("daily_counters").select("key, count").eq("day", today),
           admin.from("profiles").select("balance_cents"),
+          admin.from("balance_events").select("kind, delta_cents"),
         ]);
+        const sumKind = (k: string) =>
+          (ledger.data ?? []).filter((r) => r.kind === k).reduce((s, r) => s + n(r.delta_cents), 0);
+        const spent = -(sumKind("unlock") + sumKind("thread_search") + sumKind("karma_check")) - sumKind("refund");
         const paidUsd = (paid.data ?? []).reduce((s, r) => s + n(r.amount_cents), 0);
         const paidRub = (paid.data ?? []).reduce((s, r) => s + n(r.amount_rub), 0);
         const totalBal = (balance.data ?? []).reduce((s, r) => s + n(r.balance_cents), 0);
@@ -122,8 +140,10 @@ export async function handleTelegramCommand(input: string): Promise<string> {
         return [
           `👥 Users: ${(users.data as { total?: number } | null)?.total ?? profiles.count ?? "?"}`,
           `🗺 Maps: ${runs.count ?? 0} (unlocked ${unlocked.count ?? 0})`,
-          `💳 Top-ups: ${topups.count ?? 0}, paid ${paid.data?.length ?? 0} = ${formatUsd(paidUsd)} / ${paidRub} ₽`,
-          `💰 Balances outstanding: ${formatUsd(totalBal)}`,
+          `💳 Revenue (real top-ups only): ${paid.data?.length ?? 0} paid = ${formatUsd(paidUsd)} / ${paidRub} ₽ (of ${topups.count ?? 0} started)`,
+          `🛠 Admin test credits: ${formatUsd(sumKind("admin_credit"))} — not revenue`,
+          `🧾 Spent by users: ${formatUsd(spent)} (unlocks ${formatUsd(-sumKind("unlock"))}, searches ${formatUsd(-sumKind("thread_search"))}, karma ${formatUsd(-sumKind("karma_check"))})`,
+          `💰 Balances outstanding (incl. test credit): ${formatUsd(totalBal)}`,
           `📊 Today: ${c || "no usage yet"}`,
         ].join("\n");
       }
@@ -185,6 +205,21 @@ export async function handleTelegramCommand(input: string): Promise<string> {
           .join("\n");
       }
 
+      case "/ledger": {
+        const { data: rows } = await admin
+          .from("balance_events")
+          .select("user_id, delta_cents, kind, ref, note, created_at")
+          .order("created_at", { ascending: false })
+          .limit(clampN(args[0], 15));
+        if (!rows || rows.length === 0) return "No balance movements yet.";
+        const ids = Array.from(new Set(rows.map((r) => r.user_id as string).filter(Boolean)));
+        const { data: profiles } = await admin.from("profiles").select("id, username").in("id", ids);
+        const name = new Map((profiles ?? []).map((p) => [p.id as string, String(p.username ?? "—")]));
+        return rows
+          .map((r) => `${KIND_ICON[String(r.kind)] ?? "•"} ${signed(n(r.delta_cents))} ${r.kind} · ${name.get(r.user_id as string) ?? "deleted"} · ${d(r.created_at)}${r.note ? `\n   ${r.note}` : ""}`)
+          .join("\n");
+      }
+
       case "/user": {
         if (!args[0]) return "Usage: /user <github login | email | uuid>";
         const rows = await userRows(1, args[0]);
@@ -195,6 +230,12 @@ export async function handleTelegramCommand(input: string): Promise<string> {
           .select("product_url, unlocked, created_at")
           .eq("user_id", r.id as string)
           .order("created_at", { ascending: false });
+        const { data: events } = await admin
+          .from("balance_events")
+          .select("delta_cents, kind, created_at")
+          .eq("user_id", r.id as string)
+          .order("created_at", { ascending: false })
+          .limit(5);
         return [
           `${r.blocked ? "⛔ BLOCKED\n" : ""}${r.login} · ${r.email}`,
           `id ${r.id}`,
@@ -202,6 +243,8 @@ export async function handleTelegramCommand(input: string): Promise<string> {
           `balance ${formatUsd(n(r.balance))} · reddit accounts ${r.reddit}`,
           `maps (${(runs ?? []).length}):`,
           ...(runs ?? []).map((m) => `  ${m.unlocked ? "🔓" : "🔒"} ${m.product_url} · ${d(m.created_at)}`),
+          `last balance events:`,
+          ...(events ?? []).map((e) => `  ${KIND_ICON[String(e.kind)] ?? "•"} ${signed(n(e.delta_cents))} ${e.kind} · ${d(e.created_at)}`),
         ].join("\n");
       }
 

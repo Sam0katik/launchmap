@@ -2,6 +2,16 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Balance ledger + full money alerts + bot buttons
+- Migration 0019 `balance_events`: every balance change (topup, admin_credit,
+  unlock, thread_search, karma_check, refund) is a row; written best-effort by
+  `lib/ledger.ts` right after each balance write.
+- Telegram alerts now cover thread searches, karma checks, admin credits (marked
+  "not revenue") and refunds, in addition to sign-ups, maps, unlocks, top-ups.
+- Bot: persistent button keyboard (Stats / Today / Users / Maps / Top-ups /
+  Ledger / Help); `/stats` splits real revenue (Platega top-ups) from admin
+  test credits and from what users spent; `/ledger`, `/user` shows last events.
+
 ## 2026-09-12 · Telegram: alerts for maps/unlocks/top-ups + query bot
 - Alerts: 🆕 new user (first sign-in), 🗺 new map, 🔓 unlock, 💳 Platega top-up
   paid. Awaited (≤5 s, never throws) because serverless may freeze after the

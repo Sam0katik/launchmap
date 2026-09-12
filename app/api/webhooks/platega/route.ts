@@ -9,6 +9,7 @@ import {
 } from "@/lib/platega";
 import { notifyTelegram } from "@/lib/telegram";
 import { formatUsd } from "@/lib/billing";
+import { recordBalanceEvent } from "@/lib/ledger";
 
 // POST /api/webhooks/platega
 // Platega calls this on every transaction status change (Settings → Callback
@@ -165,6 +166,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "credit_failed" }, { status: 500 });
   }
 
+  await recordBalanceEvent({ userId, deltaCents: topup.amount_cents as number, kind: "topup", ref: id, note: `${expectedRub} RUB via Platega` });
   await notifyTelegram(
     `💳 Top-up paid: ${formatUsd(topup.amount_cents as number)} (${expectedRub} ₽) via Platega\n` +
       `user ${userId} · new balance ${formatUsd(newBalance as number)}`

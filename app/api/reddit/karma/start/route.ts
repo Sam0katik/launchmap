@@ -10,6 +10,10 @@ import {
   MAX_REDDIT_ACCOUNTS,
 } from "@/lib/billing";
 import { withinApifyBudget } from "@/lib/budget";
+import { recordBalanceEvent } from "@/lib/ledger";
+import { notifyTelegram } from "@/lib/telegram";
+import { githubLogin } from "@/lib/admins";
+import { formatUsd } from "@/lib/billing";
 
 // POST /api/reddit/karma/start  Body: { username }
 // Kick off an Apify scrape of a Reddit user profile (public karma + age).
@@ -115,6 +119,7 @@ export async function POST(req: NextRequest) {
       p_user_id: user.id,
       p_cents: KARMA_CHECK_PRICE_CENTS,
     });
+    await recordBalanceEvent({ userId: user.id, deltaCents: KARMA_CHECK_PRICE_CENTS, kind: "refund", ref: username, note: "karma check: budget" });
     return NextResponse.json({ error: "budget_exhausted" }, { status: 429 });
   }
 
@@ -125,11 +130,18 @@ export async function POST(req: NextRequest) {
       p_user_id: user.id,
       p_cents: KARMA_CHECK_PRICE_CENTS,
     });
+    await recordBalanceEvent({ userId: user.id, deltaCents: KARMA_CHECK_PRICE_CENTS, kind: "refund", ref: username, note: "karma check: start failed" });
     return NextResponse.json(
       { error: "start_failed", detail: started.error },
       { status: 502 }
     );
   }
+  await recordBalanceEvent({ userId: user.id, deltaCents: -KARMA_CHECK_PRICE_CENTS, kind: "karma_check", ref: username });
+  await notifyTelegram(
+    `🧪 Karma check (${formatUsd(KARMA_CHECK_PRICE_CENTS)}) by ${githubLogin(user) ?? user.email ?? user.id}\n` +
+      `u/${username} · balance left ${formatUsd(balance - KARMA_CHECK_PRICE_CENTS)}`
+  );
+
   // Bind the run to this profile: /result only accepts this id.
   await admin
     .from("profiles")

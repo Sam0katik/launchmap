@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
       { command: "users", description: "Last users" },
       { command: "maps", description: "Last maps" },
       { command: "topups", description: "Last top-ups" },
+      { command: "ledger", description: "Last balance movements" },
       { command: "user", description: "One user: /user <login>" },
       { command: "help", description: "All commands" },
     ],
