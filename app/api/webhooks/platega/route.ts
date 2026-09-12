@@ -7,6 +7,8 @@ import {
   verifyPlategaCallback,
   getPlategaTransaction,
 } from "@/lib/platega";
+import { notifyTelegram } from "@/lib/telegram";
+import { formatUsd } from "@/lib/billing";
 
 // POST /api/webhooks/platega
 // Platega calls this on every transaction status change (Settings → Callback
@@ -162,6 +164,11 @@ export async function POST(req: NextRequest) {
     console.error("[platega] credit failed", topup.id, creditErr);
     return NextResponse.json({ error: "credit_failed" }, { status: 500 });
   }
+
+  await notifyTelegram(
+    `💳 Top-up paid: ${formatUsd(topup.amount_cents as number)} (${expectedRub} ₽) via Platega\n` +
+      `user ${userId} · new balance ${formatUsd(newBalance as number)}`
+  );
 
   return NextResponse.json({ ok: true, credited: topup.amount_cents });
 }

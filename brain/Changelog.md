@@ -2,6 +2,15 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · Telegram: alerts for maps/unlocks/top-ups + query bot
+- Alerts: 🆕 new user (first sign-in), 🗺 new map, 🔓 unlock, 💳 Platega top-up
+  paid. Awaited (≤5 s, never throws) because serverless may freeze after the
+  response.
+- Query bot (`lib/telegram-commands.ts`, `api/telegram/webhook`): /stats,
+  /users, /maps, /topups, /user, /block, /unblock, /help — service-role reads,
+  only for the operator chat, webhook guarded by a token-derived secret header.
+  Registered from the admin panel ("Enable bot commands").
+
 ## 2026-09-12 · Free first thread search removed
 - Every thread search now charges $0.50 (confirm step first). `expectFree` /
   `not_free` logic dropped; unlock offer copy updated.

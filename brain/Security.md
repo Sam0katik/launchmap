@@ -41,6 +41,9 @@
   100 analyses/day global; Apify 20/user/day + 500/day global; 2 scans/day.
 - **Blocking**: `profiles.blocked` gates every action route via
   `lib/auth.ts`; set only from the admin panel (service role).
+- **Telegram bot**: webhook accepts only requests carrying the secret derived
+  from the bot token, and only messages from `TELEGRAM_CHAT_ID`; everything
+  else is silently dropped. Commands run with the service role.
 - **Apify run binding**: `/result` routes only accept the run id their own
   `/start` stored on the row. Token sent as a header, never in the URL.
 - **SSRF guard** (`analyze`): blocks localhost/link-local/private/reserved

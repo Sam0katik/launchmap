@@ -9,6 +9,7 @@ import { AdminTopUpButton } from "@/components/AdminTopUpButton";
 import { AdminRefreshReddit } from "@/components/AdminRefreshReddit";
 import { AdminBlockToggle } from "@/components/AdminBlockToggle";
 import { AdminTelegramTest } from "@/components/AdminTelegramTest";
+import { AdminTelegramWebhook } from "@/components/AdminTelegramWebhook";
 import { telegramConfigured } from "@/lib/telegram";
 import { formatUsd } from "@/lib/billing";
 
@@ -98,6 +99,7 @@ export default async function AdminPage() {
               </h1>
               <div className="flex flex-wrap items-center gap-2">
                 <AdminTelegramTest configured={telegramConfigured()} />
+                <AdminTelegramWebhook configured={telegramConfigured()} />
                 <AdminRefreshReddit />
               </div>
             </div>

@@ -6,6 +6,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeProduct } from "@/lib/anthropic";
 import { fetchLandingContent, isSafePublicUrl } from "@/lib/landing";
 import { withinDailyBudget, ANALYZE_GLOBAL_PER_DAY } from "@/lib/budget";
+import { notifyTelegram } from "@/lib/telegram";
+import { githubLogin } from "@/lib/admins";
 import { rankCommunities } from "@/lib/matching";
 import { MAX_MAPS_PER_ACCOUNT } from "@/lib/billing";
 import type { Community } from "@/lib/types";
@@ -150,6 +152,14 @@ export async function POST(req: NextRequest) {
     if (error || !run) {
       return NextResponse.json({ error: "persist_failed" }, { status: 500 });
     }
+
+    // Operator alert (best-effort; awaited because serverless may freeze
+    // after the response — notifyTelegram is capped at 5 s and never throws).
+    await notifyTelegram(
+      `🗺 New map by ${githubLogin(user) ?? user.email ?? user.id}\n${url}\n` +
+        `${analysis.category || "?"} · tags: ${analysis.niche_tags.slice(0, 5).join(", ")}\n` +
+        `${ranked.length} communities matched`
+    );
 
     return NextResponse.json({ runId: run.id, cached: false });
   } catch (e) {

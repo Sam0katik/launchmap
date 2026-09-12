@@ -26,6 +26,8 @@
 - `admin/topup` — grant test credit (admin only).
 - `admin/block` — block/unblock a user (admin only).
 - `auth/callback` — OAuth exchange + one-time Telegram "new user" alert.
+- `telegram/webhook` — operator query bot (secret header + chat-id gate);
+  `admin/telegram-test`, `admin/telegram-webhook` — test alert / register.
 - `admin/refresh-reddit/start` + `/result` — one Apify scan over all reddit subs
   → writes real members + `scraped_rules`.
 

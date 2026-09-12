@@ -4,7 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getActionUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProfileForUser } from "@/lib/profile";
-import { UNLOCK_PRICE_CENTS } from "@/lib/billing";
+import { UNLOCK_PRICE_CENTS, formatUsd } from "@/lib/billing";
+import { notifyTelegram } from "@/lib/telegram";
+import { githubLogin } from "@/lib/admins";
 
 // POST /api/unlock  Body: { runId }
 // Unlock one of the user's maps (all publics + briefs) by spending the internal
@@ -93,6 +95,11 @@ export async function POST(req: NextRequest) {
     await admin.rpc("credit_balance", { p_user_id: user.id, p_cents: UNLOCK_PRICE_CENTS });
     return NextResponse.json({ error: "unlock_failed" }, { status: 500 });
   }
+
+  await notifyTelegram(
+    `🔓 Map unlocked (${formatUsd(UNLOCK_PRICE_CENTS)}) by ${githubLogin(user) ?? user.email ?? user.id}\n` +
+      `run ${runId} · balance left ${formatUsd(next)}`
+  );
 
   return NextResponse.json({ ok: true, balanceCents: next });
 }
