@@ -2,6 +2,13 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-12 · New background paper plane (pushed to main)
+- `FlyingPlane` rebuilt: origami dart in the site's print-zine language (cream
+  facets, 2px ink outlines, orange nose), rides a swooping flight path with a
+  loop (SMIL `animateMotion`, nose follows the curve) and draws a faint dashed
+  trail behind it. Replaces the old white sliding plane. No JS; reduced-motion
+  hides it. Used on `/map/[id]`.
+
 ## 2026-07-14 · Site-down hotfix + deploy (merged to main, PR #43)
 - **Fixed site-wide 504 `MIDDLEWARE_INVOCATION_TIMEOUT`**: auth middleware
   called `supabase.auth.getUser()` with no timeout on ~every request; a slow

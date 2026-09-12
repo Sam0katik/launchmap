@@ -112,33 +112,21 @@ body {
   .mascot-fly { animation: none; }
 }
 
-/* Background plane drifting slowly across the screen (left → right), with a
-   gentle vertical sway, looping forever. Ambient — sits behind content. */
-@keyframes plane-across {
-  0%   { transform: translate(-8vw, 0) rotate(0deg); }
-  50%  { transform: translate(52vw, 26px) rotate(2deg); }
-  100% { transform: translate(112vw, 0) rotate(0deg); }
+/* Background paper plane (components/FlyingPlane.tsx). The flight path is
+   SMIL inside the SVG; this is only the inner bob (rides air currents) and
+   the reduced-motion switch. transform-box keeps the pivot on the plane. */
+@keyframes plane-bob {
+  0%   { transform: translateY(0)    rotate(0deg); }
+  50%  { transform: translateY(-7px) rotate(-3deg); }
+  100% { transform: translateY(0)    rotate(0deg); }
 }
-.plane-across {
-  animation: plane-across 34s linear infinite;
-  will-change: transform;
-}
-/* Flight feel: the inner layer rises/dips and pitches its nose on a separate,
-   slightly off-beat cycle — layered on the linear glide it reads as gusts. */
-@keyframes plane-soar {
-  0%   { transform: translateY(0)     rotate(6deg); }
-  20%  { transform: translateY(-46px) rotate(-11deg); }
-  45%  { transform: translateY(20px)  rotate(13deg); }
-  70%  { transform: translateY(-30px) rotate(-6deg); }
-  100% { transform: translateY(0)     rotate(6deg); }
-}
-.plane-soar {
-  animation: plane-soar 6s ease-in-out infinite;
-  will-change: transform;
+.plane-bob {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: plane-bob 3.2s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .plane-across { animation: none; }
-  .plane-soar { animation: none; }
+  .plane-flight { display: none; }
 }
 
 /* Animated loading ellipsis — three dots that pulse in sequence so any async

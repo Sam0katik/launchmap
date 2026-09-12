@@ -4,6 +4,16 @@ Chronological work diary — one entry per session/batch. Newest first. Terse.
 (Structured records live in [[Decisions Log]] and [[Changelog]]; this is the
 running "what happened / what we were thinking" log.)
 
+## 2026-09-12
+- Session resumed after a ~7-week gap. Operator restored Supabase + Vercel;
+  working directly on `main` (Vercel auto-deploys) for quick visual tests.
+- Shipped the redesigned background paper plane (see [[Changelog]]).
+- **Not yet acted on:** the Reddit ToS / Dodo-rejection blocker documented on
+  branch `claude/trusting-franklin-2c3hl3` (`brain/Reddit Compliance
+  (BLOCKER).md`) is still unmerged; the "Next steps" below it in
+  [[Open Questions & Next Steps]] are stale until the operator picks
+  option A (compliant pivot) or B (Reddit licence).
+
 ## 2026-07-14
 - **Dodo Payments scaffold added** (`lib/dodo.ts`, `app/api/webhooks/dodo`,
   wired into `topup/create`, env-gated, off by default). Dodo chosen as the
