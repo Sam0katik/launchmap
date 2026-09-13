@@ -4,6 +4,13 @@ Chronological work diary — one entry per session/batch. Newest first. Terse.
 (Structured records live in [[Decisions Log]] and [[Changelog]]; this is the
 running "what happened / what we were thinking" log.)
 
+## 2026-09-13
+- Work moves to **Claude Code running locally** — the cloud session had no
+  network route to Supabase/Vercel APIs, so migrations, env vars and payment
+  tests were all manual. See [[Local Setup (Claude Code)]].
+- Last cloud commit: legal pages rewritten to match the real payment model,
+  platform URLs (youtube.com etc.) refused before any spend.
+
 ## 2026-09-12
 - Session resumed after a ~7-week gap. Operator restored Supabase + Vercel;
   working directly on `main` (Vercel auto-deploys) for quick visual tests.

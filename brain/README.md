@@ -18,10 +18,11 @@ don't lose context between sessions. Updated at the end of every work batch.
 - [[Decisions Log]] — decisions we've locked in, with dates
 - [[Changelog]] — what changed each batch
 - [[Open Questions & Next Steps]] — the live plan
+- [[Local Setup (Claude Code)]] — running this repo locally (moved off the cloud session 2026-09-13)
 
 ## Rules for this vault
 - **Real data only.** Never write invented numbers (members, karma, prices).
 - **No secrets.** Reference env var *names* only, never values.
 - Keep it terse. This is a map, not a novel.
 
-_Last updated: 2026-09-12_
+_Last updated: 2026-09-13_
