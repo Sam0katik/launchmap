@@ -4,6 +4,7 @@ import { VectorSketch } from "@/components/VectorSketch";
 import { ClippedNote } from "@/components/ClippedNote";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -82,6 +83,8 @@ export default function Home() {
           </div>
         </footer>
       </div>
+
+      <LanguageSwitcher />
     </>
   );
 }

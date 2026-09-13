@@ -2,6 +2,15 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-13 · Language switcher on the landing page
+- `components/LanguageSwitcher.tsx`: cream chip pinned bottom-right of `/`,
+  shows the current language (US flag + EN); the list (English / Русский)
+  appears on hover or keyboard focus. Same print-zine styling as the rest of
+  the site (2px ink border, offset hard shadow, sage-green selected row).
+- Flags are SVG, **not emoji** — flag emoji don't render on Windows at all.
+- Selecting a language only moves the selection; Russian carries a "soon" tag
+  because there is no localization behind it yet.
+
 ## 2026-09-12 · Legal pages match reality; platform URLs refused
 - **Terms §5 was wrong**: it described "free vs paid plans" and "drafts". Now it
   states the real model — free analysis, prepaid balance, $2 unlock / $0.50

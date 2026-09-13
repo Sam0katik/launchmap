@@ -2,6 +2,16 @@
 
 Newest first. Each: what we decided + why.
 
+- **2026-09-13 — Reddit/Apify features stay (option A rejected).** Operator's
+  call: the live thread finder, karma check and rules/member scan are kept and
+  stay paid. The ToS exposure in [[Reddit Compliance (BLOCKER)]] is unchanged —
+  it is now an **accepted risk**, not an open question. The `APIFY_TOKEN`
+  kill-switch remains the way to turn it all off if a processor asks.
+- **2026-09-13 — Platega needs no KYC step on our side.** Operator reports the
+  merchant path is clear, so payments are no longer gated on onboarding; what
+  is left is setting `PLATEGA_*` and running the go-live checklist in
+  [[Payments]].
+
 - **2026-09-12 — No free first thread search.** Every Apify search is $0.50;
   the unlock ($2) covers the map + briefs only. Simpler accounting, no
   stale-state edge case, cost always covered by the payer.

@@ -5,6 +5,14 @@ Chronological work diary — one entry per session/batch. Newest first. Terse.
 running "what happened / what we were thinking" log.)
 
 ## 2026-09-13
+- **Operator closed both blockers**: Reddit/Apify features **stay** (option A
+  pivot rejected), and Platega needs no KYC on our side. See [[Decisions Log]] —
+  the Reddit ToS exposure described in [[Reddit Compliance (BLOCKER)]] is
+  unchanged, it is now an accepted risk rather than an open question.
+- Landing: small language switcher pinned bottom-right (EN with a US flag,
+  Russian revealed on hover). UI only — no localization behind it yet.
+
+## 2026-09-13
 - Work moves to **Claude Code running locally** — the cloud session had no
   network route to Supabase/Vercel APIs, so migrations, env vars and payment
   tests were all manual. See [[Local Setup (Claude Code)]].
