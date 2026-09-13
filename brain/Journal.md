@@ -4,6 +4,23 @@ Chronological work diary — one entry per session/batch. Newest first. Terse.
 (Structured records live in [[Decisions Log]] and [[Changelog]]; this is the
 running "what happened / what we were thinking" log.)
 
+## 2026-09-13 (2)
+- **Russian localization shipped.** Cookie-backed (`zf_lang`), not
+  localStorage — the root layout reads it during render, so a reload comes back
+  in the chosen language with no flash and `<html lang>` is right. Every route
+  is per-request now; that is the accepted cost.
+- Verified in a real build: Departure Mono renders Cyrillic natively (font
+  unchanged), layout holds, the switcher persists across reload.
+- Deliberately left English: scraped subreddit rules / best time / karma (real
+  Reddit data), the admin panel, the legal pages.
+- **Security re-check before the deploy**: invariant intact (all client UPDATE
+  policies dropped by 0006/0008/0011), every route guarded, both webhooks
+  timing-safe, no secrets in the repo. `npm audit` residual is Next 14.2.x —
+  advisory-by-advisory it does not reach this app; the Next 15 migration stays
+  the real fix.
+- Handoff files written for moving to a new Claude account (see
+  [[Account Handoff]]).
+
 ## 2026-09-13
 - **Operator closed both blockers**: Reddit/Apify features **stay** (option A
   pivot rejected), and Platega needs no KYC on our side. See [[Decisions Log]] —

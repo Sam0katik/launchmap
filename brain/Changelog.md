@@ -2,6 +2,22 @@
 
 Per-batch summary of shipped changes. Newest first.
 
+## 2026-09-13 · Russian localization + security re-check
+- `lib/i18n.ts` (one typed dictionary, `fill()` for placeholders),
+  `lib/i18n-server.ts` (server read), `components/LangProvider.tsx` (client
+  context). Language in a cookie `zf_lang` (1 year, SameSite=Lax).
+- Translated: landing, URL form + all analyze errors, map, unlock offer,
+  profile, community cards, posting-brief chrome, thread finder, karma check,
+  account playbook, community DB, demo, contact, auth error, nav.
+- Untranslated on purpose: scraped subreddit rules / best time / karma (real
+  data), admin panel, legal pages.
+- Every route is dynamic now (the root layout reads the cookie). The landing's
+  old static-CDN numbers in the 09-12 load test no longer apply.
+- `lib/posting-brief.ts`: added `linkKey` so the link chip localizes without
+  moving rule logic into the view.
+- Security re-check found no new exposure; Next 14.2.x advisories assessed one
+  by one and none reach this app as configured.
+
 ## 2026-09-13 · Language switcher on the landing page
 - `components/LanguageSwitcher.tsx`: cream chip pinned bottom-right of `/`,
   shows the current language (US flag + EN); the list (English / Русский)
