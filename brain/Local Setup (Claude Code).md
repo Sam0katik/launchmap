@@ -29,6 +29,43 @@ vars and payment tests all had to be done by hand. Locally none of that applies.
 locally writes real rows. For risky work, create a second Supabase project, run
 `supabase/migrations/*.sql` in order, and point `.env.local` at it.
 
+## What Claude can and cannot do once it runs locally
+
+**Can, on its own:**
+- Code + `npm run build` + commit + push to `main` → Vercel deploys (see the
+  working agreement below).
+- **Apply migrations** — but NOT with the service-role key: that key is REST
+  only, it cannot run DDL. Install the Supabase CLI (`npm i -g supabase`,
+  `supabase login`, `supabase link --project-ref fotagddmaninlcpgjlxb`), then
+  `supabase db push` applies everything in `supabase/migrations/`. `psql` with
+  the connection string from Settings → Database works too.
+- Read/write rows with the service-role key (check balances, the ledger, what a
+  webhook actually credited).
+- Vercel CLI: `vercel env add` (set `PLATEGA_*` without the dashboard) and
+  `vercel logs --follow` — the logs are what make webhook debugging possible.
+- Run the app, drive it in a browser, take screenshots, call the Telegram API.
+
+**Cannot — operator's hands only:**
+- Platega merchant onboarding, KYC, and the dashboard's "fake callback" button.
+- Anything behind 2FA/SMS (GitHub OAuth app, DB password rotation).
+- The real ₽ test payment.
+- Filling `.env.local` the first time. Keys go in that file, never into chat.
+
+So on the [[Payments]] go-live checklist: steps 1, 2 (writing the vars) and 4–6
+(code, reading logs, interpreting results) are Claude's; registering the
+merchant and clicking in the Platega cabinet are the operator's.
+
+**The line on destructive SQL** (agreed 2026-09-13): additive, idempotent
+migrations (`add column if not exists`, as 0016–0019 all are) run without
+asking, same as a deploy. Anything that deletes or overwrites data — `drop`,
+`delete`, `truncate`, rolling a column back — is shown to the operator first.
+"Ship without confirmation" covers deploying code; a prod DB has no undo but a
+backup. Remember local dev points at the PRODUCTION project.
+
+**Permission prompts:** local Claude Code asks before most commands. Worth
+writing a `.claude/settings.json` allowlist for `npm`, `git`, `supabase` and
+`vercel` so only meaningful actions interrupt.
+
 ## Tools worth installing for the payment phase
 
 - **Vercel CLI** (`npm i -g vercel`, then `vercel link`): `vercel env add`,
