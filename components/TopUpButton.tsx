@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Dots } from "@/components/Dots";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 
 // Profile top-up. When Platega is configured it opens an amount picker and
 // starts a hosted checkout (SBP / card / crypto — the payer picks the method on
@@ -20,15 +22,16 @@ export function TopUpButton({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   if (!enabled) {
     return (
       <button
         disabled
-        title="Top-up — connecting soon"
+        title={t.topup.soonTitle}
         className="rounded-md border-2 border-hairline-strong bg-surface-2 px-4 py-2 text-sm text-ink-muted opacity-60"
       >
-        Top up — coming soon
+        {t.topup.soonLabel}
       </button>
     );
   }
@@ -47,10 +50,10 @@ export function TopUpButton({
         window.location.href = data.url; // hosted checkout
         return;
       }
-      setError("Couldn't start checkout — try again.");
+      setError(t.topup.errStart);
       setBusy(null);
     } catch {
-      setError("Network error.");
+      setError(t.topup.errNetwork);
       setBusy(null);
     }
   }
@@ -61,7 +64,7 @@ export function TopUpButton({
         onClick={() => setOpen(true)}
         className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
       >
-        Top up
+        {t.topup.cta}
       </button>
     );
   }
@@ -73,7 +76,7 @@ export function TopUpButton({
           key={c}
           onClick={() => start(c)}
           disabled={busy !== null}
-          title={`${Math.ceil((c / 100) * rubPerUsd)} ₽ via SBP / card / crypto`}
+          title={fill(t.topup.methodHint, { rub: Math.ceil((c / 100) * rubPerUsd) })}
           className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-sm text-ink hover:bg-surface-3 disabled:opacity-60"
         >
           {busy === c ? (

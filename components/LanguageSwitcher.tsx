@@ -1,9 +1,12 @@
 "use client";
 
-// Language switcher for the landing page: a small chip pinned bottom-right
-// that shows the current language and reveals the list on hover/focus.
-// UI only — no localization behind it yet, so Russian is marked "soon".
-import { useState } from "react";
+// Language switcher: a small chip pinned bottom-right that shows the current
+// language and reveals the list on hover/focus. The choice is written to a
+// cookie (so the server renders the right language on the next request, and it
+// survives a reload) and the route is refreshed to re-render server components.
+import { useRouter } from "next/navigation";
+import { LANG_COOKIE, LANG_COOKIE_MAX_AGE, type Lang } from "@/lib/i18n";
+import { useLang, useT } from "@/components/LangProvider";
 
 // Flags drawn as SVG (not emoji: flag emoji don't render on Windows at all).
 // One viewBox unit = one stripe, in the site's muted ink/cream palette.
@@ -43,11 +46,19 @@ const LANGS = [
   { code: "ru", label: "RU", name: "Русский", Flag: FlagRU },
 ] as const;
 
-type LangCode = (typeof LANGS)[number]["code"];
-
 export function LanguageSwitcher() {
-  const [lang, setLang] = useState<LangCode>("en");
-  const current = LANGS.find((l) => l.code === lang)!;
+  const router = useRouter();
+  const lang = useLang();
+  const t = useT();
+  const current = LANGS.find((l) => l.code === lang) ?? LANGS[0];
+
+  function choose(next: Lang) {
+    if (next === lang) return;
+    // Lax + a year: the language must survive a reload and follow ordinary
+    // navigation. Not a secret, so it is readable by script by design.
+    document.cookie = `${LANG_COOKIE}=${next}; path=/; max-age=${LANG_COOKIE_MAX_AGE}; samesite=lax`;
+    router.refresh();
+  }
 
   return (
     <div className="group fixed bottom-4 right-4 z-30 select-none">
@@ -58,7 +69,7 @@ export function LanguageSwitcher() {
             <li key={code}>
               <button
                 type="button"
-                onClick={() => setLang(code)}
+                onClick={() => choose(code)}
                 aria-current={code === lang}
                 className={`focus-ring flex w-full items-center gap-2 rounded-xs px-2 py-1.5 text-left text-[13px] ${
                   code === lang ? "bg-[#b9c4a0] text-ink" : "text-ink-muted hover:bg-surface-3"
@@ -66,11 +77,6 @@ export function LanguageSwitcher() {
               >
                 <Flag />
                 <span>{name}</span>
-                {code === "ru" && (
-                  <span className="ml-1 text-[10px] uppercase tracking-widest text-ink-subtle">
-                    soon
-                  </span>
-                )}
               </button>
             </li>
           ))}
@@ -79,7 +85,7 @@ export function LanguageSwitcher() {
 
       <button
         type="button"
-        aria-label={`Language: ${current.name}`}
+        aria-label={`${t.lang.label}: ${current.name}`}
         className="btn-press focus-ring flex items-center gap-1.5 rounded-sm border-2 border-hairline-strong bg-surface-1 px-2 py-1.5 text-[13px] text-ink shadow-[3px_4px_0_0_var(--color-hairline-strong)] hover:bg-surface-2"
       >
         <current.Flag />

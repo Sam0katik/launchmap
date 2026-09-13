@@ -1,6 +1,10 @@
 // Beige note "clipped" to the card with a paper clip. Slides out smoothly on
 // hover. Key phrases are marker-highlighted (reference style).
+import { serverDict } from "@/lib/i18n-server";
+
 export function ClippedNote() {
+  const { t } = serverDict();
+
   return (
     // outer wrapper stays put (stable hover target — no flicker); inner slides
     <div className="group relative w-[270px] select-none">
@@ -31,13 +35,14 @@ export function ClippedNote() {
       </svg>
 
       <div className="border-2 border-hairline-strong bg-[#cdbfa6] px-5 py-5 text-[13px] leading-relaxed text-ink shadow-[6px_8px_0_0_var(--color-hairline-strong)]">
-        <p className="mb-3 text-base">Mission brief</p>
+        <p className="mb-3 text-base">{t.landing.noteTitle}</p>
         <p>
-          Paste your URL and ZeroFans maps where to post. Each spot lists its{" "}
-          <span className="hl">rules</span>,{" "}
-          <span className="hl">karma bar</span>, and{" "}
-          <span className="hl">best time</span> — so you reach first users{" "}
-          <span className="hl">without getting banned</span>.
+          {t.landing.notePrefix}{" "}
+          <span className="hl">{t.landing.noteRules}</span>,{" "}
+          <span className="hl">{t.landing.noteKarma}</span>,{" "}
+          <span className="hl">{t.landing.noteTime}</span>{" "}
+          {t.landing.noteMiddle}{" "}
+          <span className="hl">{t.landing.noteEnd}</span>.
         </p>
       </div>
     </div>

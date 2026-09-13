@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dots } from "@/components/Dots";
 import communities from "@/data/communities.json";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 
 // Rotating example URLs — cycled through the placeholder for a bit of life and
 // to hint at what to paste.
@@ -21,18 +23,14 @@ const EXAMPLES = [
 // and route to /demo so entering a URL actually shows something.
 const BACKEND_READY = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-// What the scan is actually doing, surfaced while it runs — the analyze call
-// really does these steps, so the button narrates real work, not theater.
-const SCAN_STEPS = [
-  "Reading your landing page",
-  "Extracting your niche",
-  `Matching ${communities.length} communities`,
-  "Checking posting rules",
-  "Ranking your map",
-];
-
 export function UrlForm() {
   const router = useRouter();
+  const t = useT();
+  // What the scan is actually doing, surfaced while it runs — the analyze call
+  // really does these steps, so the button narrates real work, not theater.
+  const scanSteps = t.form.steps.map((s) =>
+    fill(s, { count: communities.length })
+  );
   const [url, setUrl] = useState("");
   const [description, setDescription] = useState("");
   const [showDescription, setShowDescription] = useState(false);
@@ -56,12 +54,12 @@ export function UrlForm() {
   useEffect(() => {
     if (!loading) return;
     setStep(0);
-    const t = setInterval(
-      () => setStep((s) => Math.min(s + 1, SCAN_STEPS.length - 1)),
+    const timer = setInterval(
+      () => setStep((s) => Math.min(s + 1, scanSteps.length - 1)),
       2600
     );
-    return () => clearInterval(t);
-  }, [loading]);
+    return () => clearInterval(timer);
+  }, [loading, scanSteps.length]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +71,7 @@ export function UrlForm() {
       u = new URL(url);
       if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error();
     } catch {
-      setError("Enter a valid http(s) URL.");
+      setError(t.form.errInvalidUrl);
       return;
     }
 
@@ -81,7 +79,7 @@ export function UrlForm() {
     // only — "launchmap" would also match the Vercel preview domain, which is a
     // perfectly valid product URL to scan.
     if (/(^|\.)zerofans\.(app|com|io)$/i.test(u.hostname)) {
-      setError("nice try 😏 — go map a real product.");
+      setError(t.form.errOwnDomain);
       return;
     }
 
@@ -103,7 +101,7 @@ export function UrlForm() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(messageFor(data.error));
+        setError(messageFor(data.error, t));
         // A page we couldn't read: open the description field so the retry
         // has something to analyze.
         if (data.error === "empty_landing") setShowDescription(true);
@@ -111,7 +109,7 @@ export function UrlForm() {
       }
       router.push(`/map/${data.runId}`);
     } catch {
-      setError("Something went wrong. Try again.");
+      setError(t.form.errGeneric);
     } finally {
       setLoading(false);
     }
@@ -139,7 +137,7 @@ export function UrlForm() {
           value={description}
           maxLength={280}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="One line: what it does, for whom (optional)"
+          placeholder={t.form.descriptionPlaceholder}
           className={`${inputCls} mt-3 text-base`}
         />
       ) : (
@@ -148,7 +146,7 @@ export function UrlForm() {
           onClick={() => setShowDescription(true)}
           className="focus-ring mt-2 text-sm text-ink-subtle hover:text-ink"
         >
-          + add a one-line description (optional)
+          {t.form.addDescription}
         </button>
       )}
 
@@ -160,11 +158,11 @@ export function UrlForm() {
       >
         {loading ? (
           <>
-            {SCAN_STEPS[step]}
+            {scanSteps[step]}
             <Dots />
           </>
         ) : (
-          "Scan to launch →"
+          t.form.submit
         )}
       </button>
       {error && <p className="mt-3 text-base text-red-700">{error}</p>}
@@ -172,27 +170,27 @@ export function UrlForm() {
   );
 }
 
-function messageFor(code: string): string {
+function messageFor(code: string, t: ReturnType<typeof useT>): string {
   switch (code) {
     case "auth_required":
-      return "Sign in with GitHub first.";
+      return t.form.errAuthRequired;
     case "map_limit":
-      return "You can keep 2 maps at a time. Delete one in your profile to analyze a new product.";
+      return t.form.errMapLimit;
     case "blocked":
-      return "This account is blocked. Contact us if you think that's a mistake.";
+      return t.form.errBlocked;
     case "daily_limit":
-      return "Daily analysis limit reached — try again tomorrow.";
+      return t.form.errDailyLimit;
     case "not_a_product":
-      return "That's a big platform, not a product launch. Paste your own product's landing page.";
+      return t.form.errNotAProduct;
     case "invalid_input":
-      return "Enter a valid URL.";
+      return t.form.errInvalidInput;
     case "empty_landing":
-      return "Couldn't read that page — add a one-line description and retry.";
+      return t.form.errEmptyLanding;
     case "ai_not_configured":
-      return "AI key not set in this environment. Add ANTHROPIC_API_KEY + restart/redeploy.";
+      return t.form.errAiNotConfigured;
     case "analysis_failed":
-      return "Analysis failed (API). Try again in a moment.";
+      return t.form.errAnalysisFailed;
     default:
-      return "Something went wrong. Try again.";
+      return t.form.errGeneric;
   }
 }

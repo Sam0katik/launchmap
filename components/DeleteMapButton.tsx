@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dots } from "@/components/Dots";
+import { useT } from "@/components/LangProvider";
 
 // Small two-step delete control for a saved map in the profile list. First click
 // arms it, second confirms, then it deletes the run (and its drafts) and
@@ -11,6 +12,7 @@ export function DeleteMapButton({ runId }: { runId: string }) {
   const [armed, setArmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const t = useT();
 
   async function onDelete(e: React.MouseEvent) {
     e.preventDefault();
@@ -38,10 +40,10 @@ export function DeleteMapButton({ runId }: { runId: string }) {
           e.stopPropagation();
           setArmed(true);
         }}
-        title="Delete this map"
+        title={t.deleteMap.title}
         className="focus-ring btn-press shrink-0 rounded-sm border-2 border-red-700/50 px-2.5 py-1 text-xs text-red-700 hover:bg-red-700/10"
       >
-        Delete
+        {t.deleteMap.delete}
       </button>
     );
   }
@@ -57,14 +59,14 @@ export function DeleteMapButton({ runId }: { runId: string }) {
         disabled={busy}
         className="focus-ring btn-press rounded-sm border-2 border-hairline-strong bg-ink px-2.5 py-1 text-xs text-canvas disabled:opacity-60"
       >
-        Cancel
+        {t.deleteMap.cancel}
       </button>
       <button
         onClick={onDelete}
         disabled={busy}
         className="focus-ring btn-press rounded-sm border-2 border-red-700/60 px-2.5 py-1 text-xs text-red-700 hover:bg-red-700/10 disabled:opacity-60"
       >
-        {busy ? <Dots /> : "Confirm"}
+        {busy ? <Dots /> : t.deleteMap.confirm}
       </button>
     </span>
   );

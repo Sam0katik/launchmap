@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DeleteMapButton } from "@/components/DeleteMapButton";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 
 // One row in the profile's launch-map list. Whole row links to the map; a
 // Rename control swaps the title for an inline input (which lifts above the
@@ -27,6 +29,7 @@ export function MapListRow({
   const [title, setTitle] = useState(initialTitle ?? "");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const t = useT();
 
   const display = title.trim() || derivedName;
 
@@ -49,7 +52,7 @@ export function MapListRow({
       {!editing && (
         <Link
           href={`/map/${id}`}
-          aria-label={`Open ${display}`}
+          aria-label={fill(t.mapRow.openAria, { name: display })}
           className="focus-ring absolute inset-0 rounded-md"
         />
       )}
@@ -72,7 +75,7 @@ export function MapListRow({
               disabled={busy}
               className="focus-ring btn-press rounded-sm border-2 border-hairline-strong bg-primary px-3 py-1 text-xs font-medium text-white hover:bg-primary-hover disabled:opacity-60"
             >
-              {busy ? "…" : "Save"}
+              {busy ? "…" : t.mapRow.save}
             </button>
             <button
               onClick={() => {
@@ -82,7 +85,7 @@ export function MapListRow({
               disabled={busy}
               className="focus-ring btn-press rounded-sm border-2 border-hairline-strong bg-surface-2 px-3 py-1 text-xs text-ink disabled:opacity-60"
             >
-              Cancel
+              {t.mapRow.cancel}
             </button>
           </div>
         ) : (
@@ -103,7 +106,7 @@ export function MapListRow({
                   : "border-hairline text-ink-tertiary"
               }`}
             >
-              {unlocked ? "Unlocked" : "Basic"}
+              {unlocked ? t.mapRow.unlocked : t.mapRow.basic}
             </span>
             <p className="mt-1 text-xs text-ink-tertiary">
               {new Date(createdAt).toLocaleDateString()}
@@ -111,10 +114,10 @@ export function MapListRow({
           </div>
           <button
             onClick={() => setEditing(true)}
-            title="Rename map"
+            title={t.mapRow.renameTitle}
             className="focus-ring btn-press shrink-0 rounded-sm border-2 border-hairline-strong px-2.5 py-1 text-xs text-ink hover:bg-surface-2"
           >
-            Rename
+            {t.mapRow.rename}
           </button>
           <DeleteMapButton runId={id} />
         </div>

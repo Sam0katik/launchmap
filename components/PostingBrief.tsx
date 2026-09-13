@@ -4,6 +4,8 @@ import { useState } from "react";
 import { buildBrief } from "@/lib/posting-brief";
 import { bareSubmitLink } from "@/lib/submit-links";
 import type { Community, ProductAnalysis } from "@/lib/types";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 
 const TONE: Record<string, string> = {
   ok: "border-success/50 text-success bg-success/5",
@@ -23,9 +25,10 @@ export function PostingBrief({
 }) {
   const [open, setOpen] = useState(false);
   const [showAllRules, setShowAllRules] = useState(false);
+  const t = useT();
   const brief = buildBrief(community, analysis);
   const submitHref = bareSubmitLink(community) ?? community.url;
-  const submitLabel = bareSubmitLink(community) ? "Open submit form" : "Open";
+  const submitLabel = bareSubmitLink(community) ? t.brief.openSubmit : t.brief.open;
   // Real rules scraped straight from the subreddit (populated by the admin
   // Reddit scan into scraped_rules). When present these are the source of truth;
   // otherwise fall back to the curated one-line summary.
@@ -43,13 +46,13 @@ export function PostingBrief({
     <div className="space-y-2">
       <div className="rounded-md border border-hairline bg-canvas/50 p-3 text-xs">
         <div className="flex items-center justify-between gap-2">
-          <span className="eyebrow text-[10px] text-ink">Posting brief</span>
+          <span className="eyebrow text-[10px] text-ink">{t.brief.heading}</span>
           <button
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             className="focus-ring btn-press rounded border border-hairline-strong bg-surface-2 px-2 py-0.5 text-[11px] text-ink hover:bg-surface-3"
           >
-            {open ? "Hide" : "Show rules"}
+            {open ? t.brief.hide : t.brief.showRules}
           </button>
         </div>
 
@@ -58,15 +61,17 @@ export function PostingBrief({
             {/* the one status we lead with: can you post a link here or not */}
             <div className="flex flex-wrap gap-1.5">
               <span className={`rounded border px-1.5 py-0.5 text-[11px] ${TONE[brief.linkTone]}`}>
-                {brief.linkChip}
+                {t.brief[brief.linkKey]}
               </span>
             </div>
 
             {/* facts only: best time + karma bar to post here */}
             {(brief.bestTime || karmaValue) && (
               <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
-                {brief.bestTime && <Row label="Best time" value={brief.bestTime} />}
-                {karmaValue && <Row label="Karma" value={karmaValue} />}
+                {brief.bestTime && (
+                  <Row label={t.brief.bestTime} value={brief.bestTime} />
+                )}
+                {karmaValue && <Row label={t.brief.karma} value={karmaValue} />}
               </dl>
             )}
 
@@ -77,14 +82,16 @@ export function PostingBrief({
               <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="eyebrow text-[9px] text-ink-subtle">
-                    Rules · r/{subName}
+                    {fill(t.brief.rulesOf, { sub: subName })}
                   </span>
                   {liveRules.length > 4 && (
                     <button
                       onClick={() => setShowAllRules((v) => !v)}
                       className="menu-link rounded text-[10px] text-ink-muted"
                     >
-                      {showAllRules ? "collapse" : `show all ${liveRules.length}`}
+                      {showAllRules
+                        ? t.brief.collapse
+                        : fill(t.brief.showAll, { count: liveRules.length })}
                     </button>
                   )}
                 </div>
@@ -101,7 +108,7 @@ export function PostingBrief({
               brief.rules && (
                 <div className="rounded border border-hairline bg-surface-2/50 px-2.5 py-1.5">
                   <span className="eyebrow text-[9px] text-ink-subtle">
-                    Rules &amp; removal
+                    {t.brief.rulesFallback}
                   </span>
                   <p className="mt-0.5 text-ink-muted">{brief.rules}</p>
                 </div>

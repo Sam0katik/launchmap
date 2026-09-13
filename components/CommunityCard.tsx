@@ -1,17 +1,12 @@
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 import { PostingBrief } from "@/components/PostingBrief";
 import { CommunityAvatar } from "@/components/CommunityAvatar";
+import { serverDict } from "@/lib/i18n-server";
+import { fill } from "@/lib/i18n";
 
 // One community card on the map, styled as a print-zine docket. All cards share
 // the same frame; locked ones show a lock placeholder instead of the brief, so
 // the grid reads uniformly.
-
-const POLICY_LABEL: Record<string, string> = {
-  welcome: "Welcome",
-  megathread_only: "Megathread only",
-  comment_only: "Comments only",
-  banned: "No self-promo",
-};
 
 const POLICY_TONE: Record<string, string> = {
   welcome: "text-success border-success/50",
@@ -37,8 +32,15 @@ export function CommunityCard({
   entry: RankedCommunity;
   analysis?: ProductAnalysis | null;
 }) {
+  const { t } = serverDict();
   const { community, locked } = entry;
   const name = displayName(community.name);
+  const policyLabel: Record<string, string> = {
+    welcome: t.card.policyWelcome,
+    megathread_only: t.card.policyMegathread,
+    comment_only: t.card.policyCommentOnly,
+    banned: t.card.policyBanned,
+  };
 
   return (
     <div className="flex flex-col rounded-md border-2 border-hairline-strong bg-surface-1 shadow-[4px_5px_0_0_var(--color-hairline-strong)]">
@@ -51,7 +53,7 @@ export function CommunityCard({
         {community.members ? (
           <span
             className="tnum shrink-0 rounded-sm border border-hairline px-1.5 py-0.5 text-[11px] text-ink-muted"
-            title={`${community.members.toLocaleString()} members`}
+            title={fill(t.card.membersTitle, { n: community.members.toLocaleString() })}
           >
             {formatMembers(community.members)}
           </span>
@@ -68,14 +70,14 @@ export function CommunityCard({
           <span
             className={`self-start rounded-sm border bg-surface-2 px-2 py-0.5 text-xs ${POLICY_TONE[community.self_promo_policy]}`}
           >
-            {POLICY_LABEL[community.self_promo_policy]}
+            {policyLabel[community.self_promo_policy]}
           </span>
         )}
 
         <div className="mt-auto pt-1">
           {locked ? (
             <div className="rounded-md border border-dashed border-hairline-strong/40 bg-canvas/40 px-3 py-3 text-center text-xs text-ink-subtle">
-              🔒 Unlock to see the brief — rules, links &amp; a tailored angle
+              {t.card.locked}
             </div>
           ) : (
             <PostingBrief community={community} analysis={analysis} />

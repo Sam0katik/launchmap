@@ -11,6 +11,8 @@ import { OpportunityFinder } from "@/components/OpportunityFinder";
 import { UNLOCK_PRICE_LABEL } from "@/lib/billing";
 import { apifyConfigured } from "@/lib/apify";
 import { productNameFromUrl } from "@/lib/product-name";
+import { serverDict } from "@/lib/i18n-server";
+import { fill } from "@/lib/i18n";
 import type { ProductAnalysis, RankedCommunity } from "@/lib/types";
 
 type OppThread = {
@@ -28,6 +30,7 @@ export default async function MapPage({
 }: {
   params: { id: string };
 }) {
+  const { t } = serverDict();
   const supabase = createClient();
 
   // Signed-out visitors get an explicit prompt, never a 404: a dropped session
@@ -135,16 +138,13 @@ export default async function MapPage({
             <div className="panel mb-10 flex flex-col items-start justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center">
               <div className="text-sm text-ink-muted">
                 <p className="mb-1.5 text-ink">
-                  Unlock the full map{" "}
+                  {t.map.unlockTitle}{" "}
                   <span className="text-ink-subtle">— {UNLOCK_PRICE_LABEL}</span>
                 </p>
                 <ul className="space-y-0.5">
-                  <li>
-                    → All <span className="tnum">{lockedCount}</span> remaining
-                    communities with posting briefs
-                  </li>
-                  <li>→ Each sub&apos;s live mod-pinned rules</li>
-                  <li>→ Live-thread finder ($0.50 per search)</li>
+                  <li>→ {fill(t.map.unlockBullet1, { count: lockedCount })}</li>
+                  <li>→ {t.map.unlockBullet2}</li>
+                  <li>→ {t.map.unlockBullet3}</li>
                 </ul>
               </div>
               <UnlockButton
@@ -157,18 +157,15 @@ export default async function MapPage({
 
           {ranked.length === 0 && (
             <div className="panel px-8 py-10 text-center">
-              <p className="text-sm text-ink-muted">
-                No strong community matches for this product yet — it may sit
-                outside our curated indie / SaaS / maker set.
-              </p>
+              <p className="text-sm text-ink-muted">{t.map.noMatches}</p>
               <p className="mt-2 text-sm text-ink-subtle">
-                Try a clearer one-line description on the{" "}
+                {t.map.noMatchesHintStart}{" "}
                 <a href="/" className="text-primary hover:underline">
-                  home page
+                  {t.map.noMatchesHintHome}
                 </a>
-                , or browse the full{" "}
+                {t.map.noMatchesHintMiddle}{" "}
                 <a href="/communities" className="text-primary hover:underline">
-                  community database
+                  {t.map.noMatchesHintDb}
                 </a>
                 .
               </p>
@@ -219,7 +216,7 @@ export default async function MapPage({
                   <section className="mb-10">
                     <div className="mb-4 flex items-center gap-3">
                       <h2 className="display-lg text-ink" style={{ fontSize: "clamp(22px,3vw,30px)" }}>
-                        Reddit
+                        {t.map.reddit}
                       </h2>
                       <Count n={reddit.length} />
                     </div>
@@ -231,7 +228,7 @@ export default async function MapPage({
                   <section>
                     <div className="mb-4 flex items-center gap-3">
                       <h2 className="display-lg text-ink" style={{ fontSize: "clamp(22px,3vw,30px)" }}>
-                        Other channels
+                        {t.map.otherChannels}
                       </h2>
                       <Count n={other.length} />
                     </div>
@@ -245,15 +242,12 @@ export default async function MapPage({
           {/* Full catalog — everything, including communities not surfaced in
               this map, so nothing is hidden behind the ranking. */}
           <div className="panel mt-10 flex flex-col items-start justify-between gap-3 px-6 py-5 sm:flex-row sm:items-center">
-            <p className="text-sm text-ink-muted">
-              Want the rest? Browse every community in the database — including
-              ones this map didn&apos;t rank for your product.
-            </p>
+            <p className="text-sm text-ink-muted">{t.map.browseAllText}</p>
             <a
               href="/communities"
               className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-surface-2 px-4 py-2 text-sm font-medium text-ink hover:bg-surface-3"
             >
-              Browse all communities →
+              {t.map.browseAllCta}
             </a>
           </div>
         </main>
@@ -265,6 +259,8 @@ export default async function MapPage({
 // Shown instead of a 404 when the visitor has no session: the map may well be
 // theirs, they just need to sign in again.
 function SignedOut() {
+  const { t } = serverDict();
+
   return (
     <>
       <VectorSketch variant="alt" />
@@ -272,11 +268,8 @@ function SignedOut() {
         <SiteNav />
         <main className="mx-auto flex w-full max-w-content flex-1 flex-col items-center justify-center px-6 text-center">
           <div className="panel px-8 py-10">
-            <h1 className="display-lg mb-3 text-ink">Sign in to open this map</h1>
-            <p className="text-sm text-ink-muted">
-              Maps are private to the account that created them. Sign in with
-              GitHub (top right) and this page will load.
-            </p>
+            <h1 className="display-lg mb-3 text-ink">{t.map.signedOutTitle}</h1>
+            <p className="text-sm text-ink-muted">{t.map.signedOutBody}</p>
           </div>
         </main>
       </div>

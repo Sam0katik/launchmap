@@ -1,3 +1,5 @@
+import { serverDict } from "@/lib/i18n-server";
+
 // The map header: the product name as the heading, with a short gray summary
 // underneath. Kept compact and clean — the receipt meta line (No.) plus the
 // identity (pixel mono, dashed rule, eyebrow) stay; the visual bulk goes.
@@ -10,10 +12,12 @@ export function CollapsibleHeadline({
   summary: string;
   runNo: string;
 }) {
+  const { t } = serverDict();
+
   return (
     <header className="panel mb-10 px-8 pb-7 pt-6">
       <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
-        <span>Your launch map</span>
+        <span>{t.mapHeader.eyebrow}</span>
         <span className="tnum">No. {runNo}</span>
       </div>
       <div className="receipt-rule mb-5" />

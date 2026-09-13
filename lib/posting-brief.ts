@@ -9,7 +9,8 @@ export interface PostingBrief {
   policyLabel: string;
   policyTone: "ok" | "warn" | "bad";
   where: string;
-  linkChip: string; // short can/can't summary
+  linkChip: string; // short can/can't summary (English fallback)
+  linkKey: LinkKey; // dictionary key for the localized chip
   linkTone: "ok" | "warn" | "bad";
   length: string;
   title: string;
@@ -59,21 +60,35 @@ function titleFor(platform: string): string {
   }
 }
 
-function linkInfo(community: Community): { chip: string; tone: "ok" | "warn" | "bad" } {
+export type LinkKey =
+  | "linkOk"
+  | "linkComments"
+  | "linkNone"
+  | "linkIsPost"
+  | "linkInline"
+  | "linkListing";
+
+function linkInfo(community: Community): {
+  chip: string;
+  key: LinkKey;
+  tone: "ok" | "warn" | "bad";
+} {
   if (community.platform === "reddit") {
     switch (community.self_promo_policy) {
       case "welcome":
-        return { chip: "Link OK, in context", tone: "ok" };
+        return { chip: "Link OK, in context", key: "linkOk", tone: "ok" };
       case "megathread_only":
       case "comment_only":
-        return { chip: "Link in comments only", tone: "warn" };
+        return { chip: "Link in comments only", key: "linkComments", tone: "warn" };
       case "banned":
-        return { chip: "No links", tone: "bad" };
+        return { chip: "No links", key: "linkNone", tone: "bad" };
     }
   }
-  if (community.platform === "hackernews") return { chip: "URL is the post", tone: "ok" };
-  if (community.platform === "discord") return { chip: "Link inline, once", tone: "ok" };
-  return { chip: "Link in the listing", tone: "ok" };
+  if (community.platform === "hackernews")
+    return { chip: "URL is the post", key: "linkIsPost", tone: "ok" };
+  if (community.platform === "discord")
+    return { chip: "Link inline, once", key: "linkInline", tone: "ok" };
+  return { chip: "Link in the listing", key: "linkListing", tone: "ok" };
 }
 
 function whereFor(community: Community): string {
@@ -151,6 +166,7 @@ export function buildBrief(
     policyTone: policy.tone,
     where: whereFor(community),
     linkChip: link.chip,
+    linkKey: link.key,
     linkTone: link.tone,
     length: lengthFor(community.platform),
     title: titleFor(community.platform),

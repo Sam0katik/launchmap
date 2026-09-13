@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useT } from "@/components/LangProvider";
 
 // Account control in the top-right.
 //  - Signed out → "Sign in with GitHub" (solid orange).
@@ -9,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 //    menu with "Profile" and "Sign out". Closes on outside-click / Esc.
 // Degrades to a no-op when Supabase env is not configured.
 export function AuthButton() {
+  const t = useT();
   const configured =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
     !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -25,7 +27,7 @@ export function AuthButton() {
     }
     const supabase = createClient();
     const nameOf = (u: { user_metadata?: Record<string, unknown>; email?: string } | null) =>
-      u ? ((u.user_metadata?.user_name as string) ?? u.email ?? "signed in") : null;
+      u ? ((u.user_metadata?.user_name as string) ?? u.email ?? t.nav.signedIn) : null;
 
     // getSession() reads the stored session locally (no network), so the button
     // renders correctly right away instead of blocking on a slow getUser() —
@@ -87,11 +89,11 @@ export function AuthButton() {
     return (
       <button
         onClick={signIn}
-        title={configured ? undefined : "Connect Supabase to enable sign-in"}
+        title={configured ? undefined : t.nav.supabaseHint}
         className="focus-ring btn-press group rounded-md border-2 border-hairline-strong bg-primary px-5 py-2.5 text-lg font-medium text-white"
       >
         <span className="rounded-sm px-1 transition-colors group-hover:bg-[#b9c4a0] group-hover:text-ink">
-          Sign in with GitHub
+          {t.nav.signIn}
         </span>
       </button>
     );
@@ -123,7 +125,7 @@ export function AuthButton() {
             role="menuitem"
             className="block px-4 py-3 text-base text-ink hover:bg-surface-2"
           >
-            Profile
+            {t.nav.profile}
           </a>
           <div className="receipt-rule mx-2" />
           <button
@@ -131,7 +133,7 @@ export function AuthButton() {
             role="menuitem"
             className="block w-full px-4 py-3 text-left text-base text-ink hover:bg-surface-2"
           >
-            Sign out
+            {t.nav.signOut}
           </button>
         </div>
       )}

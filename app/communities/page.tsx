@@ -6,6 +6,8 @@ import communities from "@/data/communities.json";
 import { PaperPlane } from "@/components/PaperPlane";
 import { RedditGuide } from "@/components/RedditGuide";
 import type { Community } from "@/lib/types";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 
 // Convenient read-only access to the whole community DB: searchable, filterable
 // table straight from data/communities.json. No backend needed.
@@ -19,6 +21,7 @@ const POLICY_TONE: Record<string, string> = {
 };
 
 export default function CommunitiesPage() {
+  const t = useT();
   const [q, setQ] = useState("");
   const [platform, setPlatform] = useState("all");
 
@@ -46,17 +49,16 @@ export default function CommunitiesPage() {
         <Link href="/" className="wordmark text-lg text-ink">
           ZEROFANS
         </Link>
-        <span className="eyebrow">community db · {ALL.length}</span>
+        <span className="eyebrow">{fill(t.communities.meta, { n: ALL.length })}</span>
       </nav>
 
       <header className="mb-6">
         <div className="mb-2">
           <PaperPlane size={44} fly />
         </div>
-        <h1 className="display-lg mb-2 text-ink">Community database</h1>
+        <h1 className="display-lg mb-2 text-ink">{t.communities.title}</h1>
         <p className="readable text-sm text-ink-subtle">
-          The curated catalog of where to launch — with each community&apos;s
-          self-promo policy, karma bar, and best time to post.
+          {t.communities.subtitle}
         </p>
       </header>
 
@@ -66,7 +68,7 @@ export default function CommunitiesPage() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search name, tag, note…"
+          placeholder={t.communities.search}
           className="focus-ring w-64 rounded-md border border-hairline bg-surface-1 px-3 py-1.5 text-sm text-ink placeholder:text-ink-tertiary"
         />
         <div className="flex gap-1">
@@ -80,24 +82,26 @@ export default function CommunitiesPage() {
                   : "border-hairline text-ink-subtle hover:text-ink"
               }`}
             >
-              {p}
+              {p === "all" ? t.communities.all : p}
             </button>
           ))}
         </div>
-        <span className="ml-auto text-xs text-ink-tertiary">{rows.length} shown</span>
+        <span className="ml-auto text-xs text-ink-tertiary">
+          {fill(t.communities.shown, { n: rows.length })}
+        </span>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-hairline">
         <table className="readable w-full text-left text-sm">
           <thead className="bg-surface-1 text-xs uppercase text-ink-subtle">
             <tr>
-              <Th>Name</Th>
-              <Th>Platform</Th>
-              <Th>Policy</Th>
-              <Th>Karma</Th>
-              <Th>Activity</Th>
-              <Th>Best time</Th>
-              <Th>Verified</Th>
+              <Th>{t.communities.thName}</Th>
+              <Th>{t.communities.thPlatform}</Th>
+              <Th>{t.communities.thPolicy}</Th>
+              <Th>{t.communities.thKarma}</Th>
+              <Th>{t.communities.thActivity}</Th>
+              <Th>{t.communities.thBestTime}</Th>
+              <Th>{t.communities.thVerified}</Th>
             </tr>
           </thead>
           <tbody>

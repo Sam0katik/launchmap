@@ -1,15 +1,17 @@
 import Link from "next/link";
+import { serverDict } from "@/lib/i18n-server";
 
 // Tab strip linking the legal pages together (Privacy / Terms / Refunds /
 // Contact). Payment processors expect these to be cross-linked and reachable.
-const TABS = [
-  { key: "privacy", label: "Privacy", href: "/privacy" },
-  { key: "terms", label: "Terms", href: "/terms" },
-  { key: "refunds", label: "Refunds", href: "/refunds" },
-  { key: "contact", label: "Contact", href: "/contact" },
-] as const;
-
 export function LegalNav({ active }: { active: string }) {
+  const { t } = serverDict();
+  const TABS = [
+    { key: "privacy", label: t.footer.privacy, href: "/privacy" },
+    { key: "terms", label: t.footer.terms, href: "/terms" },
+    { key: "refunds", label: t.footer.refunds, href: "/refunds" },
+    { key: "contact", label: t.footer.contact, href: "/contact" },
+  ];
+
   return (
     <nav className="flex flex-wrap gap-2">
       {TABS.map((t) => {

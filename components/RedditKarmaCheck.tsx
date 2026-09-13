@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Dots } from "@/components/Dots";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 import { KARMA_CHECK_PRICE_LABEL } from "@/lib/billing";
 
 const PRICE = KARMA_CHECK_PRICE_LABEL;
@@ -42,58 +44,60 @@ function ageDays(createdUtc: number): number {
     : 0;
 }
 
-function ageLabel(createdUtc: number): string {
+type T = ReturnType<typeof useT>;
+
+function ageLabel(createdUtc: number, t: T): string {
   const days = ageDays(createdUtc);
   if (!days) return "—";
-  if (days < 31) return `${days}d old`;
-  if (days < 365) return `${Math.floor(days / 30)}mo old`;
-  return `${(days / 365).toFixed(1)}y old`;
+  if (days < 31) return fill(t.karma.ageDays, { n: days });
+  if (days < 365) return fill(t.karma.ageMonths, { n: Math.floor(days / 30) });
+  return fill(t.karma.ageYears, { n: (days / 365).toFixed(1) });
 }
 
-function verdict(k: SavedRedditAccount): {
+function verdict(k: SavedRedditAccount, t: T): {
   tone: string;
   label: string;
 } {
   const days = ageDays(k.createdUtc);
   if (days < 7 || k.totalKarma < 10) {
-    return { tone: "border-red-700/50 text-red-700 bg-red-700/5", label: "Too fresh" };
+    return { tone: "border-red-700/50 text-red-700 bg-red-700/5", label: t.karma.verdictFresh };
   }
   if (k.totalKarma < 50) {
     return {
       tone: "border-[#b06a00]/50 text-[#b06a00] bg-[#b06a00]/5",
-      label: "Warming up",
+      label: t.karma.verdictWarming,
     };
   }
-  return { tone: "border-success/50 text-success bg-success/5", label: "Ready" };
+  return { tone: "border-success/50 text-success bg-success/5", label: t.karma.verdictReady };
 }
 
 // Concrete, rule-based improvement advice from the karma mix + age.
-function recommendations(k: SavedRedditAccount): string[] {
+function recommendations(k: SavedRedditAccount, t: T): string[] {
   const days = ageDays(k.createdUtc);
   const recs: string[] = [];
   if (days < 14)
     recs.push(
-      "Account is very young — wait ~2 weeks before any promo post; comment daily meanwhile."
+      t.karma.recYoung
     );
   if (k.totalKarma < 10)
     recs.push(
-      "Under 10 karma most subs auto-remove you. Answer 5–10 questions in your niche to clear the floor."
+      t.karma.recUnder10
     );
   else if (k.totalKarma < 50)
     recs.push(
-      "Get to 50+ karma before the stricter subs — helpful comments in mid-size niche subs are the fastest safe route."
+      t.karma.recUnder50
     );
   if (k.commentKarma < k.linkKarma)
     recs.push(
-      "Post karma outweighs comment karma — that reads as a self-promoter to mods. Balance it with genuine comments."
+      t.karma.recImbalance
     );
   if (k.commentKarma >= 50 && days >= 30)
     recs.push(
-      "Solid comment history — start with the 'Welcome' subs on your map, one post per session."
+      t.karma.recSolid
     );
   if (recs.length === 0)
     recs.push(
-      "Account looks healthy. Keep the 90/10 rule: ~9 helpful comments per 1 promo post."
+      t.karma.recHealthy
     );
   return recs;
 }
@@ -110,6 +114,7 @@ export function RedditKarmaCheck({
   maxAccounts: number;
 }) {
   const [accounts, setAccounts] = useState<SavedRedditAccount[]>(initialAccounts);
+  const t = useT();
   const [open, setOpen] = useState(initialAccounts.length > 0);
   const [name, setName] = useState("");
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -132,16 +137,16 @@ export function RedditKarmaCheck({
           startRes.status === 402
             ? `Not enough balance — a check costs ${PRICE}. Top up above.`
             : startRes.status === 403 && startData?.error === "need_unlock"
-              ? "Unlock at least one map first — the karma check is part of a launch."
+              ? t.karma.errGate
               : startRes.status === 409 && startData?.error === "account_limit"
                 ? `You can keep ${maxAccounts} accounts. Re-check an existing one instead.`
                 : startRes.status === 400
-                  ? "Enter a valid username."
+                  ? t.karma.errInvalidName
                   : startRes.status === 429
-                    ? "Daily check limit for your account reached — try again tomorrow."
+                    ? t.karma.errDailyLimit
                   : startData?.detail
                     ? `Couldn't start: ${startData.detail}`
-                    : "Couldn't start the check — try again."
+                    : t.karma.errStart
         );
         return;
       }
@@ -172,18 +177,18 @@ export function RedditKarmaCheck({
             setExpanded(entry.username);
             setName("");
           } else {
-            setError("No such Reddit user (or the profile is private).");
+            setError(t.karma.errNoUser);
           }
           return;
         }
         if (data.status === "FAILED") {
-          setError("Check failed on Reddit — try again later.");
+          setError(t.karma.errFailed);
           return;
         }
       }
-      setError("Taking too long — try again.");
+      setError(t.karma.errTimeout);
     } catch {
-      setError("Network error.");
+      setError(t.karma.errNetwork);
     } finally {
       setBusy(false);
       setConfirming(null);
@@ -197,7 +202,7 @@ export function RedditKarmaCheck({
         className="focus-ring btn-press inline-flex items-center gap-2.5 rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-2.5 text-sm text-ink hover:bg-surface-2"
       >
         <RedditGlyph />
-        Check your Reddit karma
+        {t.karma.cta}
         <span className="text-ink-tertiary">→</span>
       </button>
     );
@@ -207,15 +212,19 @@ export function RedditKarmaCheck({
     <div className="rounded-md border-2 border-hairline-strong bg-surface-1 p-5 shadow-[3px_4px_0_0_var(--color-hairline-strong)]">
       <div className="mb-3 flex items-center gap-2">
         <RedditGlyph size={20} />
-        <span className="text-sm font-medium text-ink">Reddit readiness</span>
+        <span className="text-sm font-medium text-ink">{t.karma.heading}</span>
         <span className="text-xs text-ink-tertiary">
-          {accounts.length}/{maxAccounts} accounts · {PRICE} per check
+          {fill(t.karma.meta, {
+            n: accounts.length,
+            max: maxAccounts,
+            price: PRICE,
+          })}
         </span>
         <button
           onClick={() => setOpen(false)}
           className="menu-link ml-auto rounded-sm text-xs text-ink-tertiary"
         >
-          − hide
+          {t.karma.hide}
         </button>
       </div>
 
@@ -223,7 +232,7 @@ export function RedditKarmaCheck({
       {accounts.length > 0 && (
         <ul className="mb-4 space-y-2">
           {accounts.map((a) => {
-            const v = verdict(a);
+            const v = verdict(a, t);
             const isOpen = expanded === a.username;
             return (
               <li
@@ -241,10 +250,10 @@ export function RedditKarmaCheck({
                     {v.label}
                   </span>
                   <span className="tnum text-xs text-ink-subtle">
-                    {a.totalKarma.toLocaleString()} karma
+                    {fill(t.karma.karmaSuffix, { n: a.totalKarma.toLocaleString() })}
                   </span>
                   <span className="text-xs text-ink-tertiary">
-                    {ageLabel(a.createdUtc)}
+                    {ageLabel(a.createdUtc, t)}
                   </span>
                   <span className="ml-auto flex items-center gap-2">
                     {confirming === a.username ? (
@@ -255,7 +264,7 @@ export function RedditKarmaCheck({
                           disabled={busy}
                           className="focus-ring btn-press rounded-sm bg-primary px-2.5 py-1 text-xs font-medium text-white disabled:opacity-60"
                         >
-                          {busy ? <Dots /> : "Confirm"}
+                          {busy ? <Dots /> : t.karma.confirm}
                         </button>
                         <button
                           onClick={() => setConfirming(null)}
@@ -271,7 +280,7 @@ export function RedditKarmaCheck({
                         disabled={busy}
                         className="focus-ring btn-press rounded-sm border border-hairline-strong px-2.5 py-1 text-xs text-ink hover:bg-surface-2 disabled:opacity-60"
                       >
-                        Re-check
+                        {t.karma.recheck}
                       </button>
                     )}
                   </span>
@@ -280,16 +289,22 @@ export function RedditKarmaCheck({
                 {isOpen && (
                   <div className="mt-2.5 border-t border-hairline pt-2.5">
                     <div className="flex flex-wrap gap-4 text-xs text-ink-subtle">
-                      <span className="tnum">Post {a.linkKarma.toLocaleString()}</span>
                       <span className="tnum">
-                        Comment {a.commentKarma.toLocaleString()}
+                        {fill(t.karma.postKarma, { n: a.linkKarma.toLocaleString() })}
+                      </span>
+                      <span className="tnum">
+                        {fill(t.karma.commentKarma, {
+                          n: a.commentKarma.toLocaleString(),
+                        })}
                       </span>
                       <span>
-                        checked {new Date(a.checkedAt).toLocaleDateString()}
+                        {fill(t.karma.checkedOn, {
+                          date: new Date(a.checkedAt).toLocaleDateString(),
+                        })}
                       </span>
                     </div>
                     <ul className="mt-2 space-y-1.5">
-                      {recommendations(a).map((r, i) => (
+                      {recommendations(a, t).map((r, i) => (
                         <li key={i} className="flex gap-2 text-sm text-ink-muted">
                           <span className="text-primary">→</span>
                           <span>{r}</span>
@@ -307,7 +322,7 @@ export function RedditKarmaCheck({
       {/* gate: karma checks are part of a launch — need an unlocked map */}
       {enabled && !eligible && (
         <p className="text-sm text-ink-tertiary">
-          Unlock at least one map to check karma.
+          {t.karma.gate}
         </p>
       )}
 
@@ -317,21 +332,31 @@ export function RedditKarmaCheck({
           {confirming === "__new__" ? (
             <div className="flex flex-wrap items-center gap-2 rounded-md border-2 border-hairline-strong bg-canvas px-3 py-2.5">
               <span className="text-sm text-ink-muted">
-                Check <span className="text-ink">u/{name.trim()}</span> for {PRICE}?
+                {fill(t.karma.confirmNew, {
+                  user: `u/${name.trim()}`,
+                  price: PRICE,
+                })}
               </span>
               <button
                 onClick={() => runCheck(name.trim())}
                 disabled={busy}
                 className="focus-ring btn-press rounded-sm bg-primary px-3 py-1 text-xs font-medium text-white disabled:opacity-60"
               >
-                {busy ? <>Checking<Dots /></> : `Confirm — ${PRICE}`}
+                {busy ? (
+                  <>
+                    {t.karma.checking}
+                    <Dots />
+                  </>
+                ) : (
+                  fill(t.karma.confirmPrice, { price: PRICE })
+                )}
               </button>
               <button
                 onClick={() => setConfirming(null)}
                 disabled={busy}
                 className="focus-ring btn-press rounded-sm border border-hairline-strong px-3 py-1 text-xs text-ink disabled:opacity-60"
               >
-                Cancel
+                {t.karma.cancel}
               </button>
             </div>
           ) : (
@@ -348,7 +373,7 @@ export function RedditKarmaCheck({
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="yourname"
+                placeholder={t.karma.namePlaceholder}
                 spellCheck={false}
                 className="min-w-0 flex-1 bg-transparent px-1.5 py-2.5 text-sm text-ink outline-none"
               />
@@ -357,7 +382,7 @@ export function RedditKarmaCheck({
                 disabled={busy}
                 className="btn-press m-1 rounded-sm bg-primary px-4 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
               >
-                Check · {PRICE}
+                {fill(t.karma.check, { price: PRICE })}
               </button>
             </form>
           )}
@@ -365,7 +390,7 @@ export function RedditKarmaCheck({
       )}
 
       {!enabled && (
-        <p className="text-sm text-ink-tertiary">Connecting soon.</p>
+        <p className="text-sm text-ink-tertiary">{t.karma.soon}</p>
       )}
 
       {error && <p className="mt-3 text-sm text-red-700">{error}</p>}

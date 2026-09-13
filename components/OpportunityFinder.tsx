@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dots } from "@/components/Dots";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 
 interface Thread {
   title: string;
@@ -43,6 +45,7 @@ export function OpportunityFinder({
   const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const t = useT();
 
   // After router.refresh() the server sends fresh props — adopt them, otherwise
   // the initial useState value would stick for the life of the component.
@@ -90,13 +93,11 @@ export function OpportunityFinder({
         return true;
       }
       if (data.status === "FAILED") {
-        setError("Search failed on Reddit — try again later.");
+        setError(t.opportunities.errSearchFailed);
         return false;
       }
     }
-    setError(
-      "Search is taking longer than usual — reopen this page in a minute, the result is kept."
-    );
+    setError(t.opportunities.errTimeout);
     return false;
   }
 
@@ -113,14 +114,14 @@ export function OpportunityFinder({
       if (!startRes.ok || !startData?.apifyRunId) {
         setError(
           startRes.status === 402
-            ? "Not enough balance — a search costs $0.50. Top up in your profile."
+            ? t.opportunities.errNoBalance
             : startRes.status === 429
-              ? "Daily search limit for your account reached — try again tomorrow."
-            : startRes.status === 422
-              ? "Not enough product keywords to search."
-              : startData?.detail
-                ? `Couldn't start: ${startData.detail}`
-                : "Couldn't start the search — try again."
+              ? t.opportunities.errDailyLimit
+              : startRes.status === 422
+                ? t.opportunities.errNoKeywords
+                : startData?.detail
+                  ? fill(t.opportunities.errStartDetail, { detail: startData.detail })
+                  : t.opportunities.errStart
         );
         return;
       }
@@ -129,7 +130,7 @@ export function OpportunityFinder({
       const collected = await poll(apifyRunId, setThreads);
       if (collected) router.refresh(); // keep the server-rendered props in sync
     } catch {
-      setError("Network error.");
+      setError(t.opportunities.errNetwork);
     } finally {
       setBusy(false);
     }
@@ -140,15 +141,16 @@ export function OpportunityFinder({
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="display-lg text-ink" style={{ fontSize: "clamp(20px,2.6vw,26px)" }}>
-            Where to jump in
+            {t.opportunities.title}
           </h2>
           <p className="mt-1 text-sm text-ink-subtle">
-            Live threads about your space — join with a real comment, not a link.
+            {t.opportunities.subtitle}
           </p>
           {threads && updatedAt && (
             <p className="mt-1 text-xs text-ink-tertiary">
-              Saved {new Date(updatedAt).toLocaleString()} — kept until you
-              refresh.
+              {fill(t.opportunities.saved, {
+                date: new Date(updatedAt).toLocaleString(),
+              })}
             </p>
           )}
         </div>
@@ -159,17 +161,17 @@ export function OpportunityFinder({
             className="focus-ring btn-press shrink-0 rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
           >
             {busy ? (
-              <>Searching<Dots /></>
+              <>{t.opportunities.searching}<Dots /></>
             ) : threads ? (
-              "Refresh · $0.50"
+              t.opportunities.refresh
             ) : (
-              "Find live threads · $0.50"
+              t.opportunities.find
             )}
           </button>
         )}
         {enabled && unlocked && armed && !busy && (
           <span className="flex shrink-0 items-center gap-2">
-            <span className="text-xs text-ink-muted">Charge $0.50?</span>
+            <span className="text-xs text-ink-muted">{t.opportunities.charge}</span>
             <button
               onClick={() => {
                 setArmed(false);
@@ -177,31 +179,31 @@ export function OpportunityFinder({
               }}
               className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover"
             >
-              Confirm
+              {t.opportunities.confirm}
             </button>
             <button
               onClick={() => setArmed(false)}
               className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-sm text-ink"
             >
-              Cancel
+              {t.opportunities.cancel}
             </button>
           </span>
         )}
       </div>
 
       {!enabled && (
-        <p className="text-sm text-ink-tertiary">Connecting soon.</p>
+        <p className="text-sm text-ink-tertiary">{t.opportunities.soon}</p>
       )}
 
       {enabled && !unlocked && (
         <p className="text-sm text-ink-tertiary">
-          🔒 Unlock this map to find live threads to join.
+          {t.opportunities.locked}
         </p>
       )}
 
       {busy && (
         <p className="text-sm text-ink-subtle">
-          Searching Reddit — this takes ~20–40 seconds, hang tight<Dots />
+          {t.opportunities.busy}<Dots />
         </p>
       )}
 
@@ -209,39 +211,43 @@ export function OpportunityFinder({
 
       {unlocked && threads && threads.length === 0 && !busy && (
         <p className="text-sm text-ink-tertiary">
-          No live threads passed the quality bar right now — we only show
-          conversations you can actually join. Try again in a few hours.
+          {t.opportunities.empty}
         </p>
       )}
 
       {unlocked && threads && threads.length > 0 && threads.length < 5 && !busy && (
         <p className="mt-2 text-xs text-ink-tertiary">
-          Only {threads.length} thread{threads.length > 1 ? "s" : ""} passed the
-          live-conversation bar right now — check back later for fresh ones.
+          {fill(t.opportunities.few, { count: threads.length })}
         </p>
       )}
 
       {unlocked && threads && threads.length > 0 && (
         <ul className="mt-1 space-y-2">
-          {threads.map((t, i) => (
+          {threads.map((thread, i) => (
             <li key={i}>
               <a
-                href={t.url}
+                href={thread.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="focus-ring group flex items-start justify-between gap-3 rounded-md border border-hairline bg-surface-1 px-3 py-2 hover:bg-surface-2"
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm text-ink group-hover:text-primary">
-                    {t.title}
+                    {thread.title}
                   </span>
                   <span className="text-xs text-ink-subtle">
-                    {t.subreddit ? `r/${t.subreddit.replace(/^r\//, "")}` : "reddit"}
-                    {t.comments != null ? ` · ${t.comments} comments` : ""}
-                    {t.upvotes != null ? ` · ${t.upvotes} upvotes` : ""}
+                    {thread.subreddit
+                      ? `r/${thread.subreddit.replace(/^r\//, "")}`
+                      : "reddit"}
+                    {thread.comments != null
+                      ? ` · ${fill(t.opportunities.commentsSuffix, { n: thread.comments })}`
+                      : ""}
+                    {thread.upvotes != null
+                      ? ` · ${fill(t.opportunities.upvotesSuffix, { n: thread.upvotes })}`
+                      : ""}
                   </span>
                 </span>
-                <span className="shrink-0 text-xs text-ink-tertiary">open →</span>
+                <span className="shrink-0 text-xs text-ink-tertiary">{t.opportunities.open}</span>
               </a>
             </li>
           ))}

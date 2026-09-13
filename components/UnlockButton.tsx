@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatUsd } from "@/lib/billing";
 import { Dots } from "@/components/Dots";
+import { useT } from "@/components/LangProvider";
+import { fill } from "@/lib/i18n";
 
 // Unlock a map by spending internal balance ($2, same for everyone). Two-step:
 // click "Spend $2" → confirm (no refunds) → charge. Refreshes on success.
@@ -21,6 +23,8 @@ export function UnlockButton({
   const [busy, setBusy] = useState(false);
   const [short, setShort] = useState(false);
   const router = useRouter();
+  const t = useT();
+  const price = priceLabel.replace(" one-time", "");
 
   async function unlock() {
     setBusy(true);
@@ -58,16 +62,16 @@ export function UnlockButton({
           onClick={() => setArmed(true)}
           className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
         >
-          Spend {priceLabel.replace(" one-time", "")}
+          {fill(t.unlock.spend, { price })}
         </button>
         <p className="mt-1 text-xs text-ink-tertiary">
-          Balance: {formatUsd(balanceCents)}
+          {fill(t.unlock.balance, { amount: formatUsd(balanceCents) })}
         </p>
         {short && (
           <p className="mt-1 text-xs text-red-700">
-            Not enough balance.{" "}
+            {t.unlock.notEnough}{" "}
             <Link href="/profile" className="underline">
-              Top up
+              {t.unlock.topUp}
             </Link>
           </p>
         )}
@@ -78,7 +82,7 @@ export function UnlockButton({
   return (
     <div className="shrink-0 text-right">
       <p className="mb-1.5 text-xs text-ink-muted">
-        Charge {priceLabel.replace(" one-time", "")} now? No refunds.
+        {fill(t.unlock.confirmQuestion, { price })}
       </p>
       <div className="flex justify-end gap-2">
         <button
@@ -86,7 +90,7 @@ export function UnlockButton({
           disabled={busy}
           className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-surface-2 px-3 py-1.5 text-sm text-ink disabled:opacity-60"
         >
-          Cancel
+          {t.unlock.cancel}
         </button>
         <button
           onClick={unlock}
@@ -94,9 +98,9 @@ export function UnlockButton({
           className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
         >
           {busy ? (
-            <>Charging<Dots /></>
+            <>{t.unlock.charging}<Dots /></>
           ) : (
-            `Confirm — spend ${priceLabel.replace(" one-time", "")}`
+            fill(t.unlock.confirm, { price })
           )}
         </button>
       </div>

@@ -1,6 +1,7 @@
 import { VectorSketch } from "@/components/VectorSketch";
 import { SiteNav } from "@/components/SiteNav";
 import { LegalNav } from "@/components/LegalNav";
+import { serverDict } from "@/lib/i18n-server";
 
 const CONTACT = {
   email: "1awqfes@gmail.com",
@@ -10,6 +11,8 @@ const CONTACT = {
 export const metadata = { title: "Contact — ZeroFans" };
 
 export default function Contact() {
+  const { t } = serverDict();
+
   return (
     <>
       <VectorSketch variant="alt" />
@@ -19,15 +22,15 @@ export default function Contact() {
         <main className="mx-auto w-full max-w-2xl px-6 pb-20 pt-4">
           <header className="panel mb-10 px-8 pb-7 pt-6">
             <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-ink-subtle">
-              <span>Contact</span>
+              <span>{t.contact.meta}</span>
               <span>ZeroFans Labs</span>
             </div>
             <div className="receipt-rule mb-5" />
             <h1 className="pixel text-ink" style={{ fontSize: "clamp(26px,3.4vw,38px)" }}>
-              Get in touch
+              {t.contact.title}
             </h1>
             <p className="mt-3 text-sm text-ink-subtle">
-              Questions, feedback, or a community to add? Reach out.
+              {t.contact.subtitle}
             </p>
           </header>
 

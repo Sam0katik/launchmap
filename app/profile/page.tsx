@@ -19,12 +19,15 @@ import { isAdminUser } from "@/lib/admins";
 import { apifyConfigured } from "@/lib/apify";
 import { plategaConfigured, rubPerUsd } from "@/lib/platega";
 import { productNameFromUrl } from "@/lib/product-name";
+import { serverDict } from "@/lib/i18n-server";
+import { fill } from "@/lib/i18n";
 import type { SavedRedditAccount } from "@/components/RedditKarmaCheck";
 
 // Account hub: every launch map the user has run, usage, and account management
 // (sign-out lives in the nav; deletion lives here). Server component, RLS-scoped
 // — a user only ever sees their own rows.
 export default async function ProfilePage() {
+  const { t } = serverDict();
   const supabase = createClient();
 
   const {
@@ -66,14 +69,13 @@ export default async function ProfilePage() {
         <main className="mx-auto w-full max-w-content px-6 pb-20 pt-4">
           {profile?.blocked === true && (
             <div className="mb-6 rounded-md border-2 border-red-700 bg-surface-1 px-5 py-4 text-sm text-red-700">
-              This account is blocked: maps, unlocks, checks and top-ups are
-              disabled. If you think this is a mistake, use the contact page.
+              {t.profile.blocked}
             </div>
           )}
           {/* identity header */}
           <header className="panel mb-10 px-8 pb-7 pt-6">
             <div className="mb-3 flex items-center justify-between gap-3 text-xs uppercase tracking-widest text-ink-subtle">
-              <span>Account · Signed in with GitHub</span>
+              <span>{t.profile.accountMeta}</span>
               <span>ZeroFans Labs</span>
             </div>
             <div className="receipt-rule mb-5" />
@@ -94,7 +96,7 @@ export default async function ProfilePage() {
                     href="/admin"
                     className="focus-ring btn-press rounded-md border-2 border-hairline-strong bg-ink px-4 py-2.5 text-base font-medium text-canvas hover:opacity-90"
                   >
-                    ⚙ Admin panel
+                    ⚙ {t.nav.adminPanel}
                   </Link>
                 )}
                 <SignOutButton />
@@ -104,46 +106,46 @@ export default async function ProfilePage() {
 
           {/* balance + usage */}
           <section className="mb-10">
-            <h2 className="eyebrow mb-3">Balance &amp; usage</h2>
+            <h2 className="eyebrow mb-3">{t.profile.balanceSection}</h2>
             {/* items-start so each card hugs its own content — otherwise the
                 grid stretches Maps/Unlocked to match the taller Balance card and
                 leaves a big empty frame under the number. */}
             <div className="grid items-start gap-4 sm:grid-cols-3">
               <div className="flex items-center justify-between gap-3 rounded-md border-2 border-hairline-strong bg-surface-1 px-4 py-3">
                 <div>
-                  <p className="eyebrow mb-1">Balance</p>
+                  <p className="eyebrow mb-1">{t.profile.balance}</p>
                   <p className="tnum text-2xl text-ink">{formatUsd(balanceCents)}</p>
                 </div>
                 <TopUpButton enabled={plategaConfigured()} rubPerUsd={rubPerUsd()} />
               </div>
               <Stat
-                label="Maps"
+                label={t.profile.maps}
                 value={`${runList.length} / ${MAX_MAPS_PER_ACCOUNT}`}
               />
               <Stat
-                label="Unlocked maps"
+                label={t.profile.unlockedMaps}
                 value={String(runList.filter((r) => r.unlocked).length)}
               />
             </div>
             <p className="mt-4 text-sm text-ink-subtle">
-              Top up your balance, then unlock any map for {UNLOCK_PRICE_LABEL} —
-              all publics + their posting briefs. You can keep{" "}
-              {MAX_MAPS_PER_ACCOUNT} maps at once; delete one below to analyze a
-              new product.
+              {fill(t.profile.balanceHint, {
+                price: UNLOCK_PRICE_LABEL,
+                max: MAX_MAPS_PER_ACCOUNT,
+              })}
             </p>
           </section>
 
           {/* run history */}
           <section className="mb-12">
-            <h2 className="eyebrow mb-3">Your launch maps</h2>
+            <h2 className="eyebrow mb-3">{t.profile.mapsSection}</h2>
             {runList.length === 0 ? (
               <div className="rounded-md border-2 border-dashed border-hairline-strong/40 px-6 py-10 text-center">
                 <p className="text-sm text-ink-subtle">
-                  No maps yet. Paste a product URL on the{" "}
+                  {t.profile.noMapsStart}{" "}
                   <Link href="/" className="text-primary hover:underline">
-                    home page
+                    {t.profile.noMapsHome}
                   </Link>{" "}
-                  to light your first one.
+                  {t.profile.noMapsEnd}
                 </p>
               </div>
             ) : (
@@ -165,7 +167,7 @@ export default async function ProfilePage() {
 
           {/* Reddit readiness check */}
           <section id="reddit-check" className="mb-12 scroll-mt-24">
-            <h2 className="eyebrow mb-3">Reddit account check</h2>
+            <h2 className="eyebrow mb-3">{t.profile.redditSection}</h2>
             <RedditKarmaCheck
               enabled={apifyConfigured()}
               eligible={runList.some((r) => r.unlocked)}
@@ -176,13 +178,13 @@ export default async function ProfilePage() {
 
           {/* Reddit account playbook */}
           <section className="mb-12">
-            <h2 className="eyebrow mb-3">Posting playbook</h2>
+            <h2 className="eyebrow mb-3">{t.profile.playbookSection}</h2>
             <RedditGuide />
           </section>
 
           {/* danger zone */}
           <section>
-            <h2 className="eyebrow mb-3 text-red-700">Danger zone</h2>
+            <h2 className="eyebrow mb-3 text-red-700">{t.profile.dangerZone}</h2>
             <div className="rounded-md border-2 border-red-700/40 px-6 py-5">
               <DeleteAccountButton />
             </div>

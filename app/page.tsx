@@ -5,6 +5,7 @@ import { ClippedNote } from "@/components/ClippedNote";
 import { ScrambleText } from "@/components/ScrambleText";
 import { AuthButton } from "@/components/AuthButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { serverDict } from "@/lib/i18n-server";
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -15,6 +16,8 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 }
 
 export default function Home() {
+  const { t } = serverDict();
+
   return (
     <>
       <VectorSketch />
@@ -42,9 +45,9 @@ export default function Home() {
               <div className="receipt-rule mb-9" />
 
               <h1 className="display-xl mb-10 text-ink" style={{ fontSize: "clamp(30px,4.4vw,44px)" }}>
-                Light the way
+                {t.landing.titleLine1}
                 <br />
-                to first users
+                {t.landing.titleLine2}
               </h1>
 
               <UrlForm />
@@ -53,15 +56,15 @@ export default function Home() {
               <ul className="mx-auto mt-8 max-w-sm space-y-1.5 text-left text-[13px] text-ink-muted">
                 <li className="flex gap-2">
                   <span className="text-primary">→</span>
-                  Where to post without getting banned — per-sub rules &amp; briefs
+                  {t.landing.offer1}
                 </li>
                 <li className="flex gap-2">
                   <span className="text-primary">→</span>
-                  Is your Reddit account ready — karma &amp; age check
+                  {t.landing.offer2}
                 </li>
                 <li className="flex gap-2">
                   <span className="text-primary">→</span>
-                  Live threads in your niche to jump into today
+                  {t.landing.offer3}
                 </li>
               </ul>
             </div>
@@ -76,10 +79,10 @@ export default function Home() {
 
         <footer className="border-t-2 border-hairline-strong">
           <div className="mx-auto flex h-14 max-w-content items-center justify-center gap-6 px-6 text-base text-ink-subtle">
-            <FooterLink href="/privacy">Privacy</FooterLink>
-            <FooterLink href="/terms">Terms</FooterLink>
-            <FooterLink href="/refunds">Refunds</FooterLink>
-            <FooterLink href="/contact">Contact</FooterLink>
+            <FooterLink href="/privacy">{t.footer.privacy}</FooterLink>
+            <FooterLink href="/terms">{t.footer.terms}</FooterLink>
+            <FooterLink href="/refunds">{t.footer.refunds}</FooterLink>
+            <FooterLink href="/contact">{t.footer.contact}</FooterLink>
           </div>
         </footer>
       </div>
