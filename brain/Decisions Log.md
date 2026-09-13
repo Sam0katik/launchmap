@@ -2,6 +2,10 @@
 
 Newest first. Each: what we decided + why.
 
+- **2026-09-13 — Ship straight to `main`, no confirmation step.** Operator wants
+  every edit deployed as it lands; feature branches and "ready to deploy?"
+  questions are dropped. `npm run build` before each push is the only gate.
+
 - **2026-09-13 — Reddit/Apify features stay (option A rejected).** Operator's
   call: the live thread finder, karma check and rules/member scan are kept and
   stay paid. The ToS exposure in [[Reddit Compliance (BLOCKER)]] is unchanged —

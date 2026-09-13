@@ -37,8 +37,11 @@ locally writes real rows. For risky work, create a second Supabase project, run
 
 ## Working agreement (carried over from the cloud session)
 
-- `main` auto-deploys to production. For anything touching money or auth, work
-  on a branch and merge after `npm run build` passes.
+- **Work directly on `main`; every commit ships** (operator's call, 2026-09-13 —
+  no feature branches, no "shall I deploy?" question). `main` auto-deploys to
+  production, so the safety net is the build, not a review step: `npm run build`
+  (plus `npm run typecheck` on type changes) must pass **before** every push,
+  money and auth paths included.
 - `CLAUDE.md` rules still apply: verify with `npm run build` / `npm run
   typecheck` before claiming a change works; never invent community data; all
   `profiles`/`runs` money writes stay in service-role server routes.
